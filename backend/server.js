@@ -1,7 +1,9 @@
-require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
-const db = require('./config/database');
+require('dotenv').config();
+
+const { initializeDatabase } = require('./config/database');
+const routes = require('./routes');
 
 const app = express();
 
@@ -11,21 +13,29 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // Routes
-app.use('/api/users', require('./routes/userRoutes'));
-app.use('/api/products', require('./routes/productRoutes'));
-app.use('/api/invoices', require('./routes/invoiceRoutes'));
-app.use('/api/reports', require('./routes/reportRoutes'));
+app.use('/api', routes);
+
+// Gestion des erreurs
+app.use((err, req, res, next) => {
+  console.error(err.stack);
+  res.status(500).send('Something broke!');
+});
 
 const PORT = process.env.PORT || 3000;
 
-// Database connection and server start
-db.authenticate()
-  .then(() => {
-    console.log('Database connected successfully');
+// Initialisation de la base de données et démarrage du serveur
+const startServer = async () => {
+  try {
+    await initializeDatabase();
     app.listen(PORT, () => {
-      console.log(`Server is running on port ${PORT}`);
+      console.log(`🚀 Serveur démarré sur le port ${PORT}`);
+      console.log(`📚 Documentation API: http://localhost:${PORT}/api/docs`);
+      console.log(`🔧 Environnement: ${process.env.NODE_ENV}`);
     });
-  })
-  .catch(err => {
-    console.error('Unable to connect to the database:', err);
-  });
+  } catch (error) {
+    console.error('❌ Erreur lors du démarrage du serveur:', error);
+    process.exit(1);
+  }
+};
+
+startServer();

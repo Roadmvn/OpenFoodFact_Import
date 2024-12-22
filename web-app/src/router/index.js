@@ -1,49 +1,46 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import { useAuthStore } from '../stores/auth'
+import AuthService from '../services/auth.service'
+
+const routes = [
+  {
+    path: '/login',
+    name: 'login',
+    component: () => import('../views/LoginView.vue'),
+    meta: { guest: true }
+  },
+  {
+    path: '/dashboard',
+    name: 'dashboard',
+    component: () => import('../views/DashboardView.vue'),
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/invoices',
+    name: 'invoices',
+    component: () => import('../views/InvoicesView.vue'),
+    meta: { requiresAuth: true }
+  },
+  // Redirection par défaut vers login
+  {
+    path: '/',
+    redirect: '/login'
+  }
+]
 
 const router = createRouter({
   history: createWebHistory(),
-  routes: [
-    {
-      path: '/login',
-      name: 'login',
-      component: () => import('../views/LoginView.vue')
-    },
-    {
-      path: '/',
-      name: 'dashboard',
-      component: () => import('../views/DashboardView.vue'),
-      meta: { requiresAuth: true }
-    },
-    {
-      path: '/products',
-      name: 'products',
-      component: () => import('../views/ProductsView.vue'),
-      meta: { requiresAuth: true }
-    },
-    {
-      path: '/users',
-      name: 'users',
-      component: () => import('../views/UsersView.vue'),
-      meta: { requiresAuth: true }
-    },
-    {
-      path: '/invoices',
-      name: 'invoices',
-      component: () => import('../views/InvoicesView.vue'),
-      meta: { requiresAuth: true }
-    }
-  ]
+  routes
 })
 
-// Navigation guard
 router.beforeEach((to, from, next) => {
-  const authStore = useAuthStore()
-  
-  if (to.meta.requiresAuth && !authStore.isAuthenticated) {
+  const currentUser = AuthService.getCurrentUser()
+  const requiresAuth = to.matched.some(record => record.meta.requiresAuth)
+  const isGuestRoute = to.matched.some(record => record.meta.guest)
+
+  if (requiresAuth && !currentUser) {
     next('/login')
-  } else if (to.path === '/login' && authStore.isAuthenticated) {
-    next('/')
+  } else if (isGuestRoute && currentUser) {
+    next('/dashboard')
   } else {
     next()
   }
