@@ -3,15 +3,32 @@
     <div class="max-w-7xl mx-auto px-4 sm:px-6 md:px-8">
       <div class="flex justify-between items-center">
         <h1 class="text-2xl font-semibold text-gray-900">Produits</h1>
-        <button
-          type="button"
-          @click="openNewProductModal"
-          class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-        >
-          <PlusIcon class="h-5 w-5 mr-2" />
-          Nouveau produit
-        </button>
+        <div class="space-x-4">
+          <button 
+            v-if="isManagerOrAdmin"
+            @click="showOpenFoodFacts = true"
+            class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600"
+          >
+            Importer depuis OpenFoodFacts
+          </button>
+          <button 
+            v-if="isManagerOrAdmin"
+            @click="openNewProductModal"
+            class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+          >
+            Ajouter un Produit
+          </button>
+        </div>
       </div>
+    </div>
+
+    <!-- Recherche OpenFoodFacts -->
+    <div v-if="showOpenFoodFacts && isManagerOrAdmin" class="mb-8">
+      <OpenFoodFactsSearch 
+        @product-imported="handleProductImported"
+        @success="showSuccess"
+        @error="showError"
+      />
     </div>
 
     <div class="max-w-7xl mx-auto px-4 sm:px-6 md:px-8">
@@ -23,23 +40,53 @@
           @export="handleExport"
         />
 
-        <!-- Table des produits -->
-        <div class="bg-white shadow rounded-lg">
-          <ProductTable
-            :products="filteredProducts"
-            :loading="loading"
-            @edit="handleEdit"
-            @delete="handleDelete"
-          />
-          
-          <!-- Pagination -->
-          <TablePagination
-            v-if="totalItems > 0"
-            v-model:currentPage="currentPage"
-            :total-items="totalItems"
-            :per-page="perPage"
-          />
+        <!-- Liste des produits -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div v-for="product in filteredProducts" :key="product.id" 
+               class="bg-white rounded-lg shadow overflow-hidden">
+            <img 
+              :src="product.imageUrl || '/placeholder-product.png'" 
+              :alt="product.name"
+              class="w-full h-48 object-cover"
+            />
+            <div class="p-4">
+              <h3 class="text-xl font-semibold">{{ product.name }}</h3>
+              <p class="text-gray-600">{{ product.brand }}</p>
+              <p class="text-lg font-bold text-green-600">{{ formatPrice(product.price) }}</p>
+              <p class="text-sm text-gray-500">Stock: {{ product.quantity }}</p>
+              
+              <div v-if="isManagerOrAdmin" class="mt-4 space-x-2">
+                <button 
+                  @click="handleEdit(product)"
+                  class="bg-blue-100 text-blue-600 px-3 py-1 rounded hover:bg-blue-200"
+                >
+                  Modifier
+                </button>
+                <button 
+                  @click="updateStock(product)"
+                  class="bg-green-100 text-green-600 px-3 py-1 rounded hover:bg-green-200"
+                >
+                  Stock
+                </button>
+                <button 
+                  v-if="isAdmin"
+                  @click="handleDelete(product)"
+                  class="bg-red-100 text-red-600 px-3 py-1 rounded hover:bg-red-200"
+                >
+                  Supprimer
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
+
+        <!-- Pagination -->
+        <TablePagination
+          v-if="totalItems > 0"
+          v-model:currentPage="currentPage"
+          :total-items="totalItems"
+          :per-page="perPage"
+        />
       </div>
     </div>
 
@@ -60,6 +107,7 @@ import AdvancedFilters from '../components/AdvancedFilters.vue'
 import ProductTable from '../components/ProductTable.vue'
 import ProductForm from '../components/ProductForm.vue'
 import TablePagination from '../components/TablePagination.vue'
+import OpenFoodFactsSearch from '../components/OpenFoodFactsSearch.vue'
 import { useNotificationStore } from '../stores/notifications'
 import exportService from '../services/exportService'
 
@@ -73,6 +121,7 @@ const selectedProduct = ref(null)
 const currentPage = ref(1)
 const perPage = ref(10)
 const filters = ref({})
+const showOpenFoodFacts = ref(false)
 
 // Catégories disponibles
 const categories = [
@@ -118,6 +167,13 @@ const filteredProducts = computed(() => {
 })
 
 const totalItems = computed(() => filteredProducts.value.length)
+
+const isManagerOrAdmin = computed(() => {
+  const role = 'manager' // TODO: get role from store
+  return role === 'manager' || role === 'admin'
+})
+
+const isAdmin = computed(() => 'admin' === 'admin') // TODO: get role from store
 
 // Gestionnaires d'événements
 const handleFilter = (newFilters) => {
@@ -191,6 +247,26 @@ const handleSubmit = async (productData) => {
   } catch (error) {
     notificationStore.error(`Erreur lors de l'enregistrement : ${error.message}`)
   }
+}
+
+const handleProductImported = (product) => {
+  products.value.unshift(product);
+  showOpenFoodFacts.value = false;
+}
+
+const formatPrice = (price) => {
+  return new Intl.NumberFormat('fr-FR', {
+    style: 'currency',
+    currency: 'EUR'
+  }).format(price);
+}
+
+const showSuccess = (message) => {
+  // Implémenter la notification de succès
+}
+
+const showError = (message) => {
+  // Implémenter la notification d'erreur
 }
 
 // Chargement initial des données

@@ -6,12 +6,14 @@ const userRoutes = require('./userRoutes');
 const productRoutes = require('./productRoutes');
 const invoiceRoutes = require('./invoiceRoutes');
 const reportRoutes = require('./reportRoutes');
+const statsRoutes = require('./statsRoutes');
 
 // Monter les routes
 router.use('/users', userRoutes);
 router.use('/products', productRoutes);
 router.use('/invoices', invoiceRoutes);
 router.use('/reports', reportRoutes);
+router.use('/stats', statsRoutes);
 
 // Route de base pour vérifier que l'API fonctionne
 router.get('/', (req, res) => {

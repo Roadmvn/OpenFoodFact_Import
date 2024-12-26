@@ -1,61 +1,55 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
+import AuthService from '../services/auth.service'
 
 export const useAuthStore = defineStore('auth', () => {
-  const token = ref(localStorage.getItem('token'))
-  const user = ref(JSON.parse(localStorage.getItem('user') || 'null'))
+  const user = ref(null)
+  const token = ref(null)
+
+  // Initialiser l'état depuis le localStorage
+  const initializeStore = () => {
+    const storedUser = AuthService.getCurrentUser()
+    const storedToken = AuthService.getToken()
+    user.value = storedUser
+    token.value = storedToken
+  }
+
+  // Initialiser au démarrage
+  initializeStore()
 
   const isAuthenticated = computed(() => !!token.value)
 
-  function setToken(newToken) {
-    token.value = newToken
-    localStorage.setItem('token', newToken)
-  }
-
-  function setUser(newUser) {
-    user.value = newUser
-    localStorage.setItem('user', JSON.stringify(newUser))
-  }
-
-  async function login(credentials) {
+  async function login(email, password) {
     try {
-      // Simulation d'une requête API
-      await new Promise(resolve => setTimeout(resolve, 1000))
-      
-      // Dans un vrai cas, vous feriez un appel API ici
-      const response = {
-        token: 'fake-jwt-token',
-        user: {
-          id: 1,
-          username: credentials.username,
-          role: 'admin'
-        }
-      }
-
-      setToken(response.token)
-      setUser(response.user)
-      
-      return true
+      const response = await AuthService.login(email, password)
+      user.value = response.user
+      token.value = response.token
+      return response
     } catch (error) {
-      console.error('Login error:', error)
-      return false
+      user.value = null
+      token.value = null
+      throw error
     }
   }
 
   function logout() {
-    token.value = null
+    AuthService.logout()
     user.value = null
-    localStorage.removeItem('token')
-    localStorage.removeItem('user')
+    token.value = null
+  }
+
+  function updateUser(newUser) {
+    user.value = newUser
+    localStorage.setItem('user', JSON.stringify(newUser))
   }
 
   return {
-    token,
     user,
+    token,
     isAuthenticated,
     login,
     logout,
-    setToken,
-    setUser
+    updateUser,
+    initializeStore
   }
 })

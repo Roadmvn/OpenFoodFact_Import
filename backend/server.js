@@ -1,14 +1,42 @@
 const express = require('express');
 const cors = require('cors');
+const helmet = require('helmet');
+const morgan = require('morgan');
+const rateLimit = require('express-rate-limit');
 require('dotenv').config();
 
 const { initializeDatabase } = require('./config/database');
 const routes = require('./routes');
+const logger = require('./utils/logger');
 
 const app = express();
 
+// Sécurité
+app.use(helmet());
+app.use(cors({
+  origin: ['http://localhost:5173', 'http://localhost:19006', 'exp://192.168.1.X:19000'],
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
+
+// Rate limiting
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100
+});
+app.use('/api/', limiter);
+
+// Logging
+app.use((req, res, next) => {
+  if (!req.path.includes('/api/users/login') && !req.path.includes('/api/users/logout')) {
+    morgan('combined', { stream: logger.stream })(req, res, next);
+  } else {
+    next();
+  }
+});
+
 // Middleware
-app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -17,8 +45,13 @@ app.use('/api', routes);
 
 // Gestion des erreurs
 app.use((err, req, res, next) => {
-  console.error(err.stack);
-  res.status(500).send('Something broke!');
+  logger.error(err.stack);
+  res.status(500).json({
+    status: 'error',
+    message: process.env.NODE_ENV === 'production' 
+      ? 'Une erreur est survenue' 
+      : err.message
+  });
 });
 
 const PORT = process.env.PORT || 3000;
@@ -28,14 +61,15 @@ const startServer = async () => {
   try {
     await initializeDatabase();
     app.listen(PORT, () => {
-      console.log(`🚀 Serveur démarré sur le port ${PORT}`);
-      console.log(`📚 Documentation API: http://localhost:${PORT}/api/docs`);
-      console.log(`🔧 Environnement: ${process.env.NODE_ENV}`);
+      logger.info(`🚀 Serveur démarré sur le port ${PORT}`);
+      logger.info(`📍 API accessible sur http://localhost:${PORT}/api`);
     });
   } catch (error) {
-    console.error('❌ Erreur lors du démarrage du serveur:', error);
+    logger.error('❌ Erreur lors du démarrage du serveur:', error);
     process.exit(1);
   }
 };
 
 startServer();
+
+module.exports = app;

@@ -235,6 +235,28 @@ exports.deleteInvoice = async (req, res) => {
   }
 };
 
+// GET /api/invoices/my-invoices
+exports.getUserInvoices = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const invoices = await Invoice.findAll({
+      where: { userId },
+      include: [
+        {
+          model: User,
+          attributes: ['id', 'firstName', 'lastName', 'email']
+        }
+      ],
+      order: [['createdAt', 'DESC']]
+    });
+
+    res.json(invoices);
+  } catch (error) {
+    console.error('Error fetching user invoices:', error);
+    res.status(500).json({ message: 'Error fetching invoices' });
+  }
+};
+
 // GET /api/invoices/stats
 exports.getInvoiceStats = async (req, res) => {
   try {

@@ -12,6 +12,12 @@ const routes = [
     path: '/dashboard',
     name: 'dashboard',
     component: () => import('../views/DashboardView.vue'),
+    meta: { requiresAuth: true, roles: ['manager', 'admin'] }
+  },
+  {
+    path: '/products',
+    name: 'products',
+    component: () => import('../views/ProductsView.vue'),
     meta: { requiresAuth: true }
   },
   {
@@ -37,13 +43,29 @@ router.beforeEach((to, from, next) => {
   const requiresAuth = to.matched.some(record => record.meta.requiresAuth)
   const isGuestRoute = to.matched.some(record => record.meta.guest)
 
+  // Si l'utilisateur n'est pas connecté et essaie d'accéder à une route protégée
   if (requiresAuth && !currentUser) {
     next('/login')
-  } else if (isGuestRoute && currentUser) {
-    next('/dashboard')
-  } else {
-    next()
+    return
   }
+
+  // Si l'utilisateur est connecté et essaie d'accéder à une route invité (comme login)
+  if (isGuestRoute && currentUser) {
+    next('/products')
+    return
+  }
+
+  // Si l'utilisateur est sur la route racine
+  if (to.path === '/') {
+    if (currentUser) {
+      next('/products')
+    } else {
+      next('/login')
+    }
+    return
+  }
+
+  next()
 })
 
 export default router
