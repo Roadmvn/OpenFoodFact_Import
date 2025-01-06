@@ -7,7 +7,6 @@ require('dotenv').config();
 
 const { initializeDatabase } = require('./config/database');
 const routes = require('./routes');
-const openFoodFactsRoutes = require('./routes/openFoodFacts');
 const logger = require('./utils/logger');
 
 const app = express();
@@ -43,7 +42,6 @@ app.use(express.urlencoded({ extended: true }));
 
 // Routes
 app.use('/api', routes);
-app.use('/api/openfoodfacts', openFoodFactsRoutes);
 
 // Gestion des erreurs
 app.use((err, req, res, next) => {
@@ -59,18 +57,17 @@ app.use((err, req, res, next) => {
 const PORT = process.env.PORT || 3000;
 
 // Initialisation de la base de données et démarrage du serveur
-const startServer = async () => {
+async function startServer() {
   try {
     await initializeDatabase();
     app.listen(PORT, () => {
-      logger.info(`🚀 Serveur démarré sur le port ${PORT}`);
-      logger.info(`📍 API accessible sur http://localhost:${PORT}/api`);
+      logger.info(`Server is running on port ${PORT}`);
     });
   } catch (error) {
-    logger.error('❌ Erreur lors du démarrage du serveur:', error);
+    logger.error('Unable to start server:', error);
     process.exit(1);
   }
-};
+}
 
 startServer();
 

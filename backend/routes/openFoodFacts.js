@@ -1,15 +1,18 @@
 const express = require('express');
 const router = express.Router();
 const openFoodFactsController = require('../controllers/openFoodFactsController');
-const { auth } = require('../middleware/auth');
+const { auth, checkRole } = require('../middleware/auth');
 
 // Routes publiques
-router.get('/search', openFoodFactsController.searchProductsOpenFoodFacts);
-router.get('/product/:barcode', openFoodFactsController.getProductByBarcodeOpenFoodFacts);
-router.get('/categories', openFoodFactsController.getCategoriesOpenFoodFacts);
+router.get('/search', openFoodFactsController.searchProducts);
 
 // Routes protégées (nécessitent une authentification)
-router.post('/product/:barcode/import', auth, openFoodFactsController.importProduct);
-router.put('/product/:id/update', auth, openFoodFactsController.updateProductInfo);
+router.use(auth);
+
+// Routes pour managers et admins
+router.post('/import/:barcode', 
+    checkRole(['manager', 'admin']), 
+    openFoodFactsController.importProduct
+);
 
 module.exports = router;

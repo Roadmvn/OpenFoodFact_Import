@@ -1,4 +1,4 @@
-const { Order } = require('../models');
+const { Order, Product } = require('../models');
 const logger = require('../utils/logger');
 
 // Créer une nouvelle commande
@@ -7,6 +7,18 @@ exports.createOrder = async (req, res) => {
         const { items, total, shippingAddress } = req.body;
         const userId = req.user.id;
 
+        // Vérifier le stock de chaque produit
+        for (const item of items) {
+            const product = await Product.findOne({ where: { barcode: item.barcode } });
+            if (!product) {
+                return res.status(404).json({ error: `Produit ${item.barcode} non trouvé` });
+            }
+            if (product.stock < item.quantity) {
+                return res.status(400).json({ error: `Stock insuffisant pour ${product.name}` });
+            }
+        }
+
+        // Créer la commande
         const order = await Order.create({
             userId,
             items,
@@ -15,11 +27,19 @@ exports.createOrder = async (req, res) => {
             status: 'pending'
         });
 
+        // Mettre à jour le stock
+        for (const item of items) {
+            const product = await Product.findOne({ where: { barcode: item.barcode } });
+            await product.update({
+                stock: product.stock - item.quantity
+            });
+        }
+
         logger.info(`Nouvelle commande créée: ${order.id}`);
         res.status(201).json(order);
     } catch (error) {
         logger.error('Erreur lors de la création de la commande:', error);
-        res.status(500).json({ message: 'Erreur lors de la création de la commande' });
+        res.status(500).json({ error: 'Erreur lors de la création de la commande' });
     }
 };
 
@@ -35,7 +55,7 @@ exports.getUserOrders = async (req, res) => {
         res.json(orders);
     } catch (error) {
         logger.error('Erreur lors de la récupération des commandes:', error);
-        res.status(500).json({ message: 'Erreur lors de la récupération des commandes' });
+        res.status(500).json({ error: 'Erreur lors de la récupération des commandes' });
     }
 };
 
@@ -46,17 +66,20 @@ exports.getOrder = async (req, res) => {
         const userId = req.user.id;
 
         const order = await Order.findOne({
-            where: { id: orderId, userId }
+            where: { 
+                id: orderId,
+                userId
+            }
         });
-
+        
         if (!order) {
-            return res.status(404).json({ message: 'Commande non trouvée' });
+            return res.status(404).json({ error: 'Commande non trouvée' });
         }
 
         res.json(order);
     } catch (error) {
         logger.error('Erreur lors de la récupération de la commande:', error);
-        res.status(500).json({ message: 'Erreur lors de la récupération de la commande' });
+        res.status(500).json({ error: 'Erreur lors de la récupération de la commande' });
     }
 };
 
@@ -65,24 +88,24 @@ exports.updateOrderStatus = async (req, res) => {
     try {
         const { orderId } = req.params;
         const { status } = req.body;
-        const userId = req.user.id;
 
-        const order = await Order.findOne({
-            where: { id: orderId, userId }
-        });
-
+        const order = await Order.findByPk(orderId);
         if (!order) {
-            return res.status(404).json({ message: 'Commande non trouvée' });
+            return res.status(404).json({ error: 'Commande non trouvée' });
         }
 
-        order.status = status;
-        await order.save();
+        // Vérifier que le nouveau statut est valide
+        const validStatuses = ['pending', 'processing', 'shipped', 'delivered', 'cancelled'];
+        if (!validStatuses.includes(status)) {
+            return res.status(400).json({ error: 'Statut invalide' });
+        }
 
+        await order.update({ status });
         logger.info(`Statut de la commande ${orderId} mis à jour: ${status}`);
         res.json(order);
     } catch (error) {
         logger.error('Erreur lors de la mise à jour du statut:', error);
-        res.status(500).json({ message: 'Erreur lors de la mise à jour du statut' });
+        res.status(500).json({ error: 'Erreur lors de la mise à jour du statut' });
     }
 };
 
@@ -93,26 +116,35 @@ exports.cancelOrder = async (req, res) => {
         const userId = req.user.id;
 
         const order = await Order.findOne({
-            where: { id: orderId, userId }
+            where: { 
+                id: orderId,
+                userId
+            }
         });
 
         if (!order) {
-            return res.status(404).json({ message: 'Commande non trouvée' });
+            return res.status(404).json({ error: 'Commande non trouvée' });
         }
 
         if (order.status !== 'pending') {
-            return res.status(400).json({ 
-                message: 'Impossible d\'annuler une commande qui n\'est pas en attente' 
-            });
+            return res.status(400).json({ error: 'Seules les commandes en attente peuvent être annulées' });
         }
 
-        order.status = 'cancelled';
-        await order.save();
+        // Remettre les produits en stock
+        for (const item of order.items) {
+            const product = await Product.findOne({ where: { barcode: item.barcode } });
+            if (product) {
+                await product.update({
+                    stock: product.stock + item.quantity
+                });
+            }
+        }
 
+        await order.update({ status: 'cancelled' });
         logger.info(`Commande ${orderId} annulée`);
         res.json(order);
     } catch (error) {
         logger.error('Erreur lors de l\'annulation de la commande:', error);
-        res.status(500).json({ message: 'Erreur lors de l\'annulation de la commande' });
+        res.status(500).json({ error: 'Erreur lors de l\'annulation de la commande' });
     }
 };

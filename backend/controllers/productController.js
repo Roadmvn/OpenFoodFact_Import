@@ -1,5 +1,7 @@
 const { Product } = require('../models');
 const { Op } = require('sequelize');
+const openFoodFactsService = require('../services/openFoodFacts');
+const logger = require('../utils/logger');
 
 // GET /api/products
 exports.getProducts = async (req, res) => {
@@ -50,14 +52,23 @@ exports.getProducts = async (req, res) => {
 // GET /api/products/:id
 exports.getProduct = async (req, res) => {
   try {
-    const product = await Product.findByPk(req.params.id);
+    const { id } = req.params;
+    const product = await Product.findByPk(id);
+    
     if (!product) {
-      return res.status(404).json({ message: 'Product not found' });
+      return res.status(404).json({ error: 'Produit non trouvé' });
     }
-    res.json(product);
+
+    // Récupérer les détails complets depuis OpenFoodFacts
+    const offProduct = await openFoodFactsService.getProductByBarcode(product.barcode);
+    
+    res.json({
+      ...product.toJSON(),
+      details: offProduct?.details || null
+    });
   } catch (error) {
-    console.error('Error in getProduct:', error);
-    res.status(500).json({ message: 'Error retrieving product' });
+    logger.error('Erreur lors de la récupération du produit:', error);
+    res.status(500).json({ error: 'Erreur lors de la récupération du produit' });
   }
 };
 
@@ -102,29 +113,74 @@ exports.deleteProduct = async (req, res) => {
   }
 };
 
-// PATCH /api/products/:id/stock
-exports.updateStock = async (req, res) => {
+// Rechercher des produits dans OpenFoodFacts
+exports.searchOpenFoodFacts = async (req, res) => {
   try {
-    const { quantity } = req.body;
-    const product = await Product.findByPk(req.params.id);
+    const { query } = req.query;
+    const products = await openFoodFactsService.searchProducts(query);
+    res.json(products);
+  } catch (error) {
+    logger.error('Erreur lors de la recherche:', error);
+    res.status(500).json({ error: 'Erreur lors de la recherche de produits' });
+  }
+};
+
+// Importer un produit depuis OpenFoodFacts
+exports.importProduct = async (req, res) => {
+  try {
+    const { barcode } = req.params;
+    const { stock = 0 } = req.body;
+
+    // Vérifier si le produit existe déjà
+    let product = await Product.findOne({ where: { barcode } });
     
-    if (!product) {
-      return res.status(404).json({ message: 'Product not found' });
-    }
+    if (product) {
+      // Mettre à jour le stock si le produit existe
+      product.stock += parseInt(stock);
+      await product.save();
+      logger.info(`Stock du produit ${barcode} mis à jour: ${product.stock}`);
+    } else {
+      // Récupérer les infos du produit depuis OpenFoodFacts
+      const offProduct = await openFoodFactsService.getProductByBarcode(barcode);
+      
+      if (!offProduct) {
+        return res.status(404).json({ error: 'Produit non trouvé sur OpenFoodFacts' });
+      }
 
-    const newStock = product.stock + parseInt(quantity);
-    if (newStock < 0) {
-      return res.status(400).json({ message: 'Insufficient stock' });
+      // Créer le produit localement
+      product = await Product.create({
+        barcode,
+        name: offProduct.name,
+        stock: parseInt(stock)
+      });
+      logger.info(`Nouveau produit importé: ${barcode}`);
     }
-
-    await product.update({
-      stock: newStock,
-      inStock: newStock > 0
-    });
 
     res.json(product);
   } catch (error) {
-    console.error('Error in updateStock:', error);
-    res.status(400).json({ message: 'Error updating stock', error: error.message });
+    logger.error('Erreur lors de l\'import du produit:', error);
+    res.status(500).json({ error: 'Erreur lors de l\'import du produit' });
+  }
+};
+
+// Mettre à jour le stock d'un produit
+exports.updateStock = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { stock } = req.body;
+
+    const product = await Product.findByPk(id);
+    if (!product) {
+      return res.status(404).json({ error: 'Produit non trouvé' });
+    }
+
+    product.stock = parseInt(stock);
+    await product.save();
+
+    logger.info(`Stock du produit ${id} mis à jour: ${stock}`);
+    res.json(product);
+  } catch (error) {
+    logger.error('Erreur lors de la mise à jour du stock:', error);
+    res.status(500).json({ error: 'Erreur lors de la mise à jour du stock' });
   }
 };
