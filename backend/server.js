@@ -7,6 +7,7 @@ require('dotenv').config();
 
 const { initializeDatabase } = require('./config/database');
 const routes = require('./routes');
+const openFoodFactsRoutes = require('./routes/openFoodFacts');
 const logger = require('./utils/logger');
 
 const app = express();
@@ -42,6 +43,7 @@ app.use(express.urlencoded({ extended: true }));
 
 // Routes
 app.use('/api', routes);
+app.use('/api/openfoodfacts', openFoodFactsRoutes);
 
 // Gestion des erreurs
 app.use((err, req, res, next) => {
