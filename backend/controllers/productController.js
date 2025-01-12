@@ -110,6 +110,41 @@ exports.getProductByBarcode = async (req, res) => {
     }
 };
 
+// Rechercher un produit local par code-barres
+exports.getLocalProductByBarcode = async (req, res) => {
+    try {
+        logger.info('=== Début getLocalProductByBarcode ===');
+        const { barcode } = req.params;
+        
+        logger.info(`Recherche du produit local avec le code-barres: ${barcode}`);
+        
+        const product = await Product.findOne({
+            where: { barcode }
+        });
+        
+        if (product) {
+            logger.info('Produit trouvé localement');
+            return res.json({
+                success: true,
+                data: product
+            });
+        }
+        
+        logger.info('Produit non trouvé localement');
+        return res.json({
+            success: false,
+            message: 'Produit non trouvé dans la base de données locale'
+        });
+
+    } catch (error) {
+        logger.error('Erreur lors de la recherche du produit local:', error);
+        return res.status(500).json({
+            success: false,
+            message: 'Erreur lors de la recherche du produit'
+        });
+    }
+};
+
 // Importer un produit depuis OpenFoodFacts
 exports.importProductByBarcode = async (req, res) => {
     try {
@@ -206,6 +241,102 @@ exports.importProductByBarcode = async (req, res) => {
             success: false,
             message: 'Erreur lors de l\'import du produit',
             error: error.message
+        });
+    }
+};
+
+// Créer un nouveau produit
+exports.createProduct = async (req, res) => {
+    try {
+        logger.info('=== Début createProduct ===');
+        const productData = req.body;
+        
+        logger.info('Données reçues:', productData);
+        
+        // Validation des données requises
+        if (!productData.name || !productData.barcode) {
+            logger.warn('Données manquantes');
+            return res.status(400).json({
+                success: false,
+                message: 'Le nom et le code-barres sont requis'
+            });
+        }
+        
+        // Vérifier si le produit existe déjà
+        const existingProduct = await Product.findOne({
+            where: { barcode: productData.barcode }
+        });
+        
+        if (existingProduct) {
+            logger.warn('Le produit existe déjà');
+            return res.status(400).json({
+                success: false,
+                message: 'Un produit avec ce code-barres existe déjà'
+            });
+        }
+        
+        // Créer le produit
+        const product = await Product.create({
+            name: productData.name,
+            brand: productData.brand,
+            category: productData.category,
+            price: productData.price,
+            stock: productData.stock,
+            barcode: productData.barcode,
+            imageUrl: productData.imageUrl,
+            status: 'active'
+        });
+        
+        logger.info('Produit créé avec succès');
+        
+        return res.status(201).json({
+            success: true,
+            message: 'Produit créé avec succès',
+            data: product
+        });
+
+    } catch (error) {
+        logger.error('Erreur lors de la création du produit:', error);
+        return res.status(500).json({
+            success: false,
+            message: 'Erreur lors de la création du produit'
+        });
+    }
+};
+
+// Supprimer un produit
+exports.deleteProduct = async (req, res) => {
+    try {
+        logger.info('=== Début deleteProduct ===');
+        const { barcode } = req.params;
+        
+        logger.info(`Suppression du produit avec le code-barres: ${barcode}`);
+        
+        const product = await Product.findOne({
+            where: { barcode }
+        });
+        
+        if (!product) {
+            logger.warn('Produit non trouvé');
+            return res.status(404).json({
+                success: false,
+                message: 'Produit non trouvé'
+            });
+        }
+        
+        await product.destroy();
+        logger.info('Produit supprimé avec succès');
+        
+        return res.json({
+            success: true,
+            message: 'Produit supprimé avec succès'
+        });
+
+    } catch (error) {
+        logger.error('Erreur lors de la suppression du produit:', error);
+        return res.status(500).json({
+            success: false,
+            message: 'Erreur lors de la suppression du produit'
         });
     }
 };

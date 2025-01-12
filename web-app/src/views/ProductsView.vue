@@ -110,6 +110,7 @@ import TablePagination from '../components/TablePagination.vue'
 import OpenFoodFactsSearch from '../components/OpenFoodFactsSearch.vue'
 import { useNotificationStore } from '../stores/notifications'
 import exportService from '../services/exportService'
+import axios from 'axios'
 
 const notificationStore = useNotificationStore()
 
@@ -305,17 +306,19 @@ const fetchProducts = () => {
   })
 }
 
-const createProduct = (product) => {
-  return new Promise(resolve => {
-    setTimeout(() => {
-      resolve({
-        ...product,
-        id: `PRD${Math.floor(Math.random() * 1000)}`,
-        createdAt: new Date().toISOString()
-      })
-    }, 500)
-  })
-}
+const createProduct = async (product) => {
+  try {
+    const response = await axios.post('/api/products', product);
+    if (response.data.success) {
+      return response.data.data;
+    } else {
+      throw new Error(response.data.message || 'Erreur lors de la création du produit');
+    }
+  } catch (error) {
+    console.error('Erreur lors de la création:', error);
+    throw error;
+  }
+};
 
 const updateProduct = (product) => {
   return new Promise(resolve => {
