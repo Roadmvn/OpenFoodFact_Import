@@ -7,7 +7,7 @@
       <input 
         v-model="searchQuery"
         type="text"
-        placeholder="Rechercher un produit..."
+        placeholder="Entrez un code-barres..."
         class="flex-1 p-2 border rounded"
         @keyup.enter="searchProducts"
       />
@@ -21,56 +21,94 @@
       </button>
     </div>
 
-    <!-- Résultats de recherche -->
-    <div v-if="searchResults.length > 0" class="space-y-4">
-      <div v-for="product in searchResults" :key="product.barcode" 
-           class="border p-4 rounded flex items-center gap-4">
+    <!-- Message d'erreur -->
+    <div v-if="error" class="text-red-500 mb-4">
+      {{ error }}
+    </div>
+
+    <!-- Résultat de la recherche -->
+    <div v-if="product" class="border p-4 rounded">
+      <div class="flex items-start gap-4">
+        <!-- Image du produit -->
         <img 
           :src="product.imageUrl" 
           :alt="product.name"
-          class="w-16 h-16 object-cover rounded"
+          class="w-32 h-32 object-cover rounded"
           @error="handleImageError"
         />
+        
+        <!-- Informations du produit -->
         <div class="flex-1">
-          <h3 class="font-semibold">{{ product.name }}</h3>
-          <p class="text-gray-600">{{ product.brand }}</p>
-          <p class="text-sm text-gray-500">Code-barres: {{ product.barcode }}</p>
+          <!-- Mode édition -->
+          <div v-if="isEditing" class="space-y-4">
+            <div>
+              <label class="block text-sm font-medium text-gray-700">Nom du produit</label>
+              <input 
+                v-model="editedProduct.name"
+                type="text"
+                class="mt-1 p-2 w-full border rounded"
+              />
+            </div>
+            
+            <div>
+              <label class="block text-sm font-medium text-gray-700">Prix</label>
+              <input 
+                v-model="editedProduct.price"
+                type="number"
+                step="0.01"
+                class="mt-1 p-2 w-full border rounded"
+              />
+            </div>
+            
+            <div>
+              <label class="block text-sm font-medium text-gray-700">Stock</label>
+              <input 
+                v-model="editedProduct.stock"
+                type="number"
+                class="mt-1 p-2 w-full border rounded"
+              />
+            </div>
+
+            <div class="flex gap-2">
+              <button 
+                @click="saveProduct"
+                class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600"
+                :disabled="importing"
+              >
+                <span v-if="importing">Import...</span>
+                <span v-else>Valider et Importer</span>
+              </button>
+              <button 
+                @click="cancelEdit"
+                class="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600"
+              >
+                Annuler
+              </button>
+            </div>
+          </div>
+
+          <!-- Mode affichage -->
+          <div v-else>
+            <h3 class="text-xl font-semibold">{{ product.name }}</h3>
+            <p class="text-gray-600">{{ product.brand }}</p>
+            <p class="text-sm text-gray-500">Code-barres: {{ product.barcode }}</p>
+            <p v-if="product.categories" class="text-sm text-gray-500">Catégories: {{ product.categories }}</p>
+            <p v-if="product.quantity" class="text-sm text-gray-500">Quantité: {{ product.quantity }}</p>
+            
+            <button 
+              @click="startEdit"
+              class="mt-4 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+            >
+              Modifier et Importer
+            </button>
+          </div>
         </div>
-        <button 
-          @click="importProduct(product.barcode)"
-          class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600"
-          :disabled="importing === product.barcode"
-        >
-          <span v-if="importing === product.barcode">Import...</span>
-          <span v-else>Importer</span>
-        </button>
       </div>
     </div>
 
     <!-- Message si aucun résultat -->
     <div v-else-if="hasSearched" class="text-center py-4 text-gray-600">
       Aucun produit trouvé
-    </div>
-
-    <!-- Pagination -->
-    <div v-if="totalPages > 1" class="flex justify-center gap-2 mt-4">
-      <button 
-        @click="changePage(currentPage - 1)"
-        :disabled="currentPage === 1"
-        class="px-3 py-1 border rounded"
-      >
-        Précédent
-      </button>
-      <span class="px-3 py-1">
-        Page {{ currentPage }} sur {{ totalPages }}
-      </span>
-      <button 
-        @click="changePage(currentPage + 1)"
-        :disabled="currentPage === totalPages"
-        class="px-3 py-1 border rounded"
-      >
-        Suivant
-      </button>
     </div>
   </div>
 </template>
@@ -80,69 +118,108 @@ import axios from 'axios';
 
 export default {
   name: 'OpenFoodFactsSearch',
+  
   data() {
     return {
       searchQuery: '',
-      searchResults: [],
+      product: null,
       isLoading: false,
-      importing: null,
+      importing: false,
       hasSearched: false,
-      currentPage: 1,
-      totalPages: 0,
-      pageSize: 20
+      error: null,
+      isEditing: false,
+      editedProduct: {
+        name: '',
+        price: 0,
+        stock: 0
+      }
     };
   },
+
   methods: {
     async searchProducts() {
-      if (!this.searchQuery.trim()) return;
+      if (!this.searchQuery.trim()) {
+        this.error = 'Veuillez entrer un code-barres';
+        return;
+      }
 
       this.isLoading = true;
       this.hasSearched = true;
+      this.error = null;
+      this.product = null;
+      this.isEditing = false;
 
       try {
-        const response = await axios.get('/api/products/openfoodfacts/search', {
-          params: {
-            query: this.searchQuery,
-            page: this.currentPage,
-            pageSize: this.pageSize
-          }
-        });
-
-        this.searchResults = response.data.products;
-        this.totalPages = Math.ceil(response.data.total / this.pageSize);
+        const barcode = this.searchQuery.trim();
+        console.log('Recherche du code-barres:', barcode);
+        
+        const response = await axios.get(`/api/products/barcode/${barcode}`);
+        console.log('Réponse de l\'API:', response.data);
+        
+        if (response.data.success && response.data.data) {
+          this.product = response.data.data;
+        } else {
+          this.error = 'Aucun produit trouvé';
+        }
       } catch (error) {
         console.error('Erreur lors de la recherche:', error);
-        this.$emit('error', 'Erreur lors de la recherche des produits');
+        this.error = error.response?.data?.message || 'Erreur lors de la recherche du produit';
       } finally {
         this.isLoading = false;
       }
     },
 
-    async importProduct(barcode) {
-      this.importing = barcode;
+    startEdit() {
+      this.editedProduct = {
+        name: this.product.name,
+        price: 0,
+        stock: 0
+      };
+      this.isEditing = true;
+    },
+
+    cancelEdit() {
+      this.isEditing = false;
+      this.editedProduct = {
+        name: '',
+        price: 0,
+        stock: 0
+      };
+    },
+
+    async saveProduct() {
+      this.importing = true;
+      this.error = null;
 
       try {
-        const response = await axios.post(`/api/products/openfoodfacts/import/${barcode}`, {
-          storeId: this.$store.state.user.storeId
-        });
+        const productData = {
+          ...this.product,
+          name: this.editedProduct.name,
+          price: parseFloat(this.editedProduct.price),
+          stock: parseInt(this.editedProduct.stock)
+        };
 
-        this.$emit('product-imported', response.data);
-        this.$emit('success', 'Produit importé avec succès');
+        const response = await axios.post(`/api/products/import/${this.product.barcode}`, productData);
+        
+        if (response.data.success) {
+          // Rediriger vers la liste des produits ou afficher un message de succès
+          this.$emit('product-imported', response.data.data);
+          this.product = null;
+          this.searchQuery = '';
+          this.isEditing = false;
+        } else {
+          this.error = response.data.message || 'Erreur lors de l\'import du produit';
+        }
       } catch (error) {
         console.error('Erreur lors de l\'import:', error);
-        this.$emit('error', 'Erreur lors de l\'import du produit');
+        this.error = error.response?.data?.message || 'Erreur lors de l\'import du produit';
       } finally {
-        this.importing = null;
+        this.importing = false;
       }
     },
 
-    async changePage(page) {
-      this.currentPage = page;
-      await this.searchProducts();
-    },
-
     handleImageError(e) {
-      e.target.src = '/placeholder-product.png'; // Image par défaut
+      e.target.src = '/placeholder-image.png'; // Image par défaut si l'image du produit n'est pas disponible
     }
   }
 };
