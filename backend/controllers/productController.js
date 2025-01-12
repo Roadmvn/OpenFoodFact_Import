@@ -1,6 +1,65 @@
 const { Product } = require('../models');
 const openFoodFactsService = require('../services/openFoodFactsService');
 const logger = require('../utils/logger');
+const { Op } = require('sequelize');
+
+// Récupérer tous les produits
+exports.getAllProducts = async (req, res) => {
+    try {
+        logger.info('=== Début getAllProducts ===');
+        
+        // Récupérer les paramètres de filtrage
+        const { search, category, status } = req.query;
+        
+        // Construire les conditions de recherche
+        const where = {};
+        
+        if (search) {
+            where.name = {
+                [Op.like]: `%${search}%`
+            };
+        }
+        
+        if (category && category !== 'Toutes les catégories') {
+            where.category = category;
+        }
+        
+        if (status) {
+            if (Array.isArray(status)) {
+                where.status = {
+                    [Op.in]: status
+                };
+            } else {
+                where.status = status;
+            }
+        }
+
+        // Récupérer les produits avec les filtres
+        const products = await Product.findAll({
+            where,
+            order: [['createdAt', 'DESC']]
+        });
+
+        logger.info(`${products.length} produits trouvés`);
+        logger.info('=== Fin getAllProducts ===');
+
+        return res.json({
+            success: true,
+            data: products
+        });
+
+    } catch (error) {
+        logger.error('=== Erreur dans getAllProducts ===');
+        logger.error(`Message d'erreur: ${error.message}`);
+        logger.error('Stack:', error.stack);
+        
+        return res.status(500).json({
+            success: false,
+            message: 'Erreur lors de la récupération des produits',
+            error: error.message
+        });
+    }
+};
 
 // Rechercher un produit par code-barres dans OpenFoodFacts
 exports.getProductByBarcode = async (req, res) => {

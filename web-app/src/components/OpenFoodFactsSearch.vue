@@ -110,6 +110,40 @@
     <div v-else-if="hasSearched" class="text-center py-4 text-gray-600">
       Aucun produit trouvé
     </div>
+
+    <!-- Liste des produits -->
+    <div class="mt-8">
+      <h3 class="text-xl font-bold mb-4">Liste des produits</h3>
+      <div class="grid gap-4">
+        <div v-for="product in products" :key="product.id" class="border p-4 rounded flex items-start gap-4">
+          <img 
+            :src="product.imageUrl" 
+            :alt="product.name"
+            class="w-24 h-24 object-cover rounded"
+            @error="handleImageError"
+          />
+          <div class="flex-1">
+            <h4 class="font-semibold">{{ product.name }}</h4>
+            <p class="text-gray-600">{{ product.brand }}</p>
+            <p class="text-sm text-gray-500">Code-barres: {{ product.barcode }}</p>
+            <div class="mt-2 flex items-center gap-4">
+              <span class="text-green-600 font-semibold">{{ product.price }}€</span>
+              <span class="text-gray-600">Stock: {{ product.stock }}</span>
+              <span 
+                :class="{
+                  'bg-green-100 text-green-800': product.status === 'actif',
+                  'bg-red-100 text-red-800': product.status === 'rupture',
+                  'bg-gray-100 text-gray-800': product.status === 'arrete'
+                }"
+                class="px-2 py-1 rounded-full text-sm"
+              >
+                {{ product.status }}
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -123,6 +157,7 @@ export default {
     return {
       searchQuery: '',
       product: null,
+      products: [],
       isLoading: false,
       importing: false,
       hasSearched: false,
@@ -134,6 +169,10 @@ export default {
         stock: 0
       }
     };
+  },
+
+  async mounted() {
+    await this.loadProducts();
   },
 
   methods: {
@@ -202,8 +241,7 @@ export default {
         const response = await axios.post(`/api/products/import/${this.product.barcode}`, productData);
         
         if (response.data.success) {
-          // Rediriger vers la liste des produits ou afficher un message de succès
-          this.$emit('product-imported', response.data.data);
+          await this.loadProducts();
           this.product = null;
           this.searchQuery = '';
           this.isEditing = false;
@@ -215,6 +253,17 @@ export default {
         this.error = error.response?.data?.message || 'Erreur lors de l\'import du produit';
       } finally {
         this.importing = false;
+      }
+    },
+
+    async loadProducts() {
+      try {
+        const response = await axios.get('/api/products');
+        if (response.data.success) {
+          this.products = response.data.data;
+        }
+      } catch (error) {
+        console.error('Erreur lors du chargement des produits:', error);
       }
     },
 
