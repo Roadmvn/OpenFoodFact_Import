@@ -19,7 +19,7 @@ export const useAuthStore = defineStore('auth', () => {
 
   const isAuthenticated = computed(() => !!token.value)
 
-  async function login(email, password) {
+  async function login({ email, password }) {
     try {
       const response = await AuthService.login(email, password)
       user.value = response.user
@@ -28,6 +28,15 @@ export const useAuthStore = defineStore('auth', () => {
     } catch (error) {
       user.value = null
       token.value = null
+      throw error
+    }
+  }
+
+  async function register(userData) {
+    try {
+      const response = await AuthService.register(userData)
+      return response
+    } catch (error) {
       throw error
     }
   }
@@ -50,6 +59,7 @@ export const useAuthStore = defineStore('auth', () => {
     login,
     logout,
     updateUser,
+    register,
     initializeStore
   }
 })

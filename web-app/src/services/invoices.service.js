@@ -1,130 +1,171 @@
-import api from './api.config'
+import { mockInvoices } from '../mocks/data'
 
 class InvoiceService {
-  async getInvoices(params = {}) {
-    try {
-      const response = await api.get('/invoices', { params })
-      return response.data
-    } catch (error) {
-      throw this._handleError(error)
-    }
-  }
+  async getInvoices(filters = {}) {
+    // Simuler un délai de réseau
+    await new Promise(resolve => setTimeout(resolve, 500))
 
-  async getInvoice(id) {
-    try {
-      const response = await api.get(`/invoices/${id}`)
-      return response.data
-    } catch (error) {
-      throw this._handleError(error)
+    let filtered = [...mockInvoices]
+
+    // Appliquer les filtres
+    if (filters.status) {
+      filtered = filtered.filter(inv => inv.status === filters.status)
+    }
+    if (filters.dateRange) {
+      const { start, end } = filters.dateRange
+      filtered = filtered.filter(inv => {
+        const invDate = new Date(inv.date)
+        return invDate >= new Date(start) && invDate <= new Date(end)
+      })
+    }
+    if (filters.search) {
+      const searchLower = filters.search.toLowerCase()
+      filtered = filtered.filter(inv => 
+        inv.id.toLowerCase().includes(searchLower) ||
+        inv.clientName.toLowerCase().includes(searchLower)
+      )
+    }
+
+    // Trier par date décroissante
+    filtered.sort((a, b) => new Date(b.date) - new Date(a.date))
+
+    return {
+      invoices: filtered,
+      total: filtered.length,
+      totalAmount: filtered.reduce((sum, inv) => sum + inv.amount, 0),
+      pending: filtered.filter(inv => inv.status === 'en_attente').length
     }
   }
 
   async createInvoice(invoiceData) {
-    try {
-      const response = await api.post('/invoices', invoiceData)
-      return response.data
-    } catch (error) {
-      throw this._handleError(error)
+    // Simuler un délai de réseau
+    await new Promise(resolve => setTimeout(resolve, 500))
+
+    const newInvoice = {
+      id: `INV-2025-${String(mockInvoices.length + 1).padStart(3, '0')}`,
+      date: new Date().toISOString().split('T')[0],
+      status: 'en_attente',
+      ...invoiceData,
+      amount: invoiceData.items.reduce((sum, item) => sum + (item.price * item.quantity), 0)
     }
+
+    mockInvoices.push(newInvoice)
+    return newInvoice
   }
 
-  async updateInvoice(id, invoiceData) {
-    try {
-      const response = await api.put(`/invoices/${id}`, invoiceData)
-      return response.data
-    } catch (error) {
-      throw this._handleError(error)
+  async updateInvoiceStatus(id, status) {
+    // Simuler un délai de réseau
+    await new Promise(resolve => setTimeout(resolve, 500))
+
+    const invoice = mockInvoices.find(inv => inv.id === id)
+    if (!invoice) {
+      throw new Error('Facture non trouvée')
     }
+
+    invoice.status = status
+    return invoice
   }
 
-  async deleteInvoice(id) {
-    try {
-      await api.delete(`/invoices/${id}`)
-      return true
-    } catch (error) {
-      throw this._handleError(error)
+  async getInvoiceDetails(id) {
+    // Simuler un délai de réseau
+    await new Promise(resolve => setTimeout(resolve, 500))
+
+    const invoice = mockInvoices.find(inv => inv.id === id)
+    if (!invoice) {
+      throw new Error('Facture non trouvée')
     }
+
+    return invoice
+  }
+
+  async exportInvoices(format = 'csv') {
+    // Simuler un délai de réseau
+    await new Promise(resolve => setTimeout(resolve, 500))
+
+    const csvContent = 'N° Facture,Client,Date,Montant,Statut\n' +
+      mockInvoices.map(inv => 
+        `${inv.id},${inv.clientName},${inv.date},${inv.amount},${inv.status}`
+      ).join('\n')
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
+    return blob
   }
 
   async markAsPaid(id) {
-    try {
-      const response = await api.patch(`/invoices/${id}/pay`)
-      return response.data
-    } catch (error) {
-      throw this._handleError(error)
-    }
+    return this.updateInvoiceStatus(id, 'payée')
   }
 
   async markAsCancelled(id) {
-    try {
-      const response = await api.patch(`/invoices/${id}/cancel`)
-      return response.data
-    } catch (error) {
-      throw this._handleError(error)
-    }
+    return this.updateInvoiceStatus(id, 'annulée')
   }
 
   async generatePDF(id) {
-    try {
-      const response = await api.get(`/invoices/${id}/pdf`, {
-        responseType: 'blob'
-      })
-      return response.data
-    } catch (error) {
-      throw this._handleError(error)
+    // Simuler un délai de réseau
+    await new Promise(resolve => setTimeout(resolve, 500))
+
+    const invoice = mockInvoices.find(inv => inv.id === id)
+    if (!invoice) {
+      throw new Error('Facture non trouvée')
     }
+
+    const pdfContent = `
+      <h1>Facture ${invoice.id}</h1>
+      <p>Client : ${invoice.clientName}</p>
+      <p>Date : ${invoice.date}</p>
+      <p>Montant : ${invoice.amount}</p>
+      <p>Statut : ${invoice.status}</p>
+    `
+
+    const blob = new Blob([pdfContent], { type: 'application/pdf' })
+    return blob
   }
 
   async sendInvoiceByEmail(id, email) {
-    try {
-      const response = await api.post(`/invoices/${id}/send`, { email })
-      return response.data
-    } catch (error) {
-      throw this._handleError(error)
+    // Simuler un délai de réseau
+    await new Promise(resolve => setTimeout(resolve, 500))
+
+    const invoice = mockInvoices.find(inv => inv.id === id)
+    if (!invoice) {
+      throw new Error('Facture non trouvée')
     }
+
+    // Simuler l'envoi de l'email
+    console.log(`Email envoyé à ${email} avec la facture ${invoice.id}`)
+    return true
   }
 
-  async getInvoiceStats(params = {}) {
-    try {
-      const response = await api.get('/invoices/stats', { params })
-      return response.data
-    } catch (error) {
-      throw this._handleError(error)
+  async getInvoiceStats() {
+    // Simuler un délai de réseau
+    await new Promise(resolve => setTimeout(resolve, 500))
+
+    const stats = {
+      total: mockInvoices.length,
+      totalAmount: mockInvoices.reduce((sum, inv) => sum + inv.amount, 0),
+      pending: mockInvoices.filter(inv => inv.status === 'en_attente').length
     }
+
+    return stats
   }
 
   async getDueInvoices() {
-    try {
-      const response = await api.get('/invoices/due')
-      return response.data
-    } catch (error) {
-      throw this._handleError(error)
-    }
+    // Simuler un délai de réseau
+    await new Promise(resolve => setTimeout(resolve, 500))
+
+    const dueInvoices = mockInvoices.filter(inv => inv.status === 'en_attente')
+    return dueInvoices
   }
 
   async searchInvoices(query) {
-    try {
-      const response = await api.get('/invoices/search', {
-        params: { q: query }
-      })
-      return response.data
-    } catch (error) {
-      throw this._handleError(error)
-    }
-  }
+    // Simuler un délai de réseau
+    await new Promise(resolve => setTimeout(resolve, 500))
 
-  _handleError(error) {
-    if (error.validationErrors) {
-      return {
-        message: 'Erreur de validation',
-        errors: error.validationErrors
-      }
-    }
+    const searchLower = query.toLowerCase()
+    const results = mockInvoices.filter(inv => 
+      inv.id.toLowerCase().includes(searchLower) ||
+      inv.clientName.toLowerCase().includes(searchLower)
+    )
 
-    return {
-      message: error.message || 'Une erreur est survenue',
-      error
-    }
+    return results
   }
 }
 

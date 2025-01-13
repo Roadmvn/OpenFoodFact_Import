@@ -1,117 +1,166 @@
 <template>
-  <div class="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-    <div class="max-w-md w-full space-y-8">
-      <div>
-        <h2 class="mt-6 text-center text-3xl font-extrabold text-gray-900">
-          Connexion à votre compte
-        </h2>
-      </div>
-      <form class="mt-8 space-y-6" @submit.prevent="handleLogin">
-        <div class="rounded-md shadow-sm -space-y-px">
-          <div>
-            <label for="email" class="sr-only">Email</label>
-            <input
-              id="email"
-              v-model="email"
-              name="email"
-              type="email"
-              required
-              class="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
-              placeholder="Email"
-              :disabled="loading"
-            />
-          </div>
-          <div>
-            <label for="password" class="sr-only">Mot de passe</label>
-            <input
-              id="password"
-              v-model="password"
-              name="password"
-              type="password"
-              required
-              class="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
-              placeholder="Mot de passe"
-              :disabled="loading"
-            />
-          </div>
-        </div>
+  <div class="min-h-screen bg-gradient-to-br from-purple-600 to-indigo-800 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
+    <div class="sm:mx-auto sm:w-full sm:max-w-md">
+      <img class="mx-auto h-16 w-auto" src="@/assets/logo.png" alt="SuperMarché Logo" />
+      <h2 class="mt-6 text-center text-3xl font-extrabold text-white">
+        Bienvenue sur SuperMarché
+      </h2>
+      <p class="mt-2 text-center text-sm text-purple-200">
+        Connectez-vous pour accéder à votre espace de gestion
+      </p>
+    </div>
 
-        <div v-if="error" class="bg-red-50 p-4 rounded-md">
-          <div class="flex">
-            <div class="flex-shrink-0">
-              <svg class="h-5 w-5 text-red-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
-              </svg>
-            </div>
-            <div class="ml-3">
-              <p class="text-sm text-red-700">{{ error }}</p>
-            </div>
-          </div>
-        </div>
-
-        <div>
+    <div class="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
+      <div class="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
+        <!-- Onglets de navigation -->
+        <div class="sm:flex sm:justify-center space-x-4 mb-8">
           <button
-            type="submit"
-            :disabled="loading"
-            class="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50"
+            class="flex-1 text-center px-3 py-2 font-medium text-sm rounded-md bg-purple-100 text-purple-700"
           >
-            <span class="absolute left-0 inset-y-0 flex items-center pl-3">
-              <svg
-                v-if="!loading"
-                class="h-5 w-5 text-indigo-500 group-hover:text-indigo-400"
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 20 20"
-                fill="currentColor"
-                aria-hidden="true"
-              >
-                <path
-                  fill-rule="evenodd"
-                  d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z"
-                  clip-rule="evenodd"
-                />
-              </svg>
-              <svg 
-                v-else
-                class="animate-spin h-5 w-5 text-white" 
-                xmlns="http://www.w3.org/2000/svg" 
-                fill="none" 
-                viewBox="0 0 24 24"
-              >
-                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-              </svg>
-            </span>
-            {{ loading ? 'Connexion en cours...' : 'Se connecter' }}
+            Connexion
+          </button>
+          <button
+            @click="$router.push('/auth/register')"
+            class="flex-1 text-center px-3 py-2 font-medium text-sm rounded-md text-gray-500 hover:text-gray-700"
+          >
+            Inscription
           </button>
         </div>
-      </form>
+
+        <form class="space-y-6" @submit.prevent="handleLogin">
+          <EmailInput
+            v-model="email"
+            id="login-email"
+          />
+
+          <PasswordInput
+            v-model="password"
+            id="login-password"
+          />
+
+          <div class="flex items-center justify-between">
+            <div class="flex items-center">
+              <input
+                id="remember-me"
+                type="checkbox"
+                v-model="rememberMe"
+                class="h-4 w-4 text-purple-600 focus:ring-purple-500 border-gray-300 rounded"
+              />
+              <label for="remember-me" class="ml-2 block text-sm text-gray-700">
+                Se souvenir de moi
+              </label>
+            </div>
+
+            <div class="text-sm">
+              <button
+                type="button"
+                @click="$router.push('/auth/forgot-password')"
+                class="font-medium text-purple-600 hover:text-purple-500"
+              >
+                Mot de passe oublié ?
+              </button>
+            </div>
+          </div>
+
+          <div>
+            <button
+              type="submit"
+              :disabled="loading"
+              class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-purple-600 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 disabled:opacity-50"
+            >
+              <span v-if="loading">Connexion en cours...</span>
+              <span v-else>Se connecter</span>
+            </button>
+          </div>
+        </form>
+
+        <div class="mt-6">
+          <div class="relative">
+            <div class="absolute inset-0 flex items-center">
+              <div class="w-full border-t border-gray-300"></div>
+            </div>
+            <div class="relative flex justify-center text-sm">
+              <span class="px-2 bg-white text-gray-500">Besoin d'aide ?</span>
+            </div>
+          </div>
+
+          <div class="mt-6 grid grid-cols-2 gap-3">
+            <div>
+              <a
+                href="mailto:support@supermarche.com"
+                class="w-full inline-flex justify-center py-2 px-4 border border-gray-300 rounded-md shadow-sm bg-white text-sm font-medium text-gray-500 hover:bg-gray-50"
+              >
+                <i class="fas fa-envelope mr-2"></i>
+                Contact
+              </a>
+            </div>
+            <div>
+              <button
+                @click="$router.push('/support')"
+                class="w-full inline-flex justify-center py-2 px-4 border border-gray-300 rounded-md shadow-sm bg-white text-sm font-medium text-gray-500 hover:bg-gray-50"
+              >
+                <i class="fas fa-question-circle mr-2"></i>
+                Aide
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="mt-8 text-center">
+      <p class="text-xs text-purple-200">
+        &copy; 2025 SuperMarché. Tous droits réservés.
+      </p>
     </div>
   </div>
 </template>
 
-<script setup>
+<script>
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { useAuthStore } from '../stores/auth'
+import { useAuthStore } from '@/stores/auth'
+import EmailInput from '@/components/EmailInput.vue'
+import PasswordInput from '@/components/PasswordInput.vue'
 
-const router = useRouter()
-const authStore = useAuthStore()
-const email = ref('')
-const password = ref('')
-const loading = ref(false)
-const error = ref('')
-
-const handleLogin = async () => {
-  try {
-    loading.value = true
-    error.value = ''
+export default {
+  name: 'LoginView',
+  components: {
+    EmailInput,
+    PasswordInput
+  },
+  setup() {
+    const router = useRouter()
+    const authStore = useAuthStore()
     
-    await authStore.login(email.value, password.value)
-    router.push('/products')
-  } catch (err) {
-    error.value = err.message || 'Une erreur est survenue lors de la connexion'
-  } finally {
-    loading.value = false
+    const email = ref('')
+    const password = ref('')
+    const rememberMe = ref(false)
+    const loading = ref(false)
+
+    const handleLogin = async () => {
+      try {
+        loading.value = true
+        await authStore.login({
+          email: email.value,
+          password: password.value,
+          rememberMe: rememberMe.value
+        })
+        router.push('/dashboard')
+      } catch (error) {
+        console.error('Erreur de connexion:', error)
+      } finally {
+        loading.value = false
+      }
+    }
+
+    return {
+      email,
+      password,
+      rememberMe,
+      loading,
+      handleLogin
+    }
   }
 }
 </script>

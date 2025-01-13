@@ -1,71 +1,116 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import AuthService from '../services/auth.service'
+import { useAuthStore } from '../stores/auth'
+
+// Layouts
+import AuthLayout from '../layouts/AuthLayout.vue'
+import DashboardLayout from '../layouts/DashboardLayout.vue'
+
+// Views
+import LoginView from '../views/LoginView.vue'
+import RegisterView from '../views/RegisterView.vue'
+import DashboardView from '../views/DashboardView.vue'
+import ProductsView from '../views/ProductsView.vue'
+import OrdersView from '../views/OrdersView.vue'
+import InvoicesView from '../views/InvoicesView.vue'
+import StatisticsView from '../views/StatisticsView.vue'
+import ProfileView from '../views/ProfileView.vue'
+import NotFoundView from '../views/NotFoundView.vue'
+import ForgotPasswordView from '../views/ForgotPasswordView.vue'
+import SupportView from '../views/SupportView.vue'
 
 const routes = [
   {
-    path: '/login',
-    name: 'login',
-    component: () => import('../views/LoginView.vue'),
-    meta: { guest: true }
+    path: '/',
+    redirect: '/auth/login'
+  },
+  {
+    path: '/auth',
+    component: AuthLayout,
+    children: [
+      {
+        path: '',
+        redirect: '/auth/login'
+      },
+      {
+        path: 'login',
+        name: 'login',
+        component: LoginView
+      },
+      {
+        path: 'register',
+        name: 'register',
+        component: RegisterView
+      },
+      {
+        path: 'forgot-password',
+        name: 'forgot-password',
+        component: ForgotPasswordView
+      }
+    ]
   },
   {
     path: '/dashboard',
-    name: 'dashboard',
-    component: () => import('../views/DashboardView.vue'),
-    meta: { requiresAuth: true, roles: ['manager', 'admin'] }
+    component: DashboardLayout,
+    meta: { requiresAuth: true },
+    children: [
+      {
+        path: '',
+        name: 'dashboard',
+        component: DashboardView
+      },
+      {
+        path: 'products',
+        name: 'products',
+        component: ProductsView
+      },
+      {
+        path: 'orders',
+        name: 'orders',
+        component: OrdersView
+      },
+      {
+        path: 'invoices',
+        name: 'invoices',
+        component: InvoicesView
+      },
+      {
+        path: 'statistics',
+        name: 'statistics',
+        component: StatisticsView
+      },
+      {
+        path: 'profile',
+        name: 'profile',
+        component: ProfileView
+      },
+      {
+        path: 'support',
+        name: 'support',
+        component: SupportView
+      }
+    ]
   },
   {
-    path: '/products',
-    name: 'products',
-    component: () => import('../views/ProductsView.vue'),
-    meta: { requiresAuth: true }
-  },
-  {
-    path: '/invoices',
-    name: 'invoices',
-    component: () => import('../views/InvoicesView.vue'),
-    meta: { requiresAuth: true }
-  },
-  // Redirection par défaut vers login
-  {
-    path: '/',
-    redirect: '/login'
+    path: '/:pathMatch(.*)*',
+    name: 'not-found',
+    component: NotFoundView
   }
 ]
 
 const router = createRouter({
-  history: createWebHistory(),
+  history: createWebHistory(import.meta.env.BASE_URL),
   routes
 })
 
 router.beforeEach((to, from, next) => {
-  const currentUser = AuthService.getCurrentUser()
+  const authStore = useAuthStore()
   const requiresAuth = to.matched.some(record => record.meta.requiresAuth)
-  const isGuestRoute = to.matched.some(record => record.meta.guest)
 
-  // Si l'utilisateur n'est pas connecté et essaie d'accéder à une route protégée
-  if (requiresAuth && !currentUser) {
-    next('/login')
-    return
+  if (requiresAuth && !authStore.isAuthenticated) {
+    next('/auth/login')
+  } else {
+    next()
   }
-
-  // Si l'utilisateur est connecté et essaie d'accéder à une route invité (comme login)
-  if (isGuestRoute && currentUser) {
-    next('/products')
-    return
-  }
-
-  // Si l'utilisateur est sur la route racine
-  if (to.path === '/') {
-    if (currentUser) {
-      next('/products')
-    } else {
-      next('/login')
-    }
-    return
-  }
-
-  next()
 })
 
 export default router
