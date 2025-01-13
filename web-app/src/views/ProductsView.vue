@@ -239,10 +239,25 @@ const handleSubmit = async (productData) => {
       }
       notificationStore.success('Produit mis à jour avec succès')
     } else {
-      // Création d'un nouveau produit
-      const newProduct = await createProduct(productData)
-      products.value.push(newProduct)
-      notificationStore.success('Produit créé avec succès')
+      try {
+        // Création d'un nouveau produit
+        const newProduct = await createProduct(productData)
+        products.value.push(newProduct)
+        notificationStore.success('Produit créé avec succès')
+      } catch (error) {
+        // Si le produit existe déjà (code 409), on l'ajoute à la liste
+        if (error.response && error.response.status === 409 && error.response.data.product) {
+          const existingProduct = error.response.data.product
+          // Vérifier si le produit n'est pas déjà dans la liste
+          const exists = products.value.some(p => p.id === existingProduct.id)
+          if (!exists) {
+            products.value.unshift(existingProduct)
+          }
+          notificationStore.info('Ce produit existe déjà dans la base de données')
+        } else {
+          throw error // Relancer l'erreur si ce n'est pas une erreur 409
+        }
+      }
     }
     closeProductModal()
   } catch (error) {
