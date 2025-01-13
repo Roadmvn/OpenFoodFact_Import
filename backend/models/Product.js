@@ -4,8 +4,9 @@ const db = require('../config/database');
 const Product = db.sequelize.define('Product', {
     id: {
         type: DataTypes.INTEGER,
+        primaryKey: true,
         autoIncrement: true,
-        primaryKey: true
+        allowNull: false
     },
     name: {
         type: DataTypes.STRING,
@@ -44,7 +45,8 @@ const Product = db.sequelize.define('Product', {
     }
 }, {
     tableName: 'products',
-    timestamps: true
+    timestamps: true,
+    underscored: true 
 });
 
 module.exports = Product;

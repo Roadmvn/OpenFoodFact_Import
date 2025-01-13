@@ -241,14 +241,17 @@ const handleSubmit = async () => {
     });
 
     console.log('Status de la réponse:', response.status);
+    const result = await response.json();
     
     if (!response.ok) {
-      const error = await response.json();
-      console.error('Erreur détaillée:', error);
-      throw new Error(error.message || 'Erreur lors de la création du produit');
+      console.error('Erreur détaillée:', result);
+      // Si le produit existe déjà, on l'émet quand même pour l'afficher
+      if (response.status === 409 && result.product) {
+        emit('submit', result.product);
+      }
+      throw new Error(result.message || 'Erreur lors de la création du produit');
     }
 
-    const result = await response.json();
     console.log('Résultat:', result);
     emit('submit', result.product);
   } catch (error) {

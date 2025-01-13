@@ -58,8 +58,9 @@ exports.createProduct = async (req, res) => {
             
             if (existingProduct) {
                 console.log('Produit existant trouvé:', existingProduct.toJSON());
-                return res.status(400).json({
-                    message: 'Un produit avec ce code-barres existe déjà'
+                return res.status(409).json({
+                    message: 'Un produit avec ce code-barres existe déjà',
+                    product: existingProduct
                 });
             }
         }
