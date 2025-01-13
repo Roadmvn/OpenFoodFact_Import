@@ -6,13 +6,6 @@
         <div class="space-x-4">
           <button 
             v-if="isManagerOrAdmin"
-            @click="showOpenFoodFacts = true"
-            class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600"
-          >
-            Importer depuis OpenFoodFacts
-          </button>
-          <button 
-            v-if="isManagerOrAdmin"
             @click="openNewProductModal"
             class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
           >
@@ -22,14 +15,22 @@
       </div>
     </div>
 
-    <!-- Recherche OpenFoodFacts -->
-    <div v-if="showOpenFoodFacts && isManagerOrAdmin" class="mb-8">
-      <OpenFoodFactsSearch 
-        @product-imported="handleProductImported"
-        @success="showSuccess"
-        @error="showError"
-      />
-    </div>
+    <!-- Modal d'ajout/modification de produit -->
+    <ProductForm
+      v-if="showProductModal"
+      :product="selectedProduct"
+      @submit="handleSubmit"
+      @close="closeProductModal"
+    />
+
+    <!-- Recherche OpenFoodFacts (intégrée dans le modal) -->
+    <OpenFoodFactsSearch 
+      v-if="showOpenFoodFacts"
+      @product-imported="handleProductImported"
+      @success="showSuccess"
+      @error="showError"
+      @close="showOpenFoodFacts = false"
+    />
 
     <div class="max-w-7xl mx-auto px-4 sm:px-6 md:px-8">
       <div class="py-4 space-y-4">
@@ -95,14 +96,6 @@
         />
       </div>
     </div>
-
-    <!-- Modal nouveau/édition produit -->
-    <ProductForm
-      v-if="showProductModal"
-      :product="selectedProduct"
-      @close="closeProductModal"
-      @submit="handleSubmit"
-    />
   </div>
 </template>
 
@@ -209,14 +202,27 @@ const handleExport = async ({ type, filters }) => {
 }
 
 const openNewProductModal = () => {
-  selectedProduct.value = null
-  showProductModal.value = true
-}
+  selectedProduct.value = null;
+  showProductModal.value = true;
+  showOpenFoodFacts.value = false;
+};
+
+const handleOpenFoodFactsSearch = () => {
+  showOpenFoodFacts.value = true;
+  showProductModal.value = false;
+};
+
+const handleProductImported = (product) => {
+  products.value.unshift(product);
+  showOpenFoodFacts.value = false;
+  notificationStore.success('Produit importé avec succès');
+};
 
 const closeProductModal = () => {
-  showProductModal.value = false
-  selectedProduct.value = null
-}
+  showProductModal.value = false;
+  showOpenFoodFacts.value = false;
+  selectedProduct.value = null;
+};
 
 const handleEdit = (product) => {
   // Créer une copie profonde du produit avec les valeurs numériques correctement formatées
@@ -329,11 +335,6 @@ const deleteProduct = async (id) => {
     throw error;
   }
 };
-
-const handleProductImported = (product) => {
-  products.value.unshift(product);
-  showOpenFoodFacts.value = false;
-}
 
 const formatPrice = (price) => {
   return Number(price).toLocaleString('fr-FR', {
