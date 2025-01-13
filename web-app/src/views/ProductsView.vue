@@ -241,26 +241,27 @@ const handleSubmit = async (productData) => {
     } else {
       try {
         // Création d'un nouveau produit
-        const newProduct = await createProduct(productData)
-        products.value.push(newProduct)
-        notificationStore.success('Produit créé avec succès')
+        const response = await createProduct(productData)
+        if (response && response.product) {
+          products.value.unshift(response.product)
+          notificationStore.success('Produit créé avec succès')
+        }
       } catch (error) {
-        // Si le produit existe déjà (code 409), on l'ajoute à la liste
         if (error.response && error.response.status === 409 && error.response.data.product) {
           const existingProduct = error.response.data.product
-          // Vérifier si le produit n'est pas déjà dans la liste
-          const exists = products.value.some(p => p.id === existingProduct.id)
+          const exists = products.value.findIndex(p => p.id === existingProduct.id) !== -1
           if (!exists) {
             products.value.unshift(existingProduct)
           }
           notificationStore.info('Ce produit existe déjà dans la base de données')
         } else {
-          throw error // Relancer l'erreur si ce n'est pas une erreur 409
+          throw error
         }
       }
     }
     closeProductModal()
   } catch (error) {
+    console.error('Erreur:', error)
     notificationStore.error(`Erreur lors de l'enregistrement : ${error.message}`)
   }
 }
@@ -289,43 +290,33 @@ const showError = (message) => {
 onMounted(async () => {
   try {
     loading.value = true
-    // Appel API pour charger les produits
     const response = await fetchProducts()
-    products.value = response.data
+    products.value = response || []
   } catch (error) {
+    console.error('Erreur:', error)
     notificationStore.error(`Erreur lors du chargement des produits : ${error.message}`)
+    products.value = [] // Initialiser avec un tableau vide en cas d'erreur
   } finally {
     loading.value = false
   }
 })
 
 // Fonctions API simulées
-const fetchProducts = () => {
-  return new Promise(resolve => {
-    setTimeout(() => {
-      resolve({
-        data: [
-          {
-            id: 'PRD001',
-            name: 'Café Bio Arabica',
-            category: 'Boissons',
-            price: 8.99,
-            stock: 150,
-            status: 'active',
-            createdAt: '2023-12-01'
-          },
-          // Ajoutez d'autres produits ici
-        ]
-      })
-    }, 1000)
-  })
+const fetchProducts = async () => {
+  try {
+    const response = await axios.get('/api/products')
+    return response.data
+  } catch (error) {
+    console.error('Erreur lors de la récupération des produits:', error)
+    throw error
+  }
 }
 
 const createProduct = async (product) => {
   try {
     const response = await axios.post('/api/products', product);
     if (response.data.success) {
-      return response.data.data;
+      return response.data;
     } else {
       throw new Error(response.data.message || 'Erreur lors de la création du produit');
     }

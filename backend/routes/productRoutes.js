@@ -2,6 +2,9 @@ const express = require('express');
 const router = express.Router();
 const productController = require('../controllers/productController');
 
+// Route pour récupérer tous les produits
+router.get('/', productController.getAllProducts);
+
 // Route pour rechercher un produit par code-barres
 router.get('/barcode/:barcode', productController.getProductByBarcode);
 

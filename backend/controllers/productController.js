@@ -161,3 +161,21 @@ exports.importProductByBarcode = async (req, res) => {
         });
     }
 };
+
+// Récupérer tous les produits
+exports.getAllProducts = async (req, res) => {
+    try {
+        const products = await Product.findAll({
+            order: [['createdAt', 'DESC']] // Les plus récents en premier
+        });
+
+        // Renvoyer directement le tableau de produits
+        res.json(products);
+    } catch (error) {
+        logger.error(`Erreur lors de la récupération des produits: ${error.message}`);
+        res.status(500).json({
+            message: 'Erreur lors de la récupération des produits',
+            error: error.message
+        });
+    }
+};
