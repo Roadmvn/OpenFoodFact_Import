@@ -35,10 +35,79 @@ exports.getProductByBarcode = async (req, res) => {
     }
 };
 
+// Créer un nouveau produit
+exports.createProduct = async (req, res) => {
+    try {
+        console.log('Données reçues:', req.body);
+        const { name, brand, category, price, stock, barcode, imageUrl } = req.body;
+
+        // Vérifications des champs requis
+        if (!name || !brand || !category) {
+            console.log('Champs manquants:', { name, brand, category });
+            return res.status(400).json({
+                message: 'Le nom, la marque et la catégorie sont requis'
+            });
+        }
+
+        // Vérifier si le produit existe déjà avec le même code-barres
+        if (barcode) {
+            console.log('Vérification du code-barres:', barcode);
+            const existingProduct = await Product.findOne({
+                where: { barcode }
+            });
+            
+            if (existingProduct) {
+                console.log('Produit existant trouvé:', existingProduct.toJSON());
+                return res.status(400).json({
+                    message: 'Un produit avec ce code-barres existe déjà'
+                });
+            }
+        }
+
+        // Créer le nouveau produit avec Sequelize
+        console.log('Tentative de création du produit avec:', {
+            name,
+            brand,
+            category,
+            price: Number(price) || 0,
+            stock: Number(stock) || 0,
+            barcode: barcode || null,
+            imageUrl: imageUrl || null
+        });
+
+        const product = await Product.create({
+            name,
+            brand,
+            category,
+            price: Number(price) || 0,
+            stock: Number(stock) || 0,
+            barcode: barcode || null,
+            imageUrl: imageUrl || null
+        });
+
+        console.log('Produit créé:', product.toJSON());
+
+        // Récupérer le produit créé avec toutes ses associations
+        const createdProduct = await Product.findByPk(product.id);
+
+        res.status(201).json({
+            message: 'Produit créé avec succès',
+            product: createdProduct
+        });
+    } catch (error) {
+        console.error('Erreur détaillée:', error);
+        logger.error(`Erreur lors de la création du produit: ${error.message}`);
+        res.status(500).json({
+            message: 'Erreur lors de la création du produit',
+            error: error.message
+        });
+    }
+};
+
 // Importer un produit depuis OpenFoodFacts
 exports.importProductByBarcode = async (req, res) => {
     try {
-        const { barcode, stock = 0 } = req.body;
+        const { barcode } = req.body;
 
         // Vérifier si le code-barres est fourni
         if (!barcode) {
@@ -48,30 +117,35 @@ exports.importProductByBarcode = async (req, res) => {
         }
 
         // Vérifier si le produit existe déjà
-        let existingProduct = await Product.findOne({
+        const existingProduct = await Product.findOne({
             where: { barcode }
         });
 
         if (existingProduct) {
             return res.status(400).json({
-                message: 'Ce produit existe déjà dans la base de données',
-                product: existingProduct
+                message: 'Ce produit existe déjà dans la base de données'
             });
         }
 
         // Récupérer les données depuis OpenFoodFacts
-        const offProduct = await openFoodFactsService.getProductByBarcode(barcode);
-        
-        if (!offProduct) {
+        const openFoodFactsProduct = await openFoodFactsService.getProductByBarcode(barcode);
+
+        if (!openFoodFactsProduct) {
             return res.status(404).json({
-                message: `Produit avec code-barres ${barcode} non trouvé dans OpenFoodFacts`
+                message: 'Produit non trouvé dans OpenFoodFacts'
             });
         }
 
-        // Créer le produit dans notre base
+        // Créer le produit dans la base de données
         const product = await Product.create({
-            ...offProduct,
-            stock
+            name: openFoodFactsProduct.product_name,
+            brand: openFoodFactsProduct.brands,
+            barcode: barcode,
+            imageUrl: openFoodFactsProduct.image_url,
+            imageSmallUrl: openFoodFactsProduct.image_small_url,
+            category: openFoodFactsProduct.categories_tags?.[0] || 'Non catégorisé',
+            stock: 0,
+            price: 0
         });
 
         res.status(201).json({
@@ -81,7 +155,7 @@ exports.importProductByBarcode = async (req, res) => {
     } catch (error) {
         logger.error(`Erreur lors de l'importation du produit: ${error.message}`);
         res.status(500).json({
-            message: 'Erreur lors de l\'importation du produit',
+            message: "Erreur lors de l'importation du produit",
             error: error.message
         });
     }

@@ -8,4 +8,7 @@ router.get('/barcode/:barcode', productController.getProductByBarcode);
 // Route pour importer un produit par code-barres
 router.post('/import/barcode', productController.importProductByBarcode);
 
+// Route pour créer un produit
+router.post('/', productController.createProduct);
+
 module.exports = router;

@@ -14,12 +14,9 @@ const app = express();
 
 // Sécurité
 app.use(helmet());
-app.use(cors({
-  origin: ['http://localhost:5173', 'http://localhost:19006', 'exp://192.168.1.X:19000'],
-  credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization']
-}));
+
+// Configuration CORS plus permissive en développement
+app.use(cors());
 
 // Rate limiting
 const limiter = rateLimit({

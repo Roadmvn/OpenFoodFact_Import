@@ -228,8 +228,33 @@ const mapCategory = (category) => {
   return 'Alimentaire'
 }
 
-const handleSubmit = () => {
-  emit('submit', formData.value)
+const handleSubmit = async () => {
+  try {
+    console.log('Données envoyées:', formData.value);
+    
+    const response = await fetch('/api/products', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(formData.value)
+    });
+
+    console.log('Status de la réponse:', response.status);
+    
+    if (!response.ok) {
+      const error = await response.json();
+      console.error('Erreur détaillée:', error);
+      throw new Error(error.message || 'Erreur lors de la création du produit');
+    }
+
+    const result = await response.json();
+    console.log('Résultat:', result);
+    emit('submit', result.product);
+  } catch (error) {
+    console.error('Erreur lors de la création:', error);
+    alert(error.message || 'Erreur lors de la création du produit');
+  }
 }
 
 const handleImageError = () => {
