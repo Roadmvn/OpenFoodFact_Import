@@ -25,16 +25,17 @@ const initializeDatabase = async () => {
     await sequelize.authenticate();
     console.log('✅ Connexion à la base de données établie avec succès.');
 
-    // Synchroniser les modèles avec la base de données (force: true pour recréer les tables)
-    await sequelize.sync({ force: true });
+    // Synchroniser les modèles avec la base de données (alter: true pour mettre à jour les tables sans les recréer)
+    await sequelize.sync({ alter: true });
     console.log('✅ Base de données synchronisée avec succès.');
   } catch (error) {
-    console.error('❌ Erreur lors de l\'initialisation de la base de données:', error);
+    console.error('❌ Impossible de se connecter à la base de données:', error);
     throw error;
   }
 };
 
 module.exports = {
   sequelize,
+  Sequelize,
   initializeDatabase
 };

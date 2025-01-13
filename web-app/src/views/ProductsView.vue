@@ -43,39 +43,45 @@
         <!-- Liste des produits -->
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           <div v-for="product in filteredProducts" :key="product.id" 
-               class="bg-white rounded-lg shadow overflow-hidden">
+               class="bg-white rounded-lg shadow overflow-hidden product-card">
             <img 
               :src="product.imageUrl || '/placeholder-product.png'" 
               :alt="product.name"
               class="w-full h-48 object-cover"
             />
-            <div class="p-4">
+            <div class="p-4 product-info">
               <h3 class="text-xl font-semibold">{{ product.name }}</h3>
-              <p class="text-gray-600">{{ product.brand }}</p>
-              <p class="text-lg font-bold text-green-600">{{ formatPrice(product.price) }}</p>
-              <p class="text-sm text-gray-500">Stock: {{ product.quantity }}</p>
-              
-              <div v-if="isManagerOrAdmin" class="mt-4 space-x-2">
-                <button 
-                  @click="handleEdit(product)"
-                  class="bg-blue-100 text-blue-600 px-3 py-1 rounded hover:bg-blue-200"
-                >
-                  Modifier
-                </button>
-                <button 
-                  @click="updateStock(product)"
-                  class="bg-green-100 text-green-600 px-3 py-1 rounded hover:bg-green-200"
-                >
-                  Stock
-                </button>
-                <button 
-                  v-if="isAdmin"
-                  @click="handleDelete(product)"
-                  class="bg-red-100 text-red-600 px-3 py-1 rounded hover:bg-red-200"
-                >
-                  Supprimer
-                </button>
+              <p class="text-gray-600 brand">{{ product.brand }}</p>
+              <p class="text-gray-600 category">{{ product.category }}</p>
+              <div class="details">
+                <span class="price">Prix: {{ formatPrice(product.price) }} €</span>
+                <span class="stock" :class="{ 'low-stock': product.quantity < 10 }">
+                  Stock: {{ product.quantity }} unités
+                </span>
               </div>
+            </div>
+            <div class="product-actions">
+              <button 
+                v-if="isManagerOrAdmin"
+                @click="handleEdit(product)"
+                class="bg-blue-100 text-blue-600 px-3 py-1 rounded hover:bg-blue-200 btn btn-edit"
+              >
+                Modifier
+              </button>
+              <button 
+                v-if="isManagerOrAdmin"
+                @click="updateStock(product)"
+                class="bg-green-100 text-green-600 px-3 py-1 rounded hover:bg-green-200 btn btn-stock"
+              >
+                Stock
+              </button>
+              <button 
+                v-if="isAdmin"
+                @click="handleDelete(product)"
+                class="bg-red-100 text-red-600 px-3 py-1 rounded hover:bg-red-200 btn btn-delete"
+              >
+                Supprimer
+              </button>
             </div>
           </div>
         </div>
@@ -213,58 +219,116 @@ const closeProductModal = () => {
 }
 
 const handleEdit = (product) => {
-  selectedProduct.value = { ...product }
-  showProductModal.value = true
-}
-
-const handleDelete = async (product) => {
-  try {
-    // Appel API pour supprimer le produit
-    await deleteProduct(product.id)
-    products.value = products.value.filter(p => p.id !== product.id)
-    notificationStore.success('Produit supprimé avec succès')
-  } catch (error) {
-    notificationStore.error(`Erreur lors de la suppression : ${error.message}`)
-  }
-}
+  // Créer une copie profonde du produit avec les valeurs numériques correctement formatées
+  selectedProduct.value = {
+    ...product,
+    price: Number(product.price),
+    stock: Number(product.stock)
+  };
+  showProductModal.value = true;
+};
 
 const handleSubmit = async (productData) => {
   try {
     if (selectedProduct.value) {
       // Mise à jour d'un produit existant
-      await updateProduct(productData)
-      const index = products.value.findIndex(p => p.id === productData.id)
-      if (index !== -1) {
-        products.value[index] = productData
+      const updatedData = {
+        id: selectedProduct.value.id,
+        name: productData.name,
+        brand: productData.brand,
+        category: productData.category,
+        barcode: productData.barcode,
+        imageUrl: productData.imageUrl,
+        price: Number(productData.price),
+        stock: Number(productData.stock)
+      };
+
+      console.log('Données envoyées pour mise à jour:', updatedData);
+      
+      const response = await axios.put(`/api/products/${selectedProduct.value.id}`, updatedData);
+      
+      if (response.data && response.data.product) {
+        const index = products.value.findIndex(p => p.id === selectedProduct.value.id);
+        if (index !== -1) {
+          products.value[index] = response.data.product;
+          notificationStore.success('Produit mis à jour avec succès');
+        }
       }
-      notificationStore.success('Produit mis à jour avec succès')
+      showProductModal.value = false;
     } else {
+      // Création d'un nouveau produit
+      const newProduct = {
+        name: productData.name,
+        brand: productData.brand,
+        category: productData.category,
+        barcode: productData.barcode,
+        imageUrl: productData.imageUrl,
+        price: Number(productData.price),
+        stock: Number(productData.stock)
+      };
+
+      console.log('Données envoyées pour création:', newProduct);
+
       try {
-        // Création d'un nouveau produit
-        const response = await createProduct(productData)
-        if (response && response.product) {
-          products.value.unshift(response.product)
-          notificationStore.success('Produit créé avec succès')
+        const response = await axios.post('/api/products', newProduct);
+        
+        if (response.data && response.data.product) {
+          // Vérifier si le produit n'existe pas déjà dans la liste
+          const existingIndex = products.value.findIndex(p => p.id === response.data.product.id);
+          if (existingIndex === -1) {
+            products.value.unshift(response.data.product);
+          }
+          notificationStore.success('Produit créé avec succès');
+          showProductModal.value = false;
         }
       } catch (error) {
         if (error.response && error.response.status === 409 && error.response.data.product) {
-          const existingProduct = error.response.data.product
-          const exists = products.value.findIndex(p => p.id === existingProduct.id) !== -1
-          if (!exists) {
-            products.value.unshift(existingProduct)
+          // Le produit existe déjà
+          const existingProduct = error.response.data.product;
+          const existingIndex = products.value.findIndex(p => p.id === existingProduct.id);
+          
+          if (existingIndex === -1) {
+            // Si le produit n'est pas dans la liste, l'ajouter
+            products.value.unshift(existingProduct);
+          } else {
+            // Si le produit est déjà dans la liste, le mettre à jour
+            products.value[existingIndex] = existingProduct;
           }
-          notificationStore.info('Ce produit existe déjà dans la base de données')
+          
+          notificationStore.info('Ce produit existe déjà dans la base de données');
+          showProductModal.value = false;
         } else {
-          throw error
+          throw error;
         }
       }
     }
-    closeProductModal()
   } catch (error) {
-    console.error('Erreur:', error)
-    notificationStore.error(`Erreur lors de l'enregistrement : ${error.message}`)
+    console.error('Erreur:', error);
+    notificationStore.error(`Erreur lors de l'enregistrement : ${error.response?.data?.message || error.message}`);
   }
-}
+};
+
+const handleDelete = async (product) => {
+  try {
+    if (confirm('Êtes-vous sûr de vouloir supprimer ce produit ?')) {
+      await deleteProduct(product.id);
+      products.value = products.value.filter(p => p.id !== product.id);
+      notificationStore.success('Produit supprimé avec succès');
+    }
+  } catch (error) {
+    notificationStore.error(`Erreur lors de la suppression : ${error.response?.data?.message || error.message}`);
+  }
+};
+
+const deleteProduct = async (id) => {
+  try {
+    await axios.delete(`/api/products/${id}`);
+    return true;
+  } catch (error) {
+    console.error('Erreur lors de la suppression du produit:', error);
+    throw error;
+  }
+};
 
 const handleProductImported = (product) => {
   products.value.unshift(product);
@@ -272,10 +336,10 @@ const handleProductImported = (product) => {
 }
 
 const formatPrice = (price) => {
-  return new Intl.NumberFormat('fr-FR', {
-    style: 'currency',
-    currency: 'EUR'
-  }).format(price);
+  return Number(price).toLocaleString('fr-FR', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2
+  });
 }
 
 const showSuccess = (message) => {
@@ -285,6 +349,22 @@ const showSuccess = (message) => {
 const showError = (message) => {
   // Implémenter la notification d'erreur
 }
+
+const updateProduct = async (product) => {
+  try {
+    const response = await axios.put(`/api/products/${product.id}`, product);
+    if (response.data && response.data.product) {
+      const index = products.value.findIndex(p => p.id === product.id);
+      if (index !== -1) {
+        products.value[index] = response.data.product;
+      }
+      notificationStore.success('Produit mis à jour avec succès');
+    }
+  } catch (error) {
+    console.error('Erreur lors de la mise à jour:', error);
+    notificationStore.error(`Erreur lors de la mise à jour : ${error.message}`);
+  }
+};
 
 // Chargement initial des données
 onMounted(async () => {
@@ -325,20 +405,79 @@ const createProduct = async (product) => {
     throw error;
   }
 };
-
-const updateProduct = (product) => {
-  return new Promise(resolve => {
-    setTimeout(() => {
-      resolve(product)
-    }, 500)
-  })
-}
-
-const deleteProduct = (id) => {
-  return new Promise(resolve => {
-    setTimeout(() => {
-      resolve()
-    }, 500)
-  })
-}
 </script>
+
+<style scoped>
+.product-card {
+  border: 1px solid #ddd;
+  padding: 1rem;
+  margin-bottom: 1rem;
+  border-radius: 8px;
+  background: white;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.product-info {
+  margin-bottom: 1rem;
+}
+
+.details {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 0.5rem;
+}
+
+.price {
+  font-weight: bold;
+  color: #2c3e50;
+}
+
+.stock {
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  background: #e8f5e9;
+  color: #2e7d32;
+}
+
+.low-stock {
+  background: #ffebee;
+  color: #c62828;
+}
+
+.brand {
+  color: #666;
+  font-style: italic;
+}
+
+.category {
+  color: #666;
+  font-size: 0.9em;
+}
+
+.product-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.btn {
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  border: none;
+  cursor: pointer;
+}
+
+.btn-edit {
+  background: #1976d2;
+  color: white;
+}
+
+.btn-stock {
+  background: #388e3c;
+  color: white;
+}
+
+.btn-delete {
+  background: #d32f2f;
+  color: white;
+}
+</style>

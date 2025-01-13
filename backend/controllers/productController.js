@@ -179,3 +179,91 @@ exports.getAllProducts = async (req, res) => {
         });
     }
 };
+
+// Mettre à jour un produit
+exports.updateProduct = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const {
+            name,
+            brand,
+            category,
+            barcode,
+            imageUrl,
+            price,
+            stock
+        } = req.body;
+
+        // Vérifier si le produit existe
+        const product = await Product.findByPk(id);
+        if (!product) {
+            return res.status(404).json({
+                message: 'Produit non trouvé'
+            });
+        }
+
+        console.log('Données reçues pour mise à jour:', req.body);
+
+        // Préparer les données de mise à jour
+        const updateData = {
+            name,
+            brand,
+            category,
+            barcode,
+            imageUrl,
+            price: Number(price) || product.price, // Garder l'ancienne valeur si la nouvelle est invalide
+            stock: Number(stock) || product.stock  // Garder l'ancienne valeur si la nouvelle est invalide
+        };
+
+        console.log('Données formatées pour mise à jour:', updateData);
+
+        // Mettre à jour le produit
+        await product.update(updateData);
+
+        // Récupérer le produit mis à jour
+        const updatedProduct = await Product.findByPk(id);
+
+        console.log('Produit mis à jour:', updatedProduct.toJSON());
+
+        res.json({
+            message: 'Produit mis à jour avec succès',
+            product: updatedProduct
+        });
+    } catch (error) {
+        console.error('Erreur détaillée:', error);
+        logger.error(`Erreur lors de la mise à jour du produit: ${error.message}`);
+        res.status(500).json({
+            message: 'Erreur lors de la mise à jour du produit',
+            error: error.message
+        });
+    }
+};
+
+// Supprimer un produit
+exports.deleteProduct = async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        // Vérifier si le produit existe
+        const product = await Product.findByPk(id);
+        if (!product) {
+            return res.status(404).json({
+                message: 'Produit non trouvé'
+            });
+        }
+
+        // Supprimer le produit
+        await product.destroy();
+
+        res.json({
+            message: 'Produit supprimé avec succès'
+        });
+    } catch (error) {
+        console.error('Erreur détaillée:', error);
+        logger.error(`Erreur lors de la suppression du produit: ${error.message}`);
+        res.status(500).json({
+            message: 'Erreur lors de la suppression du produit',
+            error: error.message
+        });
+    }
+};

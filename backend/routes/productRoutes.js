@@ -14,4 +14,10 @@ router.post('/import/barcode', productController.importProductByBarcode);
 // Route pour créer un produit
 router.post('/', productController.createProduct);
 
+// Route pour mettre à jour un produit
+router.put('/:id', productController.updateProduct);
+
+// Route pour supprimer un produit
+router.delete('/:id', productController.deleteProduct);
+
 module.exports = router;

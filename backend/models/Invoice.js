@@ -1,7 +1,7 @@
 const { DataTypes } = require('sequelize');
-const { sequelize } = require('../config/database');
+const db = require('../config/database');
 
-const Invoice = sequelize.define('Invoice', {
+const Invoice = db.sequelize.define('Invoice', {
   id: {
     type: DataTypes.UUID,
     defaultValue: DataTypes.UUIDV4,
