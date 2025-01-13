@@ -156,12 +156,20 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, watch } from 'vue'
 
 const props = defineProps({
   product: {
     type: Object,
-    default: () => ({})
+    default: () => ({
+      name: '',
+      brand: '',
+      category: '',
+      price: 0,
+      stock: 0,
+      barcode: '',
+      imageUrl: null
+    })
   }
 })
 
@@ -186,11 +194,28 @@ const formData = ref({
   imageUrl: null
 })
 
-onMounted(() => {
+// Initialiser le formulaire avec les données du produit
+const initForm = () => {
   if (props.product) {
-    formData.value = { ...props.product }
+    formData.value = { 
+      ...props.product,
+      price: Number(props.product.price),
+      stock: Number(props.product.stock)
+    }
   }
+}
+
+// Initialiser au montage
+onMounted(() => {
+  initForm()
 })
+
+// Réagir aux changements de props.product
+watch(() => props.product, (newProduct) => {
+  if (newProduct) {
+    initForm()
+  }
+}, { deep: true })
 
 const fetchOpenFoodFacts = async () => {
   if (!formData.value.barcode) return

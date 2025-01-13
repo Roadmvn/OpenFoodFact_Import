@@ -20,7 +20,7 @@
       v-if="showProductModal"
       :product="selectedProduct"
       @submit="handleSubmit"
-      @close="closeProductModal"
+      @cancel="closeProductModal"
     />
 
     <!-- Recherche OpenFoodFacts (intégrée dans le modal) -->
@@ -56,8 +56,8 @@
               <p class="text-gray-600 category">{{ product.category }}</p>
               <div class="details">
                 <span class="price">Prix: {{ formatPrice(product.price) }} €</span>
-                <span class="stock" :class="{ 'low-stock': product.quantity < 10 }">
-                  Stock: {{ product.quantity }} unités
+                <span class="stock" :class="{ 'low-stock': product.stock < 10 }">
+                  Stock: {{ product.stock }} unités
                 </span>
               </div>
             </div>
