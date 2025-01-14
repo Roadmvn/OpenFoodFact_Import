@@ -6,10 +6,16 @@
         <p class="text-gray-500">Bienvenue dans votre espace de gestion</p>
       </div>
       <div class="flex gap-4">
-        <button class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-purple-600 hover:bg-purple-700">
+        <button 
+          @click="showNewSaleModal = true"
+          class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-purple-600 hover:bg-purple-700"
+        >
           + Nouvelle vente
         </button>
-        <button class="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+        <button 
+          @click="exportDashboard"
+          class="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
+        >
           <i class="fas fa-download mr-2"></i> Exporter
         </button>
       </div>
@@ -133,7 +139,7 @@
           <h3 class="text-lg font-medium text-gray-900">Évolution des ventes</h3>
           <div class="flex gap-2">
             <button 
-              v-for="period in ['Jour', 'Semaine', 'Mois']" 
+              v-for="period in periods" 
               :key="period"
               :class="[
                 'px-3 py-1 text-sm rounded-md',
@@ -141,17 +147,18 @@
                   ? 'bg-purple-600 text-white'
                   : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
               ]"
-              @click="selectedPeriod = period"
+              @click="changePeriod(period)"
             >
               {{ period }}
             </button>
           </div>
         </div>
-        <div class="h-64">
+        <div class="h-[300px]"> 
           <apexchart
             type="area"
             :options="chartOptions"
             :series="chartSeries"
+            height="100%"
           />
         </div>
       </div>
@@ -160,7 +167,12 @@
       <div class="bg-white shadow rounded-lg p-6">
         <div class="flex items-center justify-between mb-4">
           <h3 class="text-lg font-medium text-gray-900">Produits populaires</h3>
-          <a href="#" class="text-sm text-purple-600 hover:text-purple-700">Voir tout</a>
+          <router-link 
+            to="/dashboard/products" 
+            class="text-sm text-purple-600 hover:text-purple-700 font-medium"
+          >
+            Voir tout
+          </router-link>
         </div>
         <div class="space-y-4">
           <div v-for="product in popularProducts" :key="product.id" class="flex items-center justify-between">
@@ -181,10 +193,15 @@
     </div>
 
     <!-- Activités récentes -->
-    <div class="bg-white shadow rounded-lg p-6">
+    <div class="bg-white shadow rounded-lg p-6 mt-8">
       <div class="flex items-center justify-between mb-4">
         <h3 class="text-lg font-medium text-gray-900">Activités récentes</h3>
-        <a href="#" class="text-sm text-purple-600 hover:text-purple-700">Voir tout</a>
+        <router-link 
+          to="/dashboard/activities" 
+          class="text-sm text-purple-600 hover:text-purple-700 font-medium"
+        >
+          Voir tout
+        </router-link>
       </div>
       <div class="flow-root">
         <ul class="-mb-8">
@@ -212,6 +229,71 @@
       </div>
     </div>
   </div>
+
+  <!-- Modal Nouvelle Vente -->
+  <div v-if="showNewSaleModal" class="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center z-50">
+    <div class="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+      <div class="flex justify-between items-center mb-4">
+        <h3 class="text-lg font-medium">Nouvelle Vente</h3>
+        <button @click="showNewSaleModal = false" class="text-gray-400 hover:text-gray-500">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      
+      <div class="space-y-4">
+        <!-- Sélection du produit -->
+        <div>
+          <label class="block text-sm font-medium text-gray-700">Produit</label>
+          <select 
+            v-model="newSale.productId"
+            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500"
+          >
+            <option value="">Sélectionner un produit</option>
+            <option v-for="product in popularProducts" :key="product.id" :value="product.id">
+              {{ product.name }} - {{ formatPrice(product.price) }}
+            </option>
+          </select>
+        </div>
+
+        <!-- Quantité -->
+        <div>
+          <label class="block text-sm font-medium text-gray-700">Quantité</label>
+          <input 
+            type="number" 
+            v-model="newSale.quantity"
+            min="1"
+            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500"
+          />
+        </div>
+
+        <!-- Client -->
+        <div>
+          <label class="block text-sm font-medium text-gray-700">Client</label>
+          <input 
+            type="text" 
+            v-model="newSale.customer"
+            placeholder="Nom du client"
+            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500"
+          />
+        </div>
+      </div>
+
+      <div class="mt-6 flex justify-end gap-3">
+        <button 
+          @click="showNewSaleModal = false"
+          class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200"
+        >
+          Annuler
+        </button>
+        <button 
+          @click="handleNewSale"
+          class="px-4 py-2 text-sm font-medium text-white bg-purple-600 rounded-md hover:bg-purple-700"
+        >
+          Créer la vente
+        </button>
+      </div>
+    </div>
+  </div>
 </template>
 
 <script>
@@ -224,7 +306,7 @@ export default {
     apexchart: VueApexCharts
   },
   setup() {
-    const selectedPeriod = ref('Semaine')
+    const selectedPeriod = ref('Jour')
     const statistics = ref({
       dailySales: 2543,
       dailySalesChange: 12,
@@ -292,19 +374,24 @@ export default {
       }
     ])
 
-    const chartOptions = {
+    const chartOptions = ref({
       chart: {
         type: 'area',
         toolbar: {
           show: false
-        }
+        },
+        zoom: {
+          enabled: false
+        },
+        parentHeightOffset: 0
       },
       dataLabels: {
         enabled: false
       },
       stroke: {
         curve: 'smooth',
-        width: 2
+        width: 2,
+        colors: ['#9333EA'] 
       },
       fill: {
         type: 'gradient',
@@ -312,44 +399,235 @@ export default {
           shadeIntensity: 1,
           opacityFrom: 0.7,
           opacityTo: 0.2,
-          stops: [0, 90, 100]
+          stops: [0, 90, 100],
+          colorStops: [
+            {
+              offset: 0,
+              color: '#9333EA',
+              opacity: 0.4
+            },
+            {
+              offset: 100,
+              color: '#9333EA',
+              opacity: 0.1
+            }
+          ]
+        }
+      },
+      grid: {
+        borderColor: '#f1f1f1',
+        strokeDashArray: 4,
+        xaxis: {
+          lines: {
+            show: true
+          }
+        },
+        yaxis: {
+          lines: {
+            show: true
+          }
+        },
+        padding: {
+          bottom: 0 
         }
       },
       xaxis: {
-        categories: ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'],
+        type: 'category',
         labels: {
           style: {
-            colors: '#6B7280'
+            colors: '#6B7280',
+            fontSize: '12px'
           }
+        },
+        axisBorder: {
+          show: false
+        },
+        axisTicks: {
+          show: false
         }
       },
       yaxis: {
         labels: {
           formatter: function(value) {
-            return value + ' €'
+            return value.toLocaleString('fr-FR', { style: 'currency', currency: 'EUR', minimumFractionDigits: 0 })
           },
           style: {
-            colors: '#6B7280'
+            colors: '#6B7280',
+            fontSize: '12px'
           }
         }
       },
-      grid: {
-        borderColor: '#E5E7EB',
-        strokeDashArray: 4
+      tooltip: {
+        x: {
+          format: 'dd/MM/yy'
+        },
+        y: {
+          formatter: function(value) {
+            return value.toLocaleString('fr-FR', { style: 'currency', currency: 'EUR' })
+          }
+        }
+      }
+    })
+
+    const chartSeries = ref([{
+      name: 'Ventes',
+      data: []
+    }])
+
+    // Données pour chaque période
+    const salesData = {
+      Jour: {
+        categories: ['8h', '10h', '12h', '14h', '16h', '18h', '20h'],
+        data: [1500, 2200, 1800, 2400, 2100, 2800, 3000]
       },
-      colors: ['#9333EA']
+      Semaine: {
+        categories: ['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi', 'Dimanche'],
+        data: [12000, 15000, 13000, 17000, 14000, 18000, 20000]
+      },
+      Mois: {
+        categories: ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Juin'],
+        data: [45000, 52000, 48000, 55000, 49000, 58000]
+      }
     }
 
-    const chartSeries = [{
-      name: 'Ventes',
-      data: [1200, 1900, 1500, 2100, 2400, 1800, 2800]
-    }]
+    const periods = ref(['Jour', 'Semaine', 'Mois'])
+
+    const changePeriod = (period) => {
+      selectedPeriod.value = period
+      
+      // Mettre à jour les données du graphique
+      chartOptions.value = {
+        ...chartOptions.value,
+        xaxis: {
+          ...chartOptions.value.xaxis,
+          categories: salesData[period].categories
+        }
+      }
+      
+      chartSeries.value = [{
+        name: 'Ventes',
+        data: salesData[period].data
+      }]
+    }
+
+    // Initialiser avec les données journalières
+    onMounted(() => {
+      changePeriod('Jour')
+    })
+
+    const showNewSaleModal = ref(false)
+
+    const newSale = ref({
+      productId: '',
+      quantity: 1,
+      customer: ''
+    })
 
     const formatPrice = (value) => {
       return new Intl.NumberFormat('fr-FR', {
         style: 'currency',
         currency: 'EUR'
       }).format(value)
+    }
+
+    const handleNewSale = () => {
+      // Validation
+      if (!newSale.value.productId || newSale.value.quantity < 1 || !newSale.value.customer) {
+        alert('Veuillez remplir tous les champs correctement')
+        return
+      }
+
+      // Trouver le produit sélectionné
+      const product = popularProducts.value.find(p => p.id === parseInt(newSale.value.productId))
+      if (!product) {
+        alert('Produit non trouvé')
+        return
+      }
+
+      // Calculer le montant total
+      const totalAmount = product.price * newSale.value.quantity
+
+      // Mettre à jour les statistiques
+      statistics.value.dailySales += totalAmount
+      statistics.value.dailySalesChange = ((statistics.value.dailySales / 2000) * 100).toFixed(1)
+      statistics.value.totalRevenue += totalAmount
+      statistics.value.revenueChange = ((statistics.value.totalRevenue / 45000) * 100).toFixed(1)
+
+      // Ajouter aux activités récentes
+      recentActivities.value.unshift({
+        id: Date.now(),
+        text: `Nouvelle vente : ${newSale.value.quantity}x ${product.name} pour ${newSale.value.customer}`,
+        time: 'Il y a quelques secondes',
+        icon: 'fas fa-shopping-cart'
+      })
+
+      // Mettre à jour le nombre de ventes du produit
+      product.sales += parseInt(newSale.value.quantity)
+
+      // Fermer le modal et réinitialiser le formulaire
+      showNewSaleModal.value = false
+      newSale.value = {
+        productId: '',
+        quantity: 1,
+        customer: ''
+      }
+    }
+
+    const exportDashboard = () => {
+      // Préparer les données à exporter
+      const data = {
+        statistiques: {
+          ventes_du_jour: statistics.value.dailySales,
+          revenu_total: statistics.value.totalRevenue,
+          commandes_en_attente: statistics.value.pendingOrders,
+          nouveaux_clients: statistics.value.newCustomers
+        },
+        produits_populaires: popularProducts.value.map(product => ({
+          nom: product.name,
+          categorie: product.category,
+          prix: product.price,
+          ventes: product.sales
+        })),
+        activites_recentes: recentActivities.value.map(activity => ({
+          activite: activity.text,
+          date: activity.time
+        }))
+      }
+
+      // Convertir en CSV
+      const csvContent = [
+        // En-têtes des statistiques
+        ['Statistiques'],
+        ['Ventes du jour', 'Revenu total', 'Commandes en attente', 'Nouveaux clients'],
+        [
+          data.statistiques.ventes_du_jour,
+          data.statistiques.revenu_total,
+          data.statistiques.commandes_en_attente,
+          data.statistiques.nouveaux_clients
+        ],
+        [], // Ligne vide pour séparer
+        // En-têtes des produits
+        ['Produits populaires'],
+        ['Nom', 'Catégorie', 'Prix', 'Ventes'],
+        ...data.produits_populaires.map(p => [p.nom, p.categorie, p.prix, p.ventes]),
+        [], // Ligne vide pour séparer
+        // En-têtes des activités
+        ['Activités récentes'],
+        ['Activité', 'Date'],
+        ...data.activites_recentes.map(a => [a.activite, a.date])
+      ]
+        .map(row => row.join(','))
+        .join('\n')
+
+      // Créer le blob et télécharger
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
+      const link = document.createElement('a')
+      const url = URL.createObjectURL(blob)
+      link.setAttribute('href', url)
+      link.setAttribute('download', `tableau_de_bord_${new Date().toLocaleDateString()}.csv`)
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
     }
 
     return {
@@ -359,7 +637,13 @@ export default {
       recentActivities,
       chartOptions,
       chartSeries,
-      formatPrice
+      periods,
+      showNewSaleModal,
+      newSale,
+      formatPrice,
+      changePeriod,
+      handleNewSale,
+      exportDashboard
     }
   }
 }

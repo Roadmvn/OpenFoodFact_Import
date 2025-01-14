@@ -12,6 +12,7 @@ import ProductsView from '../views/ProductsView.vue'
 import OrdersView from '../views/OrdersView.vue'
 import StatisticsView from '../views/StatisticsView.vue'
 import InvoicesView from '../views/InvoicesView.vue'
+import ActivitiesView from '../views/ActivitiesView.vue'
 
 const router = createRouter({
   history: createWebHistory(),
@@ -54,6 +55,11 @@ const router = createRouter({
           path: 'products',
           name: 'products',
           component: ProductsView
+        },
+        {
+          path: 'activities',
+          name: 'activities',
+          component: ActivitiesView
         },
         {
           path: 'orders',
