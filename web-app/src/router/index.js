@@ -8,13 +8,17 @@ import DashboardLayout from '../layouts/DashboardLayout.vue'
 import LoginView from '../views/LoginView.vue'
 import RegisterView from '../views/RegisterView.vue'
 import DashboardView from '../views/DashboardView.vue'
+import ProductsView from '../views/ProductsView.vue'
+import OrdersView from '../views/OrdersView.vue'
+import StatisticsView from '../views/StatisticsView.vue'
+import InvoicesView from '../views/InvoicesView.vue'
 
 const router = createRouter({
   history: createWebHistory(),
   routes: [
     {
       path: '/',
-      redirect: '/auth/login'
+      redirect: '/dashboard'
     },
     {
       path: '/auth',
@@ -45,6 +49,26 @@ const router = createRouter({
           path: '',
           name: 'dashboard',
           component: DashboardView
+        },
+        {
+          path: 'products',
+          name: 'products',
+          component: ProductsView
+        },
+        {
+          path: 'orders',
+          name: 'orders',
+          component: OrdersView
+        },
+        {
+          path: 'statistics',
+          name: 'statistics',
+          component: StatisticsView
+        },
+        {
+          path: 'invoices',
+          name: 'invoices',
+          component: InvoicesView
         }
       ]
     }

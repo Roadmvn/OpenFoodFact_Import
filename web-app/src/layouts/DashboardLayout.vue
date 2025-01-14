@@ -112,8 +112,8 @@ export default {
       { name: 'dashboard', to: '/dashboard', text: 'Tableau de bord' },
       { name: 'products', to: '/dashboard/products', text: 'Produits' },
       { name: 'orders', to: '/dashboard/orders', text: 'Commandes' },
-      { name: 'invoices', to: '/dashboard/invoices', text: 'Factures' },
-      { name: 'statistics', to: '/dashboard/statistics', text: 'Statistiques' }
+      { name: 'statistics', to: '/dashboard/statistics', text: 'Statistiques' },
+      { name: 'invoices', to: '/dashboard/invoices', text: 'Factures' }
     ]
 
     const handleLogout = async () => {
