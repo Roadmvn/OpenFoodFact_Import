@@ -1,81 +1,59 @@
 import axios from 'axios';
-import { mockUsers } from '../mocks/data'
 
-const API_URL = 'http://localhost:3000/api/users/';
+const API_URL = '/api/auth/';
 
 class AuthService {
-  async register(userData) {
-    try {
-      // Vérifier si l'email existe déjà
-      const existingUser = mockUsers.find(u => u.email === userData.email)
-      if (existingUser) {
-        throw new Error('Cette adresse email est déjà utilisée')
-      }
+  async login(email, password) {
+    // Simulation d'une attente
+    await new Promise(resolve => setTimeout(resolve, 500));
 
-      // Simuler un délai de réseau
-      await new Promise(resolve => setTimeout(resolve, 500))
+    // Accepte n'importe quelles données
+    const userData = {
+      id: 1,
+      firstName: email.split('@')[0],
+      lastName: 'User',
+      email: email,
+      token: 'fake_token_' + Date.now()
+    };
 
-      const newUser = {
-        id: mockUsers.length + 1,
-        ...userData,
-        role: 'user'
-      }
-      mockUsers.push(newUser)
-
-      // Retourner l'utilisateur sans le mot de passe
-      const userWithoutPassword = { ...newUser }
-      delete userWithoutPassword.password
-      return userWithoutPassword
-    } catch (error) {
-      console.error('Erreur d\'inscription:', error)
-      throw error
-    }
+    localStorage.setItem('user', JSON.stringify(userData));
+    return userData;
   }
 
-  async login(email, password) {
-    try {
-      // Simuler un délai de réseau
-      await new Promise(resolve => setTimeout(resolve, 500))
+  async register(userData) {
+    // Simulation d'une attente
+    await new Promise(resolve => setTimeout(resolve, 500));
 
-      const user = mockUsers.find(u => u.email === email)
-      if (!user) {
-        throw new Error('Email ou mot de passe incorrect')
-      }
-
-      if (user.password !== password) {
-        throw new Error('Email ou mot de passe incorrect')
-      }
-
-      const token = 'mock-jwt-token'
-      const userWithoutPassword = { ...user }
-      delete userWithoutPassword.password
-
-      localStorage.setItem('user', JSON.stringify(userWithoutPassword))
-      localStorage.setItem('token', token)
-      return { user: userWithoutPassword, token }
-    } catch (error) {
-      console.error('Erreur de connexion:', error)
-      throw error
-    }
+    // Accepte toujours l'inscription
+    return {
+      message: 'Inscription réussie'
+    };
   }
 
   logout() {
-    localStorage.removeItem('token');
     localStorage.removeItem('user');
   }
 
   getCurrentUser() {
     const userStr = localStorage.getItem('user');
-    if (!userStr) return null;
-    try {
-      return JSON.parse(userStr);
-    } catch {
-      return null;
-    }
+    return userStr ? JSON.parse(userStr) : null;
   }
 
   getToken() {
-    return localStorage.getItem('token');
+    const user = this.getCurrentUser();
+    return user?.token;
+  }
+
+  updateUser(userData) {
+    const user = this.getCurrentUser();
+    if (!user) {
+      throw new Error('User not authenticated');
+    }
+    return axios.put(API_URL + 'profile', userData, {
+      headers: {
+        Authorization: `Bearer ${this.getToken()}`
+      }
+    });
   }
 }
 

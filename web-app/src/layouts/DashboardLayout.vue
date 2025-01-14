@@ -61,7 +61,7 @@
                   role="menu"
                 >
                   <router-link
-                    to="/profile"
+                    to="/dashboard/profile"
                     class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                     role="menuitem"
                     @click="showProfileMenu = false"
@@ -118,8 +118,8 @@ export default {
 
     const handleLogout = async () => {
       try {
-        await authStore.logout()
-        router.push('/login')
+        authStore.logout()
+        await router.push('/auth/login')
       } catch (error) {
         console.error('Erreur lors de la déconnexion:', error)
       }
