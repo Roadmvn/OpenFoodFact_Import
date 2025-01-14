@@ -110,10 +110,10 @@ export default {
 
     const navigationItems = [
       { name: 'dashboard', to: '/dashboard', text: 'Tableau de bord' },
-      { name: 'products', to: '/products', text: 'Produits' },
-      { name: 'orders', to: '/orders', text: 'Commandes' },
-      { name: 'invoices', to: '/invoices', text: 'Factures' },
-      { name: 'statistics', to: '/statistics', text: 'Statistiques' }
+      { name: 'products', to: '/dashboard/products', text: 'Produits' },
+      { name: 'orders', to: '/dashboard/orders', text: 'Commandes' },
+      { name: 'invoices', to: '/dashboard/invoices', text: 'Factures' },
+      { name: 'statistics', to: '/dashboard/statistics', text: 'Statistiques' }
     ]
 
     const handleLogout = async () => {
