@@ -22,142 +22,112 @@
     </div>
 
     <!-- KPI Cards -->
-    <div class="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-5">
+    <div class="grid grid-cols-5 gap-4">
       <!-- Ventes du jour -->
-      <div class="bg-white overflow-hidden shadow rounded-lg">
-        <div class="p-5">
-          <div class="flex items-center">
-            <div class="flex-shrink-0">
-              <i class="fas fa-shopping-cart text-green-600 text-3xl"></i>
+      <div class="bg-white shadow rounded-lg p-4">
+        <div class="flex items-center">
+          <div class="flex-shrink-0">
+            <div class="bg-green-100 rounded-full p-2">
+              <i class="fas fa-shopping-cart text-green-600 text-lg"></i>
             </div>
-            <div class="ml-5 w-0 flex-1">
-              <dl>
-                <dt class="text-sm font-medium text-gray-500 truncate">
-                  Ventes du jour
-                </dt>
-                <dd class="flex items-baseline">
-                  <div class="text-2xl font-semibold text-gray-900">
-                    {{ formatPrice(statistics.dailySales) }}
-                  </div>
-                  <div class="ml-2 flex items-baseline text-sm font-semibold" 
-                       :class="statistics.dailySalesChange >= 0 ? 'text-green-600' : 'text-red-600'">
-                    <i :class="statistics.dailySalesChange >= 0 ? 'fas fa-arrow-up' : 'fas fa-arrow-down'" class="mr-0.5"></i>
-                    {{ Math.abs(statistics.dailySalesChange) }}%
-                  </div>
-                </dd>
-              </dl>
+          </div>
+          <div class="ml-3">
+            <div class="text-2xl font-bold text-gray-900">
+              {{ formatPrice(statistics.dailySales) }}
+            </div>
+            <div class="flex items-baseline">
+              <span class="text-sm text-gray-500">Ventes du jour</span>
+              <div class="ml-2" :class="statistics.dailySalesChange >= 0 ? 'text-green-600' : 'text-red-600'">
+                <span class="text-sm font-medium">{{ statistics.dailySalesChange >= 0 ? '+' : '' }}{{ statistics.dailySalesChange }}%</span>
+              </div>
             </div>
           </div>
         </div>
       </div>
 
       <!-- Chiffre d'affaires -->
-      <div class="bg-white overflow-hidden shadow rounded-lg">
-        <div class="p-5">
-          <div class="flex items-center">
-            <div class="flex-shrink-0">
-              <i class="fas fa-euro-sign text-green-600 text-3xl"></i>
+      <div class="bg-white shadow rounded-lg p-4">
+        <div class="flex items-center">
+          <div class="flex-shrink-0">
+            <div class="bg-blue-100 rounded-full p-2">
+              <i class="fas fa-euro-sign text-blue-600 text-lg"></i>
             </div>
-            <div class="ml-5 w-0 flex-1">
-              <dl>
-                <dt class="text-sm font-medium text-gray-500 truncate">
-                  Chiffre d'affaires
-                </dt>
-                <dd class="flex items-baseline">
-                  <div class="text-2xl font-semibold text-gray-900">
-                    {{ formatPrice(statistics.totalRevenue) }}
-                  </div>
-                  <div class="ml-2 flex items-baseline text-sm font-semibold" 
-                       :class="statistics.revenueChange >= 0 ? 'text-green-600' : 'text-red-600'">
-                    <i :class="statistics.revenueChange >= 0 ? 'fas fa-arrow-up' : 'fas fa-arrow-down'" class="mr-0.5"></i>
-                    {{ Math.abs(statistics.revenueChange) }}%
-                  </div>
-                </dd>
-              </dl>
+          </div>
+          <div class="ml-3">
+            <div class="text-2xl font-bold text-gray-900">
+              {{ formatPrice(statistics.totalRevenue) }}
+            </div>
+            <div class="flex items-baseline">
+              <span class="text-sm text-gray-500">Chiffre d'affaires</span>
+              <div class="ml-2" :class="statistics.revenueChange >= 0 ? 'text-green-600' : 'text-red-600'">
+                <span class="text-sm font-medium">{{ statistics.revenueChange >= 0 ? '+' : '' }}{{ statistics.revenueChange }}%</span>
+              </div>
             </div>
           </div>
         </div>
       </div>
 
       <!-- Commandes en attente -->
-      <div class="bg-white overflow-hidden shadow rounded-lg">
-        <div class="p-5">
-          <div class="flex items-center">
-            <div class="flex-shrink-0">
-              <i class="fas fa-clock text-yellow-500 text-3xl"></i>
+      <div class="bg-white shadow rounded-lg p-4">
+        <div class="flex items-center">
+          <div class="flex-shrink-0">
+            <div class="bg-yellow-100 rounded-full p-2">
+              <i class="fas fa-clock text-yellow-600 text-lg"></i>
             </div>
-            <div class="ml-5 w-0 flex-1">
-              <dl>
-                <dt class="text-sm font-medium text-gray-500 truncate">
-                  Commandes en attente
-                </dt>
-                <dd class="flex items-baseline">
-                  <div class="text-2xl font-semibold text-gray-900">
-                    {{ statistics.pendingOrders }}
-                  </div>
-                  <div class="ml-2 flex items-baseline text-sm font-semibold" 
-                       :class="statistics.ordersChange >= 0 ? 'text-green-600' : 'text-red-600'">
-                    <i :class="statistics.ordersChange >= 0 ? 'fas fa-arrow-up' : 'fas fa-arrow-down'" class="mr-0.5"></i>
-                    {{ Math.abs(statistics.ordersChange) }}%
-                  </div>
-                </dd>
-              </dl>
+          </div>
+          <div class="ml-3">
+            <div class="text-2xl font-bold text-gray-900">
+              {{ statistics.pendingOrders }}
+            </div>
+            <div class="flex items-baseline">
+              <span class="text-sm text-gray-500">Commandes en attente</span>
+              <div class="ml-2" :class="statistics.ordersChange >= 0 ? 'text-green-600' : 'text-red-600'">
+                <span class="text-sm font-medium">{{ statistics.ordersChange >= 0 ? '+' : '' }}{{ statistics.ordersChange }}%</span>
+              </div>
             </div>
           </div>
         </div>
       </div>
 
       <!-- Nouveaux clients -->
-      <div class="bg-white overflow-hidden shadow rounded-lg">
-        <div class="p-5">
-          <div class="flex items-center">
-            <div class="flex-shrink-0">
-              <i class="fas fa-users text-blue-500 text-3xl"></i>
+      <div class="bg-white shadow rounded-lg p-4">
+        <div class="flex items-center">
+          <div class="flex-shrink-0">
+            <div class="bg-purple-100 rounded-full p-2">
+              <i class="fas fa-users text-purple-600 text-lg"></i>
             </div>
-            <div class="ml-5 w-0 flex-1">
-              <dl>
-                <dt class="text-sm font-medium text-gray-500 truncate">
-                  Nouveaux clients
-                </dt>
-                <dd class="flex items-baseline">
-                  <div class="text-2xl font-semibold text-gray-900">
-                    {{ statistics.newCustomers }}
-                  </div>
-                  <div class="ml-2 flex items-baseline text-sm font-semibold" 
-                       :class="statistics.customersChange >= 0 ? 'text-green-600' : 'text-red-600'">
-                    <i :class="statistics.customersChange >= 0 ? 'fas fa-arrow-up' : 'fas fa-arrow-down'" class="mr-0.5"></i>
-                    {{ Math.abs(statistics.customersChange) }}%
-                  </div>
-                </dd>
-              </dl>
+          </div>
+          <div class="ml-3">
+            <div class="text-2xl font-bold text-gray-900">
+              {{ statistics.newCustomers }}
+            </div>
+            <div class="flex items-baseline">
+              <span class="text-sm text-gray-500">Nouveaux clients</span>
+              <div class="ml-2" :class="statistics.customersChange >= 0 ? 'text-green-600' : 'text-red-600'">
+                <span class="text-sm font-medium">{{ statistics.customersChange >= 0 ? '+' : '' }}{{ statistics.customersChange }}%</span>
+              </div>
             </div>
           </div>
         </div>
       </div>
 
       <!-- Taux de conversion -->
-      <div class="bg-white overflow-hidden shadow rounded-lg">
-        <div class="p-5">
-          <div class="flex items-center">
-            <div class="flex-shrink-0">
-              <i class="fas fa-chart-line text-purple-500 text-3xl"></i>
+      <div class="bg-white shadow rounded-lg p-4">
+        <div class="flex items-center">
+          <div class="flex-shrink-0">
+            <div class="bg-pink-100 rounded-full p-2">
+              <i class="fas fa-chart-line text-pink-600 text-lg"></i>
             </div>
-            <div class="ml-5 w-0 flex-1">
-              <dl>
-                <dt class="text-sm font-medium text-gray-500 truncate">
-                  Taux de conversion
-                </dt>
-                <dd class="flex items-baseline">
-                  <div class="text-2xl font-semibold text-gray-900">
-                    {{ statistics.conversionRate }}%
-                  </div>
-                  <div class="ml-2 flex items-baseline text-sm font-semibold" 
-                       :class="statistics.conversionChange >= 0 ? 'text-green-600' : 'text-red-600'">
-                    <i :class="statistics.conversionChange >= 0 ? 'fas fa-arrow-up' : 'fas fa-arrow-down'" class="mr-0.5"></i>
-                    {{ Math.abs(statistics.conversionChange) }}%
-                  </div>
-                </dd>
-              </dl>
+          </div>
+          <div class="ml-3">
+            <div class="text-2xl font-bold text-gray-900">
+              {{ statistics.conversionRate }}%
+            </div>
+            <div class="flex items-baseline">
+              <span class="text-sm text-gray-500">Taux de conversion</span>
+              <div class="ml-2" :class="statistics.conversionChange >= 0 ? 'text-green-600' : 'text-red-600'">
+                <span class="text-sm font-medium">{{ statistics.conversionChange >= 0 ? '+' : '' }}{{ statistics.conversionChange }}%</span>
+              </div>
             </div>
           </div>
         </div>
