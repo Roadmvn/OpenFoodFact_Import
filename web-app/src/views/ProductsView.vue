@@ -23,15 +23,6 @@
       @cancel="closeProductModal"
     />
 
-    <!-- Recherche OpenFoodFacts (intégrée dans le modal) -->
-    <OpenFoodFactsSearch 
-      v-if="showOpenFoodFacts"
-      @product-imported="handleProductImported"
-      @success="showSuccess"
-      @error="showError"
-      @close="showOpenFoodFacts = false"
-    />
-
     <div class="max-w-7xl mx-auto px-4 sm:px-6 md:px-8">
       <div class="py-4 space-y-4">
         <!-- Filtres avancés -->
@@ -99,386 +90,312 @@
   </div>
 </template>
 
-<script setup>
-import { ref, computed, onMounted } from 'vue'
-import { PlusIcon } from '@heroicons/vue/outline'
+<script>
+import { ref, computed } from 'vue'
 import AdvancedFilters from '../components/AdvancedFilters.vue'
-import ProductTable from '../components/ProductTable.vue'
 import ProductForm from '../components/ProductForm.vue'
 import TablePagination from '../components/TablePagination.vue'
-import OpenFoodFactsSearch from '../components/OpenFoodFactsSearch.vue'
-import { useNotificationStore } from '../stores/notifications'
-import exportService from '../services/exportService'
-import axios from 'axios'
 
-const notificationStore = useNotificationStore()
-
-// État
-const products = ref([])
-const loading = ref(true)
-const showProductModal = ref(false)
-const selectedProduct = ref(null)
-const currentPage = ref(1)
-const perPage = ref(10)
-const filters = ref({})
-const showOpenFoodFacts = ref(false)
-
-// Catégories disponibles
-const categories = [
-  'Boissons',
-  'Boulangerie',
-  'Produits laitiers',
-  'Fruits',
-  'Confiserie'
-]
-
-// Produits filtrés et paginés
-const filteredProducts = computed(() => {
-  let result = [...products.value]
-
-  // Application des filtres
-  if (filters.value.search) {
-    const search = filters.value.search.toLowerCase()
-    result = result.filter(product =>
-      product.name.toLowerCase().includes(search) ||
-      product.id.toLowerCase().includes(search)
-    )
-  }
-
-  if (filters.value.category) {
-    result = result.filter(product => product.category === filters.value.category)
-  }
-
-  if (filters.value.status?.length > 0) {
-    result = result.filter(product => filters.value.status.includes(product.status))
-  }
-
-  if (filters.value.dateRange?.length === 2) {
-    const [start, end] = filters.value.dateRange
-    result = result.filter(product => {
-      const createdAt = new Date(product.createdAt)
-      return createdAt >= start && createdAt <= end
-    })
-  }
-
-  // Pagination
-  const start = (currentPage.value - 1) * perPage.value
-  return result.slice(start, start + perPage.value)
-})
-
-const totalItems = computed(() => filteredProducts.value.length)
-
-const isManagerOrAdmin = computed(() => {
-  const role = 'manager' // TODO: get role from store
-  return role === 'manager' || role === 'admin'
-})
-
-const isAdmin = computed(() => 'admin' === 'admin') // TODO: get role from store
-
-// Gestionnaires d'événements
-const handleFilter = (newFilters) => {
-  filters.value = newFilters
-  currentPage.value = 1
-}
-
-const handleExport = async ({ type, filters }) => {
-  try {
-    const dataToExport = products.value.map(product => ({
-      id: product.id,
-      name: product.name,
-      category: product.category,
-      price: product.price,
-      stock: product.stock
-    }))
-
-    if (type === 'pdf') {
-      await exportService.exportToPDF(dataToExport, filters)
-    } else if (type === 'excel') {
-      await exportService.exportToExcel(dataToExport, filters)
-    }
-  } catch (error) {
-    notificationStore.error(`Erreur lors de l'export : ${error.message}`)
-  }
-}
-
-const openNewProductModal = () => {
-  selectedProduct.value = null;
-  showProductModal.value = true;
-  showOpenFoodFacts.value = false;
-};
-
-const handleOpenFoodFactsSearch = () => {
-  showOpenFoodFacts.value = true;
-  showProductModal.value = false;
-};
-
-const handleProductImported = (product) => {
-  products.value.unshift(product);
-  showOpenFoodFacts.value = false;
-  notificationStore.success('Produit importé avec succès');
-};
-
-const closeProductModal = () => {
-  showProductModal.value = false;
-  showOpenFoodFacts.value = false;
-  selectedProduct.value = null;
-};
-
-const handleEdit = (product) => {
-  // Créer une copie profonde du produit avec les valeurs numériques correctement formatées
-  selectedProduct.value = {
-    ...product,
-    price: Number(product.price),
-    stock: Number(product.stock)
-  };
-  showProductModal.value = true;
-};
-
-const handleSubmit = async (productData) => {
-  try {
-    if (selectedProduct.value) {
-      // Mise à jour d'un produit existant
-      const updatedData = {
-        id: selectedProduct.value.id,
-        name: productData.name,
-        brand: productData.brand,
-        category: productData.category,
-        barcode: productData.barcode,
-        imageUrl: productData.imageUrl,
-        price: Number(productData.price),
-        stock: Number(productData.stock)
-      };
-
-      console.log('Données envoyées pour mise à jour:', updatedData);
-      
-      const response = await axios.put(`/api/products/${selectedProduct.value.id}`, updatedData);
-      
-      if (response.data && response.data.product) {
-        const index = products.value.findIndex(p => p.id === selectedProduct.value.id);
-        if (index !== -1) {
-          products.value[index] = response.data.product;
-          notificationStore.success('Produit mis à jour avec succès');
-        }
+export default {
+  name: 'ProductsView',
+  components: {
+    AdvancedFilters,
+    ProductForm,
+    TablePagination
+  },
+  setup() {
+    const products = ref([
+      {
+        id: 1,
+        name: 'Ordinateur portable Pro',
+        category: 'Électronique',
+        brand: 'TechBrand',
+        price: 1299.00,
+        stock: 125,
+        imageUrl: '/laptop.jpg'
+      },
+      {
+        id: 2,
+        name: 'Smartphone X',
+        category: 'Électronique',
+        brand: 'PhoneBrand',
+        price: 899.00,
+        stock: 98,
+        imageUrl: '/phone.jpg'
+      },
+      {
+        id: 3,
+        name: 'Casque sans fil',
+        category: 'Accessoires',
+        brand: 'AudioBrand',
+        price: 199.00,
+        stock: 78,
+        imageUrl: '/headphones.jpg'
+      },
+      {
+        id: 4,
+        name: 'Tablette Air',
+        category: 'Électronique',
+        brand: 'TechBrand',
+        price: 649.00,
+        stock: 65,
+        imageUrl: '/tablet.jpg'
       }
-      showProductModal.value = false;
-    } else {
-      // Création d'un nouveau produit
-      const newProduct = {
-        name: productData.name,
-        brand: productData.brand,
-        category: productData.category,
-        barcode: productData.barcode,
-        imageUrl: productData.imageUrl,
-        price: Number(productData.price),
-        stock: Number(productData.stock)
-      };
+    ])
 
-      console.log('Données envoyées pour création:', newProduct);
+    const loading = ref(false)
+    const filters = ref({
+      search: '',
+      category: '',
+      minPrice: null,
+      maxPrice: null
+    })
 
+    const categories = computed(() => {
+      const uniqueCategories = new Set(products.value.map(p => p.category))
+      return Array.from(uniqueCategories)
+    })
+
+    const filteredProducts = computed(() => {
+      let result = products.value
+
+      if (filters.value.search) {
+        const searchLower = filters.value.search.toLowerCase()
+        result = result.filter(p => 
+          p.name.toLowerCase().includes(searchLower) ||
+          p.brand.toLowerCase().includes(searchLower)
+        )
+      }
+
+      if (filters.value.category) {
+        result = result.filter(p => p.category === filters.value.category)
+      }
+
+      if (filters.value.minPrice) {
+        result = result.filter(p => p.price >= filters.value.minPrice)
+      }
+
+      if (filters.value.maxPrice) {
+        result = result.filter(p => p.price <= filters.value.maxPrice)
+      }
+
+      return result
+    })
+
+    const formatPrice = (price) => {
+      return new Intl.NumberFormat('fr-FR', {
+        style: 'currency',
+        currency: 'EUR'
+      }).format(price)
+    }
+
+    const isManagerOrAdmin = computed(() => {
+      const role = 'manager' // TODO: get role from store
+      return role === 'manager' || role === 'admin'
+    })
+
+    const isAdmin = computed(() => 'admin' === 'admin') // TODO: get role from store
+
+    const showProductModal = ref(false)
+    const selectedProduct = ref(null)
+    const currentPage = ref(1)
+    const perPage = ref(10)
+    const totalItems = computed(() => filteredProducts.value.length)
+
+    const handleFilter = (newFilters) => {
+      filters.value = newFilters
+      currentPage.value = 1
+    }
+
+    const handleExport = async ({ type, filters }) => {
       try {
-        const response = await axios.post('/api/products', newProduct);
-        
-        if (response.data && response.data.product) {
-          // Vérifier si le produit n'existe pas déjà dans la liste
-          const existingIndex = products.value.findIndex(p => p.id === response.data.product.id);
-          if (existingIndex === -1) {
-            products.value.unshift(response.data.product);
-          }
-          notificationStore.success('Produit créé avec succès');
-          showProductModal.value = false;
+        const dataToExport = products.value.map(product => ({
+          id: product.id,
+          name: product.name,
+          category: product.category,
+          price: product.price,
+          stock: product.stock
+        }))
+
+        if (type === 'pdf') {
+          // await exportService.exportToPDF(dataToExport, filters)
+        } else if (type === 'excel') {
+          // await exportService.exportToExcel(dataToExport, filters)
         }
       } catch (error) {
-        if (error.response && error.response.status === 409 && error.response.data.product) {
-          // Le produit existe déjà
-          const existingProduct = error.response.data.product;
-          const existingIndex = products.value.findIndex(p => p.id === existingProduct.id);
+        console.error('Erreur lors de l\'export :', error)
+      }
+    }
+
+    const openNewProductModal = () => {
+      selectedProduct.value = null;
+      showProductModal.value = true;
+    };
+
+    const handleProductImported = (product) => {
+      products.value.unshift(product);
+      // notificationStore.success('Produit importé avec succès');
+    };
+
+    const closeProductModal = () => {
+      showProductModal.value = false;
+      selectedProduct.value = null;
+    };
+
+    const handleEdit = (product) => {
+      selectedProduct.value = product;
+      showProductModal.value = true;
+    };
+
+    const handleSubmit = async (productData) => {
+      try {
+        if (selectedProduct.value) {
+          // Mise à jour d'un produit existant
+          const updatedData = {
+            id: selectedProduct.value.id,
+            name: productData.name,
+            brand: productData.brand,
+            category: productData.category,
+            price: Number(productData.price),
+            stock: Number(productData.stock)
+          };
+
+          console.log('Données envoyées pour mise à jour:', updatedData);
           
-          if (existingIndex === -1) {
-            // Si le produit n'est pas dans la liste, l'ajouter
-            products.value.unshift(existingProduct);
-          } else {
-            // Si le produit est déjà dans la liste, le mettre à jour
-            products.value[existingIndex] = existingProduct;
-          }
+          // await axios.put(`/api/products/${selectedProduct.value.id}`, updatedData);
           
-          notificationStore.info('Ce produit existe déjà dans la base de données');
+          // if (response.data && response.data.product) {
+          //   const index = products.value.findIndex(p => p.id === selectedProduct.value.id);
+          //   if (index !== -1) {
+          //     products.value[index] = response.data.product;
+          //     // notificationStore.success('Produit mis à jour avec succès');
+          //   }
+          // }
           showProductModal.value = false;
         } else {
-          throw error;
+          // Création d'un nouveau produit
+          const newProduct = {
+            name: productData.name,
+            brand: productData.brand,
+            category: productData.category,
+            price: Number(productData.price),
+            stock: Number(productData.stock)
+          };
+
+          console.log('Données envoyées pour création:', newProduct);
+
+          // try {
+          //   const response = await axios.post('/api/products', newProduct);
+            
+          //   if (response.data && response.data.product) {
+          //     // Vérifier si le produit n'existe pas déjà dans la liste
+          //     const existingIndex = products.value.findIndex(p => p.id === response.data.product.id);
+          //     if (existingIndex === -1) {
+          //       products.value.unshift(response.data.product);
+          //     }
+          //     // notificationStore.success('Produit créé avec succès');
+          //     showProductModal.value = false;
+          //   }
+          // } catch (error) {
+          //   if (error.response && error.response.status === 409 && error.response.data.product) {
+          //     // Le produit existe déjà
+          //     const existingProduct = error.response.data.product;
+          //     const existingIndex = products.value.findIndex(p => p.id === existingProduct.id);
+              
+          //     if (existingIndex === -1) {
+          //       // Si le produit n'est pas dans la liste, l'ajouter
+          //       products.value.unshift(existingProduct);
+          //     } else {
+          //       // Si le produit est déjà dans la liste, le mettre à jour
+          //       products.value[existingIndex] = existingProduct;
+          //     }
+              
+          //     // notificationStore.info('Ce produit existe déjà dans la base de données');
+          //     showProductModal.value = false;
+          //   } else {
+          //     throw error;
+          //   }
+          // }
         }
+      } catch (error) {
+        console.error('Erreur:', error);
+        // notificationStore.error(`Erreur lors de l'enregistrement : ${error.response?.data?.message || error.message}`);
       }
-    }
-  } catch (error) {
-    console.error('Erreur:', error);
-    notificationStore.error(`Erreur lors de l'enregistrement : ${error.response?.data?.message || error.message}`);
-  }
-};
+    };
 
-const handleDelete = async (product) => {
-  try {
-    if (confirm('Êtes-vous sûr de vouloir supprimer ce produit ?')) {
-      await deleteProduct(product.id);
-      products.value = products.value.filter(p => p.id !== product.id);
-      notificationStore.success('Produit supprimé avec succès');
-    }
-  } catch (error) {
-    notificationStore.error(`Erreur lors de la suppression : ${error.response?.data?.message || error.message}`);
-  }
-};
-
-const deleteProduct = async (id) => {
-  try {
-    await axios.delete(`/api/products/${id}`);
-    return true;
-  } catch (error) {
-    console.error('Erreur lors de la suppression du produit:', error);
-    throw error;
-  }
-};
-
-const formatPrice = (price) => {
-  return Number(price).toLocaleString('fr-FR', {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2
-  });
-}
-
-const showSuccess = (message) => {
-  // Implémenter la notification de succès
-}
-
-const showError = (message) => {
-  // Implémenter la notification d'erreur
-}
-
-const updateProduct = async (product) => {
-  try {
-    const response = await axios.put(`/api/products/${product.id}`, product);
-    if (response.data && response.data.product) {
-      const index = products.value.findIndex(p => p.id === product.id);
-      if (index !== -1) {
-        products.value[index] = response.data.product;
+    const handleDelete = async (product) => {
+      try {
+        if (confirm('Êtes-vous sûr de vouloir supprimer ce produit ?')) {
+          // await deleteProduct(product.id);
+          products.value = products.value.filter(p => p.id !== product.id);
+          // notificationStore.success('Produit supprimé avec succès');
+        }
+      } catch (error) {
+        // notificationStore.error(`Erreur lors de la suppression : ${error.response?.data?.message || error.message}`);
       }
-      notificationStore.success('Produit mis à jour avec succès');
+    };
+
+    return {
+      products,
+      loading,
+      filters,
+      categories,
+      filteredProducts,
+      formatPrice,
+      isManagerOrAdmin,
+      isAdmin,
+      showProductModal,
+      selectedProduct,
+      currentPage,
+      perPage,
+      totalItems,
+      handleFilter,
+      handleExport,
+      openNewProductModal,
+      handleProductImported,
+      closeProductModal,
+      handleEdit,
+      handleSubmit,
+      handleDelete
     }
-  } catch (error) {
-    console.error('Erreur lors de la mise à jour:', error);
-    notificationStore.error(`Erreur lors de la mise à jour : ${error.message}`);
-  }
-};
-
-// Chargement initial des données
-onMounted(async () => {
-  try {
-    loading.value = true
-    const response = await fetchProducts()
-    products.value = response || []
-  } catch (error) {
-    console.error('Erreur:', error)
-    notificationStore.error(`Erreur lors du chargement des produits : ${error.message}`)
-    products.value = [] // Initialiser avec un tableau vide en cas d'erreur
-  } finally {
-    loading.value = false
-  }
-})
-
-// Fonctions API simulées
-const fetchProducts = async () => {
-  try {
-    const response = await axios.get('/api/products')
-    return response.data
-  } catch (error) {
-    console.error('Erreur lors de la récupération des produits:', error)
-    throw error
   }
 }
-
-const createProduct = async (product) => {
-  try {
-    const response = await axios.post('/api/products', product);
-    if (response.data.success) {
-      return response.data;
-    } else {
-      throw new Error(response.data.message || 'Erreur lors de la création du produit');
-    }
-  } catch (error) {
-    console.error('Erreur lors de la création:', error);
-    throw error;
-  }
-};
 </script>
 
 <style scoped>
 .product-card {
-  border: 1px solid #ddd;
-  padding: 1rem;
-  margin-bottom: 1rem;
-  border-radius: 8px;
-  background: white;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  @apply transition-all duration-200;
+}
+
+.product-card:hover {
+  @apply transform scale-[1.02] shadow-lg;
 }
 
 .product-info {
-  margin-bottom: 1rem;
+  @apply space-y-2;
 }
 
 .details {
-  display: flex;
-  justify-content: space-between;
-  margin-top: 0.5rem;
+  @apply flex justify-between items-center mt-4;
 }
 
 .price {
-  font-weight: bold;
-  color: #2c3e50;
+  @apply font-semibold text-purple-600;
 }
 
 .stock {
-  padding: 0.25rem 0.5rem;
-  border-radius: 4px;
-  background: #e8f5e9;
-  color: #2e7d32;
+  @apply text-sm text-gray-600;
 }
 
 .low-stock {
-  background: #ffebee;
-  color: #c62828;
-}
-
-.brand {
-  color: #666;
-  font-style: italic;
-}
-
-.category {
-  color: #666;
-  font-size: 0.9em;
+  @apply text-red-500;
 }
 
 .product-actions {
-  display: flex;
-  gap: 0.5rem;
+  @apply p-4 bg-gray-50 flex justify-end space-x-2;
 }
 
 .btn {
-  padding: 0.5rem 1rem;
-  border-radius: 4px;
-  border: none;
-  cursor: pointer;
-}
-
-.btn-edit {
-  background: #1976d2;
-  color: white;
-}
-
-.btn-stock {
-  background: #388e3c;
-  color: white;
-}
-
-.btn-delete {
-  background: #d32f2f;
-  color: white;
+  @apply text-sm font-medium transition-colors duration-200;
 }
 </style>

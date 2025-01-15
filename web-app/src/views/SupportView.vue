@@ -35,13 +35,13 @@
           <h2 class="text-xl font-semibold text-gray-900 mb-2">Premiers pas</h2>
           <ul class="space-y-3 text-gray-600">
             <li>
-              <a href="#" class="hover:text-purple-600">Comment créer un compte ?</a>
+              <a href="#" class="hover:text-accent">Comment créer un compte ?</a>
             </li>
             <li>
-              <a href="#" class="hover:text-purple-600">Configuration initiale</a>
+              <a href="#" class="hover:text-accent">Configuration initiale</a>
             </li>
             <li>
-              <a href="#" class="hover:text-purple-600">Guide de démarrage rapide</a>
+              <a href="#" class="hover:text-accent">Guide de démarrage rapide</a>
             </li>
           </ul>
         </div>
@@ -54,13 +54,13 @@
           <h2 class="text-xl font-semibold text-gray-900 mb-2">Gestion du compte</h2>
           <ul class="space-y-3 text-gray-600">
             <li>
-              <a href="#" class="hover:text-purple-600">Modifier mon profil</a>
+              <a href="#" class="hover:text-accent">Modifier mon profil</a>
             </li>
             <li>
-              <a href="#" class="hover:text-purple-600">Changer mon mot de passe</a>
+              <a href="#" class="hover:text-accent">Changer mon mot de passe</a>
             </li>
             <li>
-              <a href="#" class="hover:text-purple-600">Paramètres de sécurité</a>
+              <a href="#" class="hover:text-accent">Paramètres de sécurité</a>
             </li>
           </ul>
         </div>
@@ -73,13 +73,13 @@
           <h2 class="text-xl font-semibold text-gray-900 mb-2">Fonctionnalités</h2>
           <ul class="space-y-3 text-gray-600">
             <li>
-              <a href="#" class="hover:text-purple-600">Gestion des produits</a>
+              <a href="#" class="hover:text-accent">Gestion des produits</a>
             </li>
             <li>
-              <a href="#" class="hover:text-purple-600">Gestion des stocks</a>
+              <a href="#" class="hover:text-accent">Gestion des stocks</a>
             </li>
             <li>
-              <a href="#" class="hover:text-purple-600">Rapports et statistiques</a>
+              <a href="#" class="hover:text-accent">Rapports et statistiques</a>
             </li>
           </ul>
         </div>
@@ -92,13 +92,13 @@
           <h2 class="text-xl font-semibold text-gray-900 mb-2">Support technique</h2>
           <ul class="space-y-3 text-gray-600">
             <li>
-              <a href="#" class="hover:text-purple-600">Signaler un problème</a>
+              <a href="#" class="hover:text-accent">Signaler un problème</a>
             </li>
             <li>
-              <a href="#" class="hover:text-purple-600">FAQ technique</a>
+              <a href="#" class="hover:text-accent">FAQ technique</a>
             </li>
             <li>
-              <a href="#" class="hover:text-purple-600">Contacter le support</a>
+              <a href="#" class="hover:text-accent">Contacter le support</a>
             </li>
           </ul>
         </div>

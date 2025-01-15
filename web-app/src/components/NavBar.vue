@@ -1,6 +1,6 @@
 <!-- NavBar.vue -->
 <template>
-  <nav class="bg-gray-800 p-4">
+  <nav class="bg-secondary p-4">
     <div class="container mx-auto flex justify-between items-center">
       <div class="flex items-center">
         <router-link to="/" class="text-white text-xl font-bold">SuperMarché</router-link>
@@ -11,7 +11,7 @@
           v-for="item in navItems" 
           :key="item.path" 
           :to="item.path"
-          class="text-gray-300 hover:text-white transition-colors duration-200"
+          class="text-gray-300 hover:text-accent transition-colors duration-200"
           :class="{ 'text-white': isCurrentRoute(item.path) }"
         >
           {{ item.name }}

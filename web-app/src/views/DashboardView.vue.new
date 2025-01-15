@@ -1,0 +1,219 @@
+<template>
+  <div class="space-y-6">
+    <div class="flex justify-between items-center">
+      <div>
+        <h1 class="text-2xl font-semibold text-gray-900">Tableau de bord</h1>
+        <p class="text-gray-500">Bienvenue dans votre espace de gestion</p>
+      </div>
+      <div class="flex gap-4">
+        <button 
+          @click="showNewSaleModal = true"
+          class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-green-600 hover:bg-green-700"
+        >
+          + Nouvelle vente
+        </button>
+        <button 
+          @click="exportDashboard"
+          class="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
+        >
+          <i class="fas fa-download mr-2"></i> Exporter
+        </button>
+      </div>
+    </div>
+
+    <!-- KPI Cards -->
+    <div class="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-5">
+      <!-- Ventes du jour -->
+      <div class="bg-white overflow-hidden shadow rounded-lg">
+        <div class="p-5">
+          <div class="flex items-center">
+            <div class="flex-shrink-0">
+              <i class="fas fa-shopping-cart text-green-600 text-3xl"></i>
+            </div>
+            <div class="ml-5 w-0 flex-1">
+              <dl>
+                <dt class="text-sm font-medium text-gray-500 truncate">
+                  Ventes du jour
+                </dt>
+                <dd class="flex items-baseline">
+                  <div class="text-2xl font-semibold text-gray-900">
+                    {{ formatPrice(statistics.dailySales) }}
+                  </div>
+                  <div class="ml-2 flex items-baseline text-sm font-semibold" 
+                       :class="statistics.dailySalesChange >= 0 ? 'text-green-600' : 'text-red-600'">
+                    <i :class="statistics.dailySalesChange >= 0 ? 'fas fa-arrow-up' : 'fas fa-arrow-down'" class="mr-0.5"></i>
+                    {{ Math.abs(statistics.dailySalesChange) }}%
+                  </div>
+                </dd>
+              </dl>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Chiffre d'affaires -->
+      <div class="bg-white overflow-hidden shadow rounded-lg">
+        <div class="p-5">
+          <div class="flex items-center">
+            <div class="flex-shrink-0">
+              <i class="fas fa-euro-sign text-green-600 text-3xl"></i>
+            </div>
+            <div class="ml-5 w-0 flex-1">
+              <dl>
+                <dt class="text-sm font-medium text-gray-500 truncate">
+                  Chiffre d'affaires
+                </dt>
+                <dd class="flex items-baseline">
+                  <div class="text-2xl font-semibold text-gray-900">
+                    {{ formatPrice(statistics.totalRevenue) }}
+                  </div>
+                  <div class="ml-2 flex items-baseline text-sm font-semibold" 
+                       :class="statistics.revenueChange >= 0 ? 'text-green-600' : 'text-red-600'">
+                    <i :class="statistics.revenueChange >= 0 ? 'fas fa-arrow-up' : 'fas fa-arrow-down'" class="mr-0.5"></i>
+                    {{ Math.abs(statistics.revenueChange) }}%
+                  </div>
+                </dd>
+              </dl>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Commandes en attente -->
+      <div class="bg-white overflow-hidden shadow rounded-lg">
+        <div class="p-5">
+          <div class="flex items-center">
+            <div class="flex-shrink-0">
+              <i class="fas fa-clock text-yellow-500 text-3xl"></i>
+            </div>
+            <div class="ml-5 w-0 flex-1">
+              <dl>
+                <dt class="text-sm font-medium text-gray-500 truncate">
+                  Commandes en attente
+                </dt>
+                <dd class="flex items-baseline">
+                  <div class="text-2xl font-semibold text-gray-900">
+                    {{ statistics.pendingOrders }}
+                  </div>
+                  <div class="ml-2 flex items-baseline text-sm font-semibold" 
+                       :class="statistics.ordersChange >= 0 ? 'text-green-600' : 'text-red-600'">
+                    <i :class="statistics.ordersChange >= 0 ? 'fas fa-arrow-up' : 'fas fa-arrow-down'" class="mr-0.5"></i>
+                    {{ Math.abs(statistics.ordersChange) }}%
+                  </div>
+                </dd>
+              </dl>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Nouveaux clients -->
+      <div class="bg-white overflow-hidden shadow rounded-lg">
+        <div class="p-5">
+          <div class="flex items-center">
+            <div class="flex-shrink-0">
+              <i class="fas fa-users text-blue-500 text-3xl"></i>
+            </div>
+            <div class="ml-5 w-0 flex-1">
+              <dl>
+                <dt class="text-sm font-medium text-gray-500 truncate">
+                  Nouveaux clients
+                </dt>
+                <dd class="flex items-baseline">
+                  <div class="text-2xl font-semibold text-gray-900">
+                    {{ statistics.newCustomers }}
+                  </div>
+                  <div class="ml-2 flex items-baseline text-sm font-semibold" 
+                       :class="statistics.customersChange >= 0 ? 'text-green-600' : 'text-red-600'">
+                    <i :class="statistics.customersChange >= 0 ? 'fas fa-arrow-up' : 'fas fa-arrow-down'" class="mr-0.5"></i>
+                    {{ Math.abs(statistics.customersChange) }}%
+                  </div>
+                </dd>
+              </dl>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Taux de conversion -->
+      <div class="bg-white overflow-hidden shadow rounded-lg">
+        <div class="p-5">
+          <div class="flex items-center">
+            <div class="flex-shrink-0">
+              <i class="fas fa-chart-line text-purple-500 text-3xl"></i>
+            </div>
+            <div class="ml-5 w-0 flex-1">
+              <dl>
+                <dt class="text-sm font-medium text-gray-500 truncate">
+                  Taux de conversion
+                </dt>
+                <dd class="flex items-baseline">
+                  <div class="text-2xl font-semibold text-gray-900">
+                    {{ statistics.conversionRate }}%
+                  </div>
+                  <div class="ml-2 flex items-baseline text-sm font-semibold" 
+                       :class="statistics.conversionChange >= 0 ? 'text-green-600' : 'text-red-600'">
+                    <i :class="statistics.conversionChange >= 0 ? 'fas fa-arrow-up' : 'fas fa-arrow-down'" class="mr-0.5"></i>
+                    {{ Math.abs(statistics.conversionChange) }}%
+                  </div>
+                </dd>
+              </dl>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Le reste du template reste inchangé -->
+    {{ ... }}
+  </div>
+</template>
+
+<script>
+import { ref, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
+import { useActivities } from '../stores/activities'
+import { formatPrice, formatDate } from '../utils/formatters'
+
+export default {
+  name: 'DashboardView',
+  setup() {
+    const router = useRouter()
+    const { getRecentActivities, addActivity } = useActivities()
+    const selectedPeriod = ref('Jour')
+    const showNewSaleModal = ref(false)
+    const newSale = ref({
+      productId: '',
+      quantity: 1
+    })
+
+    // États pour les statistiques
+    const statistics = ref({
+      dailySales: 2543,
+      dailySalesChange: 12,
+      totalRevenue: 48385,
+      revenueChange: 8.2,
+      pendingOrders: 18,
+      ordersChange: -5.4,
+      newCustomers: 156,
+      customersChange: 3.2,
+      conversionRate: 2.8,
+      conversionChange: 0.5
+    })
+
+    // Le reste du script reste inchangé
+    {{ ... }}
+
+    return {
+      selectedPeriod,
+      statistics,
+      showNewSaleModal,
+      newSale,
+      formatPrice,
+      formatDate,
+      handleNewSale,
+      exportDashboard
+    }
+  }
+}
+</script>

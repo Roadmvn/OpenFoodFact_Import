@@ -10,18 +10,15 @@ export default {
         '100': '100',
       },
       colors: {
-        primary: {
-          50: '#f5f3ff',
-          100: '#ede9fe',
-          200: '#ddd6fe',
-          300: '#c4b5fd',
-          400: '#a78bfa',
-          500: '#8b5cf6',
-          600: '#7c3aed',
-          700: '#6d28d9',
-          800: '#5b21b6',
-          900: '#4c1d95',
-        },
+        primary: '#0B4619',    // Vert Corporate
+        secondary: '#1A7431',  // Vert Clair
+        success: '#2F9E44',   // Vert Success
+        warning: '#F59E0B',   // Orange Warning
+        danger: '#DC2626',    // Rouge Danger
+        info: '#3B82F6',      // Bleu Info
+        background: '#FFFFFF', // Blanc
+        surface: '#F3F4F6',   // Gris Clair
+        text: '#111827',      // Texte Principal
       },
     },
   },

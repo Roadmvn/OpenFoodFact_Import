@@ -3,25 +3,54 @@
 @tailwind utilities;
 
 @layer base {
-  html {
-    font-family: 'Inter', system-ui, sans-serif;
-  }
-  
   body {
-    @apply bg-gray-100 text-gray-900 antialiased;
+    @apply bg-white text-gray-900;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply text-gray-900 font-semibold;
+  }
+
+  a {
+    @apply text-purple-600 hover:text-purple-700 transition-colors duration-200;
   }
 }
 
 @layer components {
   .btn {
-    @apply px-4 py-2 rounded-md font-medium transition-colors duration-200;
+    @apply px-4 py-2 rounded-md transition-colors duration-200;
   }
-  
+
   .btn-primary {
-    @apply bg-primary-600 text-white hover:bg-primary-700 focus:ring-2 focus:ring-primary-500 focus:ring-offset-2;
+    @apply bg-purple-600 text-white hover:bg-purple-700 focus:ring-2 focus:ring-purple-500 focus:ring-offset-2;
   }
-  
+
+  .btn-secondary {
+    @apply bg-purple-100 text-purple-700 hover:bg-purple-200;
+  }
+
+  .btn-outline {
+    @apply border-2 border-purple-600 text-purple-600 hover:bg-purple-50;
+  }
+
+  .card {
+    @apply bg-white rounded-lg shadow-lg p-6;
+  }
+
   .input {
-    @apply block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500;
+    @apply block w-full rounded-md border-gray-300 shadow-sm
+    focus:border-purple-500 focus:ring focus:ring-purple-500 focus:ring-opacity-50;
+  }
+
+  .navbar {
+    @apply bg-white shadow-sm border-b border-gray-200;
+  }
+
+  .navbar-link {
+    @apply text-gray-600 hover:text-purple-600 px-3 py-2 rounded-md text-sm font-medium;
+  }
+
+  .navbar-link-active {
+    @apply text-purple-600 bg-purple-50;
   }
 }
