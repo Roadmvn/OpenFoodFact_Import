@@ -164,34 +164,52 @@
       </div>
     </div>
 
-    <div class="grid grid-cols-1 gap-5 lg:grid-cols-2">
-      <!-- Graphique d'évolution des ventes -->
-      <div class="bg-white shadow rounded-lg p-6">
-        <div class="flex items-center justify-between mb-4">
-          <h3 class="text-lg font-medium text-gray-900">Évolution des ventes</h3>
-          <div class="flex gap-2">
-            <button 
-              v-for="period in periods" 
-              :key="period"
-              :class="[
-                'px-3 py-1 text-sm rounded-md',
-                selectedPeriod === period
-                  ? 'bg-green-600 text-white'
-                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-              ]"
-              @click="changePeriod(period)"
-            >
-              {{ period }}
-            </button>
+    <div class="space-y-6">
+      <!-- Graphiques -->
+      <div class="grid grid-cols-1 gap-5 lg:grid-cols-2">
+        <!-- Graphique d'évolution des ventes -->
+        <div class="bg-white shadow rounded-lg p-6">
+          <div class="flex items-center justify-between mb-4">
+            <h3 class="text-lg font-medium text-gray-900">Évolution des ventes</h3>
+            <div class="flex gap-2">
+              <button 
+                v-for="period in periods" 
+                :key="period"
+                :class="[
+                  'px-3 py-1 text-sm rounded-md',
+                  selectedPeriod === period
+                    ? 'bg-green-600 text-white'
+                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                ]"
+                @click="changePeriod(period)"
+              >
+                {{ period }}
+              </button>
+            </div>
+          </div>
+          <div class="h-[300px]">
+            <apexchart
+              type="area"
+              :options="chartOptions"
+              :series="chartSeries"
+              height="100%"
+            />
           </div>
         </div>
-        <div class="h-[300px]"> 
-          <apexchart
-            type="area"
-            :options="chartOptions"
-            :series="chartSeries"
-            height="100%"
-          />
+
+        <!-- Distribution des ventes -->
+        <div class="bg-white shadow rounded-lg p-6">
+          <div class="flex items-center justify-between mb-4">
+            <h3 class="text-lg font-medium text-gray-900">Distribution des ventes</h3>
+          </div>
+          <div class="h-[300px]">
+            <apexchart
+              type="pie"
+              :options="pieChartOptions"
+              :series="pieChartSeries"
+              height="100%"
+            />
+          </div>
         </div>
       </div>
 
@@ -355,22 +373,75 @@
 import { ref, onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useActivities } from '../stores/activities'
-import FranceMapChart from '../components/dashboard/FranceMapChart.vue'
-import { ApexCharts } from 'apexcharts'
 import VueApexCharts from 'vue3-apexcharts'
 import { formatPrice, formatDate } from '../utils/formatters'
 
 export default {
   name: 'DashboardView',
   components: {
-    FranceMapChart,
     apexchart: VueApexCharts
   },
   setup() {
     const router = useRouter()
     const { getRecentActivities, addActivity } = useActivities()
-    const selectedPeriod = ref('Jour')
+    const selectedPeriod = ref('Mois')
     const periods = ['Jour', 'Semaine', 'Mois']
+
+    // Données pour le graphique circulaire
+    const pieData = ref([45, 25, 20, 10])
+    const pieCategories = ['Électronique', 'Périphériques', 'Accessoires', 'Services']
+
+    // Options du graphique circulaire
+    const pieChartOptions = ref({
+      chart: {
+        type: 'pie',
+        fontFamily: 'Inter, sans-serif',
+        toolbar: {
+          show: false
+        }
+      },
+      labels: pieCategories,
+      colors: ['#22c55e', '#3b82f6', '#f59e0b', '#8b5cf6'],
+      legend: {
+        position: 'bottom',
+        horizontalAlign: 'center',
+        fontSize: '14px',
+      },
+      plotOptions: {
+        pie: {
+          donut: {
+            size: '0%'
+          }
+        }
+      },
+      dataLabels: {
+        enabled: true,
+        formatter: function(val) {
+          return val.toFixed(1) + '%'
+        }
+      },
+      tooltip: {
+        y: {
+          formatter: function(val) {
+            return val + '%'
+          }
+        }
+      },
+      responsive: [{
+        breakpoint: 480,
+        options: {
+          chart: {
+            width: '100%'
+          },
+          legend: {
+            position: 'bottom'
+          }
+        }
+      }]
+    })
+
+    const pieChartSeries = computed(() => pieData.value)
+
     const statistics = ref({
       dailySales: 2543,
       dailySalesChange: 12,
@@ -418,107 +489,6 @@ export default {
         trend: -5
       }
     ])
-
-    const alerts = ref([
-      {
-        id: 1,
-        type: 'critical',
-        icon: 'fa-exclamation-triangle',
-        message: 'Stock critique - Ordinateur portable Pro',
-        details: 'Reste 2 unités en stock'
-      },
-      {
-        id: 2,
-        type: 'warning',
-        icon: 'fa-bell',
-        message: 'Objectif de vente mensuel',
-        details: 'À 75% de l\'objectif - 5 jours restants'
-      },
-      {
-        id: 3,
-        type: 'info',
-        icon: 'fa-info-circle',
-        message: 'Nouvelle promotion disponible',
-        details: 'Pack Bureau -30% à configurer'
-      }
-    ])
-
-    const goals = ref([
-      {
-        id: 1,
-        label: 'Chiffre d\'affaires',
-        current: 42000,
-        target: 50000,
-        unit: '€'
-      },
-      {
-        id: 2,
-        label: 'Nouveaux clients',
-        current: 156,
-        target: 200,
-        unit: 'clients'
-      },
-      {
-        id: 3,
-        label: 'Taux de satisfaction',
-        current: 92,
-        target: 95,
-        unit: '%'
-      },
-      {
-        id: 4,
-        label: 'Taux de conversion',
-        current: 2.8,
-        target: 3.5,
-        unit: '%'
-      }
-    ])
-
-    const activePromotions = ref([
-      {
-        id: 1,
-        name: 'Soldes d\'été',
-        description: '-30% sur les accessoires',
-        performance: 115,
-        sales: 234,
-        revenue: 12450,
-        endDate: '2025-01-31'
-      },
-      {
-        id: 2,
-        name: 'Pack Bureau',
-        description: 'Écran + Clavier + Souris',
-        performance: 85,
-        sales: 45,
-        revenue: 8900,
-        endDate: '2025-02-15'
-      },
-      {
-        id: 3,
-        name: 'Offre Étudiants',
-        description: '-15% sur les ordinateurs',
-        performance: 95,
-        sales: 67,
-        revenue: 15600,
-        endDate: '2025-02-28'
-      }
-    ])
-
-    const salesByRegion = ref({
-      'Île-de-France': 15420,
-      'Auvergne-Rhône-Alpes': 8930,
-      'Nouvelle-Aquitaine': 6750,
-      'Occitanie': 5890,
-      'Hauts-de-France': 7240,
-      'Grand Est': 6890,
-      'Provence-Alpes-Côte d\'Azur': 8120,
-      'Pays de la Loire': 4560,
-      'Bretagne': 3980,
-      'Normandie': 3450,
-      'Bourgogne-Franche-Comté': 2980,
-      'Centre-Val de Loire': 2340,
-      'Corse': 890
-    })
 
     const recentActivities = ref([])
     const showNewSaleModal = ref(false)
@@ -771,72 +741,22 @@ export default {
       document.body.removeChild(link)
     }
 
-    // Données pour le graphique circulaire
-    const salesByCategory = ref([
-      { category: 'Électronique', value: 45 },
-      { category: 'Périphériques', value: 25 },
-      { category: 'Accessoires', value: 20 },
-      { category: 'Services', value: 10 }
-    ])
-
-    // Options pour le graphique circulaire
-    const pieChartOptions = ref({
-      chart: {
-        type: 'pie',
-        fontFamily: 'Inter, sans-serif',
-      },
-      labels: salesByCategory.value.map(item => item.category),
-      colors: ['#22c55e', '#3b82f6', '#f59e0b', '#8b5cf6'],
-      legend: {
-        position: 'bottom',
-        horizontalAlign: 'center',
-        fontSize: '14px',
-      },
-      dataLabels: {
-        enabled: true,
-        formatter: function(val) {
-          return val.toFixed(1) + '%'
-        }
-      },
-      tooltip: {
-        y: {
-          formatter: function(val) {
-            return val + '%'
-          }
-        }
-      },
-      responsive: [{
-        breakpoint: 480,
-        options: {
-          chart: {
-            width: '100%'
-          },
-          legend: {
-            position: 'bottom'
-          }
-        }
-      }]
-    })
-
-    // Séries pour le graphique circulaire
-    const pieChartSeries = computed(() => salesByCategory.value.map(item => item.value))
-
     return {
       selectedPeriod,
       periods,
       statistics,
       popularProducts,
       recentActivities,
-      chartOptions,
-      chartSeries,
       showNewSaleModal,
       newSale,
       formatPrice,
       formatDate,
       handleNewSale,
       changePeriod,
+      chartOptions,
+      chartSeries,
       pieChartOptions,
-      pieChartSeries,
+      pieChartSeries
     }
   }
 }
