@@ -1,7 +1,7 @@
 <template>
   <div class="min-h-screen flex">
     <!-- Sidebar -->
-    <div class="w-64 bg-blue-700 fixed h-full">
+    <div class="w-64 bg-[#004D40] fixed h-full">
       <!-- Logo -->
       <div class="h-16 flex items-center px-6">
         <img class="h-8 w-auto" src="@/assets/logo.png" alt="SuperMarché" />
@@ -19,8 +19,8 @@
             class="flex items-center px-4 py-3 text-sm font-medium rounded-lg mb-1"
             :class="[
               $route.name === item.name
-                ? 'bg-blue-800 text-white'
-                : 'text-blue-100 hover:bg-blue-600 hover:text-white'
+                ? 'bg-[#00695C] text-white'
+                : 'text-gray-100 hover:bg-[#00695C] hover:text-white'
             ]"
           >
             <i :class="['fas', item.icon, 'w-5 h-5 mr-3']"></i>
@@ -29,20 +29,20 @@
         </div>
 
         <!-- Séparateur -->
-        <div class="my-4 border-t border-blue-600"></div>
+        <div class="my-4 border-t border-[#00695C]"></div>
 
         <!-- Menu profil -->
         <div class="space-y-1">
           <router-link
             to="/dashboard/profile"
-            class="flex items-center px-4 py-3 text-sm font-medium rounded-lg mb-1 text-blue-100 hover:bg-blue-600 hover:text-white"
+            class="flex items-center px-4 py-3 text-sm font-medium rounded-lg mb-1 text-gray-100 hover:bg-[#00695C] hover:text-white"
           >
             <i class="fas fa-user w-5 h-5 mr-3"></i>
             Mon Profil
           </router-link>
           <button
             @click="handleLogout"
-            class="flex items-center w-full px-4 py-3 text-sm font-medium rounded-lg text-blue-100 hover:bg-blue-600 hover:text-white"
+            class="flex items-center w-full px-4 py-3 text-sm font-medium rounded-lg text-gray-100 hover:bg-[#00695C] hover:text-white"
           >
             <i class="fas fa-sign-out-alt w-5 h-5 mr-3"></i>
             Se déconnecter
@@ -56,22 +56,8 @@
       <!-- Header -->
       <div class="bg-white h-16 fixed right-0 left-64 px-6 flex items-center justify-between">
         <div class="flex items-center">
-          <div class="relative">
-            <span class="absolute inset-y-0 left-0 pl-3 flex items-center">
-              <i class="fas fa-search text-gray-400"></i>
-            </span>
-            <input
-              type="text"
-              placeholder="Rechercher..."
-              class="w-64 pl-10 pr-4 py-2 border border-gray-300 rounded-lg"
-            />
-          </div>
         </div>
         <div>
-          <button class="relative text-gray-500 hover:text-gray-700">
-            <i class="fas fa-bell text-xl"></i>
-            <span class="absolute top-0 right-0 h-2 w-2 bg-red-500 rounded-full"></span>
-          </button>
         </div>
       </div>
 

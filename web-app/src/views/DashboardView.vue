@@ -1,195 +1,216 @@
 <template>
-  <div class="space-y-6">
-    <div class="flex justify-between items-center">
-      <div>
-        <h1 class="text-2xl font-semibold text-gray-900">Tableau de bord</h1>
-        <p class="text-gray-500">Bienvenue dans votre espace de gestion</p>
-      </div>
-      <div class="flex gap-4">
-        <button 
-          @click="showNewSaleModal = true"
-          class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-green-600 hover:bg-green-700"
-        >
-          + Nouvelle vente
-        </button>
-        <button 
-          @click="exportDashboard"
-          class="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
-        >
-          <i class="fas fa-download mr-2"></i> Exporter
-        </button>
-      </div>
-    </div>
-
-    <!-- KPI Cards -->
-    <div class="grid grid-cols-5 gap-6 mb-6">
-      <!-- Ventes du jour -->
-      <div class="bg-white rounded-lg shadow p-4">
-        <div class="flex items-center">
-          <div class="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center mr-3">
-            <i class="fas fa-shopping-cart text-green-500"></i>
-          </div>
+  <main class="flex-1 pb-8" id="dashboard-content">
+    <div class="bg-white shadow-sm rounded-lg mb-6">
+      <div class="p-4">
+        <div class="flex items-center justify-between">
           <div>
-            <h4 class="text-2xl font-bold">{{ formatPrice(dailySales) }}</h4>
-            <div class="flex items-center">
-              <p class="text-gray-600 text-sm">Ventes du jour</p>
-              <span class="ml-2 text-sm" :class="dailySalesGrowth >= 0 ? 'text-green-500' : 'text-red-500'">
-                {{ dailySalesGrowth >= 0 ? '+' : '' }}{{ dailySalesGrowth }}%
-              </span>
-            </div>
+            <h1 class="text-2xl font-bold text-[#004D40]">Bienvenue {{ userName }}!</h1>
+            <p class="text-sm text-gray-500">Voici votre tableau de bord</p>
           </div>
-        </div>
-      </div>
-
-      <!-- Chiffre d'affaires -->
-      <div class="bg-white rounded-lg shadow p-4">
-        <div class="flex items-center">
-          <div class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center mr-3">
-            <i class="fas fa-euro-sign text-blue-500"></i>
-          </div>
-          <div>
-            <h4 class="text-2xl font-bold">{{ formatPrice(revenue) }}</h4>
-            <div class="flex items-center">
-              <p class="text-gray-600 text-sm">Chiffre d'affaires</p>
-              <span class="ml-2 text-sm" :class="revenueGrowth >= 0 ? 'text-green-500' : 'text-red-500'">
-                {{ revenueGrowth >= 0 ? '+' : '' }}{{ revenueGrowth }}%
-              </span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Commandes en attente -->
-      <div class="bg-white rounded-lg shadow p-4">
-        <div class="flex items-center">
-          <div class="w-10 h-10 rounded-full bg-yellow-100 flex items-center justify-center mr-3">
-            <i class="fas fa-clock text-yellow-500"></i>
-          </div>
-          <div>
-            <h4 class="text-2xl font-bold">{{ pendingOrders }}</h4>
-            <div class="flex items-center">
-              <p class="text-gray-600 text-sm">Commandes en attente</p>
-              <span class="ml-2 text-sm" :class="ordersGrowth >= 0 ? 'text-green-500' : 'text-red-500'">
-                {{ ordersGrowth >= 0 ? '+' : '' }}{{ ordersGrowth }}%
-              </span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Nouveaux clients -->
-      <div class="bg-white rounded-lg shadow p-4">
-        <div class="flex items-center">
-          <div class="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center mr-3">
-            <i class="fas fa-users text-purple-500"></i>
-          </div>
-          <div>
-            <h4 class="text-2xl font-bold">{{ newCustomers }}</h4>
-            <div class="flex items-center">
-              <p class="text-gray-600 text-sm">Nouveaux clients</p>
-              <span class="ml-2 text-sm" :class="customersGrowth >= 0 ? 'text-green-500' : 'text-red-500'">
-                {{ customersGrowth >= 0 ? '+' : '' }}{{ customersGrowth }}%
-              </span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Taux de conversion -->
-      <div class="bg-white rounded-lg shadow p-4">
-        <div class="flex items-center">
-          <div class="w-10 h-10 rounded-full bg-pink-100 flex items-center justify-center mr-3">
-            <i class="fas fa-chart-line text-pink-500"></i>
-          </div>
-          <div>
-            <h4 class="text-2xl font-bold">{{ conversionRate }}%</h4>
-            <div class="flex items-center">
-              <p class="text-gray-600 text-sm">Taux de conversion</p>
-              <span class="ml-2 text-sm" :class="conversionGrowth >= 0 ? 'text-green-500' : 'text-red-500'">
-                {{ conversionGrowth >= 0 ? '+' : '' }}{{ conversionGrowth }}%
-              </span>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <div class="space-y-6">
-      <!-- Graphiques -->
-      <div class="grid grid-cols-12 gap-6">
-        <!-- Évolution des ventes -->
-        <div class="col-span-8 bg-white shadow rounded-lg p-6">
-          <div class="flex items-center justify-between mb-6">
-            <h3 class="text-lg font-medium text-gray-900">Évolution des ventes</h3>
-            <div class="flex gap-2">
+          <div class="flex items-center gap-4">
+            <!-- Menu d'export -->
+            <div class="relative">
               <button 
-                v-for="period in periods" 
-                :key="period"
-                @click="selectedPeriod = period"
-                class="px-4 py-2 rounded-lg text-sm"
-                :class="selectedPeriod === period ? 'bg-green-500 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'"
+                @click="showExportMenu = !showExportMenu"
+                class="flex items-center gap-2 px-4 py-2 text-sm font-medium bg-[#004D40] text-white rounded-lg hover:bg-[#00695C] transition-colors duration-200"
               >
-                {{ period }}
+                <i class="fas fa-download"></i>
+                <span>Exporter le rapport</span>
+              </button>
+              
+              <!-- Options d'export -->
+              <div v-if="showExportMenu" 
+                class="absolute right-0 mt-2 w-72 bg-white rounded-lg shadow-lg border border-gray-100 z-10"
+              >
+                <div class="p-3">
+                  <h3 class="text-sm font-medium text-gray-700 mb-2">Sélectionner les données</h3>
+                  
+                  <!-- Sélection des données -->
+                  <div class="space-y-2 mb-4">
+                    <label class="flex items-center gap-2 text-sm text-gray-600">
+                      <input 
+                        type="checkbox" 
+                        v-model="exportConfig.sections.kpis"
+                        class="rounded text-[#004D40] focus:ring-[#004D40]"
+                      >
+                      KPIs (Ventes, CA, etc.)
+                    </label>
+                    <label class="flex items-center gap-2 text-sm text-gray-600">
+                      <input 
+                        type="checkbox" 
+                        v-model="exportConfig.sections.salesChart"
+                        class="rounded text-[#004D40] focus:ring-[#004D40]"
+                      >
+                      Graphique des ventes
+                    </label>
+                    <label class="flex items-center gap-2 text-sm text-gray-600">
+                      <input 
+                        type="checkbox" 
+                        v-model="exportConfig.sections.categories"
+                        class="rounded text-[#004D40] focus:ring-[#004D40]"
+                      >
+                      Répartition par catégories
+                    </label>
+                    <label class="flex items-center gap-2 text-sm text-gray-600">
+                      <input 
+                        type="checkbox" 
+                        v-model="exportConfig.sections.products"
+                        class="rounded text-[#004D40] focus:ring-[#004D40]"
+                      >
+                      Produits populaires
+                    </label>
+                  </div>
+
+                  <!-- Période -->
+                  <div class="mb-4">
+                    <h3 class="text-sm font-medium text-gray-700 mb-2">Période</h3>
+                    <select 
+                      v-model="exportConfig.period"
+                      class="w-full text-sm border-gray-200 rounded-lg focus:border-[#004D40] focus:ring-[#004D40]"
+                    >
+                      <option value="current">Période actuelle</option>
+                      <option value="day">Dernier jour</option>
+                      <option value="week">Dernière semaine</option>
+                      <option value="month">Dernier mois</option>
+                      <option value="custom">Personnalisé</option>
+                    </select>
+                  </div>
+
+                  <!-- Format d'export -->
+                  <div class="border-t border-gray-100 pt-3">
+                    <h3 class="text-sm font-medium text-gray-700 mb-2">Format d'export</h3>
+                    <div class="grid grid-cols-2 gap-2">
+                      <button 
+                        v-for="option in exportFormats"
+                        :key="option.format"
+                        @click="handleExport(option.format)"
+                        class="flex items-center gap-2 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded-md"
+                        :class="{ 'bg-[#E0F2F1]': exportConfig.format === option.format }"
+                      >
+                        <i :class="['fas', option.icon, 'text-[#004D40]']"></i>
+                        <span>{{ option.text }}</span>
+                      </button>
+                    </div>
+                  </div>
+
+                  <!-- Barre de progression -->
+                  <div v-if="isExporting" class="mt-3">
+                    <div class="text-sm text-gray-600 mb-2">Export en cours...</div>
+                    <div class="h-2 bg-gray-200 rounded-full">
+                      <div 
+                        class="h-full bg-[#004D40] rounded-full transition-all duration-300"
+                        :style="{ width: exportProgress + '%' }"
+                      ></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="relative w-64">
+              <input 
+                type="text" 
+                v-model="searchQuery"
+                @input="handleSearch"
+                placeholder="Rechercher..." 
+                class="w-full h-9 pl-9 pr-4 text-sm rounded-lg border border-gray-200 focus:border-[#004D40] focus:ring-1 focus:ring-[#004D40] transition-colors duration-200"
+              >
+              <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <i class="fas fa-search text-gray-400"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- KPI Cards en taille réduite -->
+    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+      <div v-for="(card, index) in [
+        { icon: 'fa-shopping-cart', bg: 'bg-[#E8F5E9]', iconColor: 'text-[#004D40]', title: 'Ventes du jour', value: '2 543,00 €', growth: '+12%' },
+        { icon: 'fa-euro-sign', bg: 'bg-[#EFEBE9]', iconColor: 'text-[#8B0000]', title: 'Chiffre d\'affaires', value: '48 385,00 €', growth: '+8.2%' },
+        { icon: 'fa-clock', bg: 'bg-[#F7D2C4]', iconColor: 'text-[#FFA07A]', title: 'Commandes en attente', value: '18', growth: '-5.4%' },
+        { icon: 'fa-users', bg: 'bg-[#C9E4CA]', iconColor: 'text-[#3E8E41]', title: 'Nouveaux clients', value: '156', growth: '+3.2%' },
+        { icon: 'fa-chart-line', bg: 'bg-[#F7CAC9]', iconColor: 'text-[#FF69B4]', title: 'Taux de conversion', value: '2.8%', growth: '+0.5%' }
+      ]" :key="index" 
+      class="bg-white rounded-lg shadow p-3 transition-all duration-300 hover:scale-105 hover:shadow-lg">
+        <div class="flex items-center">
+          <div :class="['w-8 h-8 rounded-full flex items-center justify-center mr-2', card.bg]">
+            <i :class="['fas', card.icon, card.iconColor, 'text-sm']"></i>
+          </div>
+          <div class="flex-1 min-w-0">
+            <p class="text-xs text-gray-500">{{ card.title }}</p>
+            <div class="flex items-center justify-between">
+              <span class="text-sm font-semibold">{{ card.value }}</span>
+              <span :class="card.growth.startsWith('+') ? 'text-green-500' : 'text-red-500'" 
+                    class="text-xs">{{ card.growth }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Graphiques -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 mt-4">
+      <!-- Évolution des ventes -->
+      <div class="lg:col-span-2 bg-white shadow rounded-lg p-4">
+        <div class="flex flex-col space-y-3">
+          <div class="flex items-center justify-between">
+            <h3 class="text-lg font-medium text-gray-900">Évolution des ventes</h3>
+            <div class="flex items-center gap-3">
+              <div class="flex gap-2">
+                <button 
+                  v-for="period in ['jour', 'semaine', 'mois']" 
+                  :key="period"
+                  @click="changePeriod(period)"
+                  class="px-4 py-1.5 text-sm rounded-lg transition-all duration-200 shadow-sm"
+                  :class="selectedPeriod === period ? 'bg-[#004D40] text-white shadow-md scale-105' : 'bg-gray-50 text-gray-600 hover:bg-gray-100'"
+                >
+                  {{ period.charAt(0).toUpperCase() + period.slice(1) }}
+                </button>
+              </div>
+              <button 
+                @click="showExportMenu = !showExportMenu"
+                class="p-2 text-gray-600 hover:bg-gray-100 rounded-lg"
+              >
+                <i class="fas fa-download text-sm"></i>
               </button>
             </div>
           </div>
 
-          <!-- Statistiques -->
-          <div class="space-y-2 mb-6">
-            <div class="flex items-center">
-              <div class="w-2 h-2 rounded-full bg-blue-500 mr-2"></div>
-              <span class="text-gray-600">Ventes totales:</span>
-              <span class="ml-2 font-medium">12 Millions</span>
-            </div>
-            <div class="flex items-center">
-              <div class="w-2 h-2 rounded-full bg-green-500 mr-2"></div>
-              <span class="text-gray-600">Bénéfices totaux:</span>
-              <span class="ml-2 font-medium">78 Millions</span>
-            </div>
-            <div class="flex items-center">
-              <div class="w-2 h-2 rounded-full bg-orange-500 mr-2"></div>
-              <span class="text-gray-600">Chiffre d'affaires total:</span>
-              <span class="ml-2 font-medium">60 Millions</span>
-            </div>
-            <div class="flex items-center">
-              <div class="w-2 h-2 rounded-full bg-purple-500 mr-2"></div>
-              <span class="text-gray-600">Nouveaux clients:</span>
-              <span class="ml-2 font-medium">156k</span>
+          <!-- Statistiques en ligne -->
+          <div class="flex flex-wrap gap-4 text-sm">
+            <div v-for="stat in [
+              { label: 'Ventes totales', value: '12M', color: 'bg-[#004D40]' },
+              { label: 'Bénéfices', value: '78M', color: 'bg-[#8B0000]' },
+              { label: 'CA total', value: '60M', color: 'bg-[#FFA07A]' },
+              { label: 'Nouveaux', value: '156k', color: 'bg-[#3E8E41]' }
+            ]" :key="stat.label" class="flex items-center">
+              <div :class="['w-2 h-2 rounded-full mr-1.5', stat.color]"></div>
+              <span class="text-gray-600">{{ stat.label }}:</span>
+              <span class="ml-1 font-medium">{{ stat.value }}</span>
             </div>
           </div>
 
           <!-- Filtres de catégorie -->
-          <div class="flex flex-wrap gap-2 mb-6">
+          <div class="flex flex-wrap gap-1.5">
             <button 
-              v-for="category in categories"
+              v-for="category in ['Électronique', 'Périphériques', 'Accessoires', 'Services']"
               :key="category"
               @click="toggleCategory(category)"
-              class="px-4 py-2 rounded-lg text-sm bg-gray-100 text-gray-600 hover:bg-gray-200"
-              :class="selectedCategories.includes(category) ? 'bg-blue-500 text-white' : ''"
+              class="px-2 py-1 text-xs rounded-md transition-colors duration-200"
+              :class="selectedCategories.includes(category) ? 'bg-[#004D40] text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'"
             >
               {{ category }}
             </button>
           </div>
 
-          <div class="h-[250px]">
+          <!-- Graphique -->
+          <div class="h-[280px]">
             <apexchart
               type="area"
-              :options="areaChartOptions"
-              :series="filteredSeries"
-              height="100%"
-              width="100%"
-            />
-          </div>
-        </div>
-
-        <!-- Distribution des ventes -->
-        <div class="col-span-4 bg-white shadow rounded-lg p-6">
-          <h3 class="text-lg font-medium text-gray-900 mb-6">Distribution des ventes</h3>
-          <div class="h-[250px]">
-            <apexchart
-              type="pie"
-              :options="pieChartOptions"
-              :series="pieData"
+              :options="chartOptions"
+              :series="getSeriesForPeriod"
               height="100%"
               width="100%"
             />
@@ -197,586 +218,482 @@
         </div>
       </div>
 
-      <!-- Produits populaires -->
-      <div class="bg-white shadow rounded-lg p-6">
-        <div class="flex items-center justify-between mb-4">
-          <h3 class="text-lg font-medium text-gray-900">Produits populaires</h3>
-          <router-link 
-            to="/dashboard/products" 
-            class="text-sm text-green-600 hover:text-green-700 font-medium"
-          >
-            Voir tout
-          </router-link>
-        </div>
-        <div class="space-y-4">
-          <div v-for="product in popularProducts" :key="product.id" 
-               class="flex items-center p-4 rounded-lg hover:bg-gray-50 transition-colors duration-200 group">
-            <div class="flex-shrink-0 w-16 h-16 bg-gray-100 rounded-lg overflow-hidden">
-              <div class="w-full h-full flex items-center justify-center text-gray-400">
-                <i class="fas fa-laptop text-2xl" v-if="product.category === 'Électronique'"></i>
-                <i class="fas fa-headphones text-2xl" v-else-if="product.category === 'Accessoires'"></i>
-              </div>
-            </div>
-            <div class="ml-4 flex-1">
-              <div class="flex items-center justify-between">
-                <div>
-                  <h4 class="text-sm font-medium text-gray-900 group-hover:text-green-600">
-                    {{ product.name }}
-                  </h4>
-                  <p class="text-sm text-gray-500">{{ product.category }}</p>
-                </div>
-                <div class="text-right">
-                  <p class="text-sm font-medium text-gray-900">{{ formatPrice(product.price) }}</p>
-                  <div class="flex items-center mt-1">
-                    <span class="text-sm text-gray-500">{{ product.sales }} ventes</span>
-                    <div class="ml-2 flex items-center">
-                      <i class="fas fa-chart-line text-green-500 text-xs mr-1"></i>
-                      <span class="text-xs text-green-500">+{{ Math.floor(Math.random() * 20 + 5) }}%</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <!-- Barre de progression -->
-              <div class="mt-2 w-full bg-gray-200 rounded-full h-1.5">
-                <div 
-                  class="bg-green-600 h-1.5 rounded-full" 
-                  :style="{ width: Math.min((product.sales / 150) * 100, 100) + '%' }"
-                ></div>
-              </div>
-            </div>
-          </div>
+      <!-- Distribution des ventes -->
+      <div class="bg-white shadow rounded-lg p-4">
+        <h3 class="text-lg font-medium text-gray-900 mb-4">Distribution des ventes</h3>
+        <div class="h-[280px]">
+          <apexchart
+            type="pie"
+            :options="pieChartOptions"
+            :series="[45, 25, 20, 10]"
+            height="100%"
+            width="100%"
+          />
         </div>
       </div>
     </div>
 
-    <!-- Activités récentes -->
-    <div class="bg-white shadow rounded-lg p-6 mt-8">
+    <!-- Produits populaires -->
+    <div class="bg-white shadow rounded-lg p-4 mt-4">
       <div class="flex items-center justify-between mb-4">
-        <h3 class="text-lg font-medium text-gray-900">Activités récentes</h3>
-        <router-link 
-          to="/dashboard/activities" 
-          class="text-sm text-green-600 hover:text-green-700 font-medium"
-        >
+        <h3 class="text-lg font-medium text-gray-900">Produits populaires</h3>
+        <router-link to="/products" class="text-sm text-[#004D40] hover:text-[#00796B]">
           Voir tout
         </router-link>
       </div>
-      <div class="flow-root">
-        <ul class="-mb-8">
-          <li v-for="(activity, index) in recentActivities" :key="activity.id">
-            <div class="relative pb-8">
-              <span v-if="index !== recentActivities.length - 1" class="absolute left-5 top-5 -ml-px h-full w-0.5 bg-gray-200" aria-hidden="true"></span>
-              <div class="relative flex items-start space-x-3">
-                <div class="relative">
-                  <span class="h-10 w-10 rounded-full flex items-center justify-center bg-green-100">
-                    <i :class="activity.icon" class="text-green-600"></i>
-                  </span>
-                </div>
-                <div class="min-w-0 flex-1">
-                  <div class="text-sm text-gray-500">
-                    <span class="font-medium text-gray-900">{{ activity.text }}</span>
-                  </div>
-                  <div class="mt-1 text-sm text-gray-500">
-                    {{ activity.time }}
-                  </div>
-                </div>
-              </div>
-            </div>
-          </li>
-        </ul>
-      </div>
-    </div>
-  </div>
-
-  <!-- Modal Nouvelle Vente -->
-  <div v-if="showNewSaleModal" class="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center z-50">
-    <div class="bg-white rounded-lg p-6 max-w-md w-full mx-4">
-      <div class="flex justify-between items-center mb-4">
-        <h3 class="text-lg font-medium">Nouvelle Vente</h3>
-        <button @click="showNewSaleModal = false" class="text-gray-400 hover:text-gray-500">
-          <i class="fas fa-times"></i>
-        </button>
-      </div>
-      
       <div class="space-y-4">
-        <!-- Sélection du produit -->
-        <div>
-          <label class="block text-sm font-medium text-gray-700">Produit</label>
-          <select 
-            v-model="newSale.productId"
-            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
-          >
-            <option value="">Sélectionner un produit</option>
-            <option v-for="product in popularProducts" :key="product.id" :value="product.id">
-              {{ product.name }} - {{ formatPrice(product.price) }}
-            </option>
-          </select>
+        <div v-for="product in popularProducts" :key="product.id" 
+             class="flex items-center p-4 rounded-lg hover:bg-gray-50 transition-colors duration-200">
+          <div class="flex-shrink-0 w-12 h-12 bg-gray-100 rounded-lg overflow-hidden flex items-center justify-center">
+            <i :class="['fas', 
+              product.category === 'Électronique' ? 'fa-laptop' : 
+              product.category === 'Périphériques' ? 'fa-mouse' : 
+              'fa-plug',
+              'text-2xl text-gray-400']">
+            </i>
+          </div>
+          <div class="ml-4 flex-1 min-w-0">
+            <p class="text-sm font-medium text-gray-900 truncate">{{ product.name }}</p>
+            <p class="text-sm text-gray-500">{{ product.category }}</p>
+          </div>
+          <div class="ml-4">
+            <p class="text-sm font-medium text-gray-900">{{ product.sales }} ventes</p>
+            <p class="text-sm text-gray-500">{{ product.revenue }}</p>
+          </div>
+          <div class="ml-4">
+            <span :class="product.trend.startsWith('+') ? 'text-green-500' : 'text-red-500'" 
+                  class="text-sm font-medium">
+              {{ product.trend }}
+            </span>
+          </div>
         </div>
-
-        <!-- Quantité -->
-        <div>
-          <label class="block text-sm font-medium text-gray-700">Quantité</label>
-          <input 
-            type="number" 
-            v-model="newSale.quantity"
-            min="1"
-            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
-          />
-        </div>
-
-        <!-- Client -->
-        <div>
-          <label class="block text-sm font-medium text-gray-700">Client</label>
-          <input 
-            type="text" 
-            v-model="newSale.customer"
-            placeholder="Nom du client"
-            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
-          />
-        </div>
-      </div>
-
-      <div class="mt-6 flex justify-end gap-3">
-        <button 
-          @click="showNewSaleModal = false"
-          class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200"
-        >
-          Annuler
-        </button>
-        <button 
-          @click="handleNewSale"
-          class="px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-md hover:bg-green-700"
-        >
-          Créer la vente
-        </button>
       </div>
     </div>
-  </div>
+  </main>
 </template>
 
-<script>
-import { ref, onMounted, computed, watch } from 'vue'
+<script setup>
+import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
+import { useAuthStore } from '@/stores/auth'
 import { useActivities } from '../stores/activities'
-import VueApexCharts from 'vue3-apexcharts'
-import { formatPrice, formatDate } from '../utils/formatters'
+import html2canvas from 'html2canvas'
+import jsPDF from 'jspdf'
+import * as XLSX from 'xlsx'
 
-export default {
-  name: 'DashboardView',
-  components: {
-    apexchart: VueApexCharts
+const router = useRouter()
+const authStore = useAuthStore()
+const { getRecentActivities, addActivity } = useActivities()
+
+// Nom d'utilisateur
+const userName = computed(() => authStore.user?.firstName || 'Guest')
+
+// États
+const selectedPeriod = ref('jour')
+const selectedCategories = ref(['Électronique', 'Périphériques', 'Accessoires', 'Services'])
+const showExportMenu = ref(false)
+const searchQuery = ref('')
+
+// États pour l'export
+const isExporting = ref(false)
+const exportProgress = ref(0)
+const exportConfig = ref({
+  format: 'pdf',
+  sections: {
+    kpis: true,
+    salesChart: true,
+    categories: true,
+    products: true
   },
-  setup() {
-    const router = useRouter()
-    const { getRecentActivities, addActivity } = useActivities()
-    const selectedPeriod = ref('Jour')
-    const periods = ['Jour', 'Semaine', 'Mois']
+  period: 'current'
+})
 
-    // Données pour le graphique circulaire
-    const pieData = ref([45, 25, 20, 10])
-    const pieCategories = ['Électronique', 'Périphériques', 'Accessoires', 'Services']
+// Formats d'export
+const exportFormats = [
+  { format: 'pdf', icon: 'fa-file-pdf', text: 'PDF' },
+  { format: 'excel', icon: 'fa-file-excel', text: 'Excel' },
+  { format: 'csv', icon: 'fa-file-csv', text: 'CSV' },
+  { format: 'image', icon: 'fa-file-image', text: 'Image' }
+]
 
-    // Options du graphique circulaire
-    const pieChartOptions = ref({
-      chart: {
-        type: 'pie',
-        fontFamily: 'Inter, sans-serif',
-        toolbar: {
-          show: false
-        }
-      },
-      labels: pieCategories,
-      colors: ['#22c55e', '#3b82f6', '#f59e0b', '#8b5cf6'],
-      legend: {
-        position: 'bottom',
-        horizontalAlign: 'center',
-        fontSize: '14px',
-      },
-      plotOptions: {
-        pie: {
-          donut: {
-            size: '0%'
-          }
-        }
-      },
-      dataLabels: {
+// Données de vente par période
+const salesData = {
+  jour: {
+    Électronique: [1500, 2200, 1800, 2400, 2100, 2800, 3000],
+    Périphériques: [1000, 1500, 1200, 1700, 1400, 1900, 2100],
+    Accessoires: [800, 1200, 900, 1400, 1100, 1600, 1800],
+    Services: [500, 800, 600, 900, 700, 1000, 1200],
+    categories: ['8h', '10h', '12h', '14h', '16h', '18h', '20h']
+  },
+  semaine: {
+    Électronique: [10500, 12200, 11800, 13400, 12100, 13800, 14000],
+    Périphériques: [8000, 9500, 8200, 9700, 8400, 9900, 10100],
+    Accessoires: [6800, 7200, 6900, 7400, 7100, 7600, 7800],
+    Services: [4500, 4800, 4600, 4900, 4700, 5000, 5200],
+    categories: ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim']
+  },
+  mois: {
+    Électronique: [45000, 48000, 46000, 49000, 47000, 50000, 52000],
+    Périphériques: [35000, 37000, 36000, 38000, 37000, 39000, 40000],
+    Accessoires: [25000, 26000, 25500, 27000, 26000, 28000, 29000],
+    Services: [15000, 16000, 15500, 16500, 16000, 17000, 17500],
+    categories: ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Juin', 'Juil']
+  }
+}
+
+// Options du graphique
+const chartOptions = computed(() => ({
+  chart: {
+    type: 'area',
+    stacked: true,
+    toolbar: { show: false },
+    animations: {
+      enabled: true,
+      easing: 'easeinout',
+      speed: 800,
+      animateGradually: {
         enabled: true,
-        formatter: function(val) {
-          return val.toFixed(1) + '%'
-        }
+        delay: 150
       },
-      tooltip: {
-        y: {
-          formatter: function(val) {
-            return val + '%'
-          }
-        }
-      },
-      responsive: [{
-        breakpoint: 480,
-        options: {
-          chart: {
-            width: '100%'
-          },
-          legend: {
-            position: 'bottom'
-          }
-        }
-      }]
-    })
-
-    // Données pour les KPI
-    const dailySales = ref(2543.00)
-    const dailySalesGrowth = ref(12)
-    const revenue = ref(48385)  
-    const revenueGrowth = ref(8.2)
-    const pendingOrders = ref(18)
-    const ordersGrowth = ref(-5.4)
-    const newCustomers = ref(156)
-    const customersGrowth = ref(3.2)
-    const conversionRate = ref(2.8)
-    const conversionGrowth = ref(0.5)
-
-    const popularProducts = ref([
-      {
-        id: 1,
-        name: 'Ordinateur portable Pro',
-        category: 'Électronique',
-        sales: [45, 52, 38, 24, 33, 26, 21, 20, 6, 8, 15, 10]
-      },
-      {
-        id: 2,
-        name: 'Souris Gaming',
-        category: 'Périphériques',
-        sales: [35, 41, 62, 42, 13, 18, 29, 37, 36, 51, 32, 35]
-      },
-      {
-        id: 3,
-        name: 'Clavier Mécanique',
-        category: 'Périphériques',
-        sales: [87, 57, 74, 99, 75, 38, 62, 47, 82, 56, 45, 47]
-      },
-      {
-        id: 4,
-        name: 'Écouteurs Sans Fil',
-        category: 'Accessoires',
-        sales: [32, 38, 41, 35, 27, 81, 34, 35, 32, 45, 32, 34]
-      },
-      {
-        id: 5,
-        name: 'Support Technique',
-        category: 'Services',
-        sales: [15, 11, 32, 18, 9, 24, 11, 13, 15, 17, 21, 15]
-      }
-    ])
-
-    const recentActivities = ref([])
-    const showNewSaleModal = ref(false)
-    
-    const newSale = ref({
-      productId: '',
-      quantity: 1,
-      customer: ''
-    })
-
-    const categories = ref(['Électronique', 'Périphériques', 'Accessoires', 'Services'])
-    const selectedCategories = ref([])
-
-    // Données pour chaque période
-    const salesData = {
-      Jour: {
-        categories: ['8h', '10h', '12h', '14h', '16h', '18h', '20h'],
-        data: [1500, 2200, 1800, 2400, 2100, 2800, 3000]
-      },
-      Semaine: {
-        categories: ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'],
-        data: [12000, 15000, 13000, 17000, 14000, 18000, 20000]
-      },
-      Mois: {
-        categories: ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Juin', 'Juil', 'Août', 'Sep', 'Oct', 'Nov', 'Déc'],
-        data: [45000, 52000, 48000, 55000, 49000, 58000, 53000, 51000, 54000, 57000, 60000, 62000]
+      dynamicAnimation: {
+        enabled: true,
+        speed: 350
       }
     }
-
-    // Ratios pour les catégories
-    const popularProductsRatios = ref([
-      {
-        category: 'Électronique',
-        ratio: 0.4
-      },
-      {
-        category: 'Périphériques',
-        ratio: 0.3
-      },
-      {
-        category: 'Accessoires',
-        ratio: 0.2
-      },
-      {
-        category: 'Services',
-        ratio: 0.1
-      }
-    ])
-
-    const areaChartOptions = ref({
-      chart: {
-        type: 'area',
-        toolbar: {
-          show: false
-        },
-        zoom: {
-          enabled: false
-        }
-      },
-      colors: ['#4F46E5', '#10B981', '#F59E0B', '#6366F1'],
-      stroke: {
-        curve: 'smooth',
-        width: 2
-      },
-      fill: {
-        type: 'gradient',
-        gradient: {
-          shadeIntensity: 1,
-          opacityFrom: 0.7,
-          opacityTo: 0.3,
-          stops: [0, 90, 100]
-        }
-      },
-      grid: {
-        show: true,
-        borderColor: '#f1f1f1',
-        strokeDashArray: 4,
-        padding: {
-          top: 0,
-          right: 0,
-          bottom: 0,
-          left: 10
-        }
-      },
-      dataLabels: {
-        enabled: false
-      },
-      xaxis: {
-        categories: salesData[selectedPeriod.value].categories,
-        labels: {
-          style: {
-            colors: '#64748B',
-            fontSize: '12px'
-          }
-        },
-        axisBorder: {
-          show: false
-        },
-        axisTicks: {
-          show: false
-        }
-      },
-      yaxis: {
-        labels: {
-          style: {
-            colors: '#64748B',
-            fontSize: '12px'
-          },
-          formatter: function(value) {
-            return value.toLocaleString('fr-FR') + ' €'
-          }
-        }
-      },
-      tooltip: {
-        shared: true,
-        intersect: false,
-        y: {
-          formatter: function(value) {
-            return value.toLocaleString('fr-FR') + ' €'
-          }
-        }
-      }
-    })
-
-    // Fonction pour changer la période
-    const changePeriod = (period) => {
-      selectedPeriod.value = period
-      areaChartOptions.value.xaxis.categories = salesData[period].categories
+  },
+  colors: ['#004D40', '#00796B', '#009688', '#4DB6AC'],
+  fill: {
+    type: 'gradient',
+    gradient: {
+      opacityFrom: 0.6,
+      opacityTo: 0.1
     }
-
-    // Fonction pour basculer une catégorie
-    const toggleCategory = (category) => {
-      const index = selectedCategories.value.indexOf(category)
-      if (index === -1) {
-        selectedCategories.value.push(category)
-      } else {
-        selectedCategories.value.splice(index, 1)
-      }
-    }
-
-    // Données filtrées pour le graphique
-    const filteredSeries = computed(() => {
-      if (selectedCategories.value.length === 0) {
-        return [{
-          name: 'Total',
-          data: salesData[selectedPeriod.value].data
-        }]
-      }
-      
-      return selectedCategories.value.map(category => ({
-        name: category,
-        data: salesData[selectedPeriod.value].data.map(value => 
-          Math.round(value * (popularProducts.value.find(p => p.category === category)?.ratio || 1))
-        )
-      }))
-    })
-
-    onMounted(() => {
-      recentActivities.value = getRecentActivities()
-    })
-
-    const handleNewSale = () => {
-      if (!newSale.value.productId || !newSale.value.customer) {
-        return
-      }
-
-      const product = popularProducts.value.find(p => p.id === newSale.value.productId)
-      
-      // Ajouter l'activité
-      addActivity({
-        text: `Nouvelle vente : ${newSale.value.quantity}x ${product.name} pour ${newSale.value.customer}`,
-        time: 'Il y a quelques secondes',
-        icon: 'fas fa-shopping-cart'
-      })
-
-      // Mettre à jour les activités récentes
-      recentActivities.value = getRecentActivities()
-
-      showNewSaleModal.value = false
-      newSale.value = {
-        productId: '',
-        quantity: 1,
-        customer: ''
-      }
-    }
-
-    // Formatage des prix
-    function formatPrice(value) {
-      return new Intl.NumberFormat('fr-FR', {
-        style: 'currency',
-        currency: 'EUR'
-      }).format(value)
-    }
-
-    const navigateToProducts = async () => {
-      try {
-        await router.push('/dashboard/products')
-      } catch (error) {
-        console.error('Erreur de navigation:', error)
-      }
-    }
-
-    const exportDashboard = () => {
-      // Préparer les données à exporter
-      const data = {
-        statistiques: {
-          ventes_du_jour: dailySales.value,
-          revenu_total: revenue.value,
-          commandes_en_attente: pendingOrders.value,
-          nouveaux_clients: newCustomers.value,
-          taux_de_conversion: conversionRate.value
-        },
-        produits_populaires: popularProducts.value.map(product => ({
-          nom: product.name,
-          categorie: product.category,
-          prix: product.price,
-          ventes: product.sales
-        })),
-        activites_recentes: recentActivities.value.map(activity => ({
-          activite: activity.text,
-          date: activity.time
-        }))
-      }
-
-      // Convertir en CSV
-      const csvContent = [
-        // En-têtes des statistiques
-        ['Statistiques'],
-        ['Ventes du jour', 'Revenu total', 'Commandes en attente', 'Nouveaux clients', 'Taux de conversion'],
-        [
-          data.statistiques.ventes_du_jour,
-          data.statistiques.revenu_total,
-          data.statistiques.commandes_en_attente,
-          data.statistiques.nouveaux_clients,
-          data.statistiques.taux_de_conversion
-        ],
-        [], // Ligne vide pour séparer
-        // En-têtes des produits
-        ['Produits populaires'],
-        ['Nom', 'Catégorie', 'Prix', 'Ventes'],
-        ...data.produits_populaires.map(p => [p.nom, p.categorie, p.prix, p.ventes]),
-        [], // Ligne vide pour séparer
-        // En-têtes des activités
-        ['Activités récentes'],
-        ['Activité', 'Date'],
-        ...data.activites_recentes.map(a => [a.activite, a.date])
-      ]
-        .map(row => row.join(','))
-        .join('\n')
-
-      // Créer le blob et télécharger
-      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
-      const link = document.createElement('a')
-      const url = URL.createObjectURL(blob)
-      link.setAttribute('href', url)
-      link.setAttribute('download', `tableau_de_bord_${new Date().toLocaleDateString()}.csv`)
-      document.body.appendChild(link)
-      link.click()
-      document.body.removeChild(link)
-    }
-
-    watch(selectedPeriod, (newPeriod) => {
-      // Mettre à jour les données en fonction de la période
-      updateChartData(newPeriod)
-    })
-
-    function updateChartData(period) {
-      // Logique pour mettre à jour les données selon la période
-      switch(period) {
-        case 'Jour':
-          // Données journalières
-          break
-        case 'Semaine':
-          // Données hebdomadaires
-          break
-        case 'Mois':
-          // Données mensuelles
-          break
-      }
-    }
-
-    return {
-      selectedPeriod,
-      periods,
-      dailySales,
-      dailySalesGrowth,
-      revenue,
-      revenueGrowth,
-      pendingOrders,
-      ordersGrowth,
-      newCustomers,
-      customersGrowth,
-      conversionRate,
-      conversionGrowth,
-      popularProducts,
-      recentActivities,
-      showNewSaleModal,
-      newSale,
-      formatPrice,
-      formatDate,
-      handleNewSale,
-      categories,
-      selectedCategories,
-      toggleCategory,
-      areaChartOptions,
-      filteredSeries,
-      pieChartOptions,
-      pieData
+  },
+  stroke: {
+    width: 2,
+    curve: 'smooth'
+  },
+  grid: {
+    borderColor: '#f1f1f1',
+    padding: { top: 0, right: 0, bottom: 0, left: 0 }
+  },
+  dataLabels: { enabled: false },
+  xaxis: {
+    categories: salesData[selectedPeriod.value].categories,
+    axisBorder: { show: false },
+    axisTicks: { show: false }
+  },
+  yaxis: {
+    labels: {
+      formatter: (value) => value.toFixed(0)
     }
   }
+}))
+
+// Options du graphique circulaire
+const pieChartOptions = {
+  labels: ['Électronique', 'Périphériques', 'Accessoires', 'Services'],
+  colors: ['#004D40', '#00796B', '#009688', '#4DB6AC'],
+  legend: {
+    position: 'bottom'
+  }
+}
+
+// Séries de données filtrées selon la période
+const getSeriesForPeriod = computed(() => {
+  return selectedCategories.value.map(category => ({
+    name: category,
+    data: salesData[selectedPeriod.value][category]
+  }))
+})
+
+// Changer la période
+const changePeriod = (period) => {
+  selectedPeriod.value = period
+}
+
+// Basculer une catégorie
+const toggleCategory = (category) => {
+  const index = selectedCategories.value.indexOf(category)
+  if (index === -1) {
+    selectedCategories.value.push(category)
+  } else if (selectedCategories.value.length > 1) {
+    selectedCategories.value.splice(index, 1)
+  }
+}
+
+// Données des produits populaires
+const popularProducts = ref([
+  {
+    id: 1,
+    name: 'Laptop Pro X1',
+    category: 'Électronique',
+    sales: 145,
+    revenue: '158,000 €',
+    trend: '+12.5%'
+  },
+  {
+    id: 2,
+    name: 'Souris Gaming RGB',
+    category: 'Périphériques',
+    sales: 89,
+    revenue: '4,450 €',
+    trend: '+5.8%'
+  },
+  {
+    id: 3,
+    name: 'Câble USB-C 2m',
+    category: 'Accessoires',
+    sales: 238,
+    revenue: '2,380 €',
+    trend: '+18.2%'
+  }
+])
+
+// Fonction d'export
+const handleExport = async (format) => {
+  try {
+    isExporting.value = true
+    exportProgress.value = 0
+    
+    const dashboard = document.querySelector('#dashboard-content')
+    
+    switch (format) {
+      case 'pdf':
+        await exportToPDF(dashboard)
+        break
+      case 'excel':
+        await exportToExcel()
+        break
+      case 'csv':
+        await exportToCSV()
+        break
+      case 'image':
+        await exportToImage(dashboard)
+        break
+    }
+    
+    // Sauvegarder les préférences
+    exportConfig.value.format = format
+    localStorage.setItem('exportPreferences', JSON.stringify(exportConfig.value))
+    
+    // Ajouter l'activité
+    addActivity({
+      type: 'export',
+      details: `Dashboard exported as ${format.toUpperCase()}`,
+      timestamp: new Date()
+    })
+    
+  } catch (error) {
+    console.error('Export failed:', error)
+  } finally {
+    isExporting.value = false
+    exportProgress.value = 0
+    showExportMenu.value = false
+  }
+}
+
+// Fonction d'export Excel
+const exportToExcel = async () => {
+  const data = {}
+  
+  if (exportConfig.value.sections.kpis) {
+    data['KPI Summary'] = [
+      ['Metric', 'Value', 'Growth'],
+      ['Ventes du jour', '2 543,00 €', '+12%'],
+      ['Chiffre d\'affaires', '48 385,00 €', '+8.2%'],
+      ['Commandes en attente', '18', '-5.4%'],
+      ['Nouveaux clients', '156', '+3.2%'],
+      ['Taux de conversion', '2.8%', '+0.5%']
+    ]
+  }
+  
+  if (exportConfig.value.sections.products) {
+    data['Products'] = [
+      ['Nom', 'Ventes', 'Revenus', 'Croissance'],
+      ...popularProducts.value.map(product => [
+        product.name,
+        product.sales,
+        product.revenue,
+        product.growth
+      ])
+    ]
+  }
+  
+  if (exportConfig.value.sections.salesChart) {
+    const periodData = salesData[selectedPeriod.value]
+    data['Sales Data'] = [
+      ['Date', 'Électronique', 'Périphériques'],
+      ...Object.entries(periodData).map(([date, values]) => [
+        date,
+        values.electronics,
+        values.peripherals
+      ])
+    ]
+  }
+  
+  exportProgress.value = 50
+  
+  const wb = XLSX.utils.book_new()
+  
+  Object.entries(data).forEach(([sheetName, sheetData]) => {
+    const ws = XLSX.utils.aoa_to_sheet(sheetData)
+    XLSX.utils.book_append_sheet(wb, ws, sheetName)
+  })
+  
+  const fileName = `dashboard-data-${exportConfig.value.period}-${new Date().toISOString().split('T')[0]}.xlsx`
+  XLSX.writeFile(wb, fileName)
+  
+  exportProgress.value = 100
+}
+
+// Fonction d'export CSV
+const exportToCSV = async () => {
+  let data = []
+  const headers = []
+  const rows = []
+  
+  if (exportConfig.value.sections.kpis) {
+    headers.push('Metric', 'Value', 'Growth')
+    rows.push(
+      ['Ventes du jour', '2 543,00 €', '+12%'],
+      ['Chiffre d\'affaires', '48 385,00 €', '+8.2%'],
+      ['Commandes en attente', '18', '-5.4%'],
+      ['Nouveaux clients', '156', '+3.2%'],
+      ['Taux de conversion', '2.8%', '+0.5%']
+    )
+  }
+  
+  if (exportConfig.value.sections.products) {
+    if (headers.length > 0) rows.push([]) // Add separator
+    headers.push('Nom', 'Ventes', 'Revenus', 'Croissance')
+    rows.push(...popularProducts.value.map(product => [
+      product.name,
+      product.sales,
+      product.revenue,
+      product.growth
+    ]))
+  }
+  
+  data = [headers, ...rows]
+  exportProgress.value = 50
+  
+  const csvContent = data.map(row => row.join(',')).join('\n')
+  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
+  const link = document.createElement('a')
+  
+  const fileName = `dashboard-data-${exportConfig.value.period}-${new Date().toISOString().split('T')[0]}.csv`
+  link.href = URL.createObjectURL(blob)
+  link.download = fileName
+  link.click()
+  
+  exportProgress.value = 100
+}
+
+// Fonction d'export PDF
+const exportToPDF = async (element) => {
+  const pdf = new jsPDF('p', 'mm', 'a4')
+  let yOffset = 10
+  
+  // Titre
+  pdf.setFontSize(16)
+  pdf.text('Rapport du Dashboard', 10, yOffset)
+  yOffset += 10
+  
+  if (exportConfig.value.sections.kpis) {
+    // KPIs
+    pdf.setFontSize(12)
+    pdf.text('KPIs', 10, yOffset)
+    yOffset += 10
+    
+    const kpiData = [
+      ['Ventes du jour', '2 543,00 €', '+12%'],
+      ['Chiffre d\'affaires', '48 385,00 €', '+8.2%'],
+      ['Commandes en attente', '18', '-5.4%'],
+      ['Nouveaux clients', '156', '+3.2%'],
+      ['Taux de conversion', '2.8%', '+0.5%']
+    ]
+    
+    pdf.autoTable({
+      startY: yOffset,
+      head: [['Metric', 'Value', 'Growth']],
+      body: kpiData,
+      margin: { top: 10 }
+    })
+    
+    yOffset = pdf.lastAutoTable.finalY + 10
+  }
+  
+  if (exportConfig.value.sections.salesChart || exportConfig.value.sections.categories) {
+    // Capture et ajout des graphiques
+    const charts = element.querySelectorAll('.chart-container')
+    for (const chart of charts) {
+      const canvas = await html2canvas(chart)
+      const imgData = canvas.toDataURL('image/png')
+      
+      if (yOffset + 60 > pdf.internal.pageSize.height) {
+        pdf.addPage()
+        yOffset = 10
+      }
+      
+      pdf.text(chart.getAttribute('data-title') || 'Graphique', 10, yOffset)
+      yOffset += 5
+      
+      const imgWidth = 190
+      const imgHeight = (canvas.height * imgWidth) / canvas.width
+      pdf.addImage(imgData, 'PNG', 10, yOffset, imgWidth, imgHeight)
+      yOffset += imgHeight + 10
+    }
+  }
+  
+  if (exportConfig.value.sections.products) {
+    if (yOffset + 60 > pdf.internal.pageSize.height) {
+      pdf.addPage()
+      yOffset = 10
+    }
+    
+    pdf.text('Produits Populaires', 10, yOffset)
+    yOffset += 10
+    
+    const productsData = popularProducts.value.map(product => [
+      product.name,
+      product.sales,
+      product.revenue,
+      product.growth
+    ])
+    
+    pdf.autoTable({
+      startY: yOffset,
+      head: [['Nom', 'Ventes', 'Revenus', 'Croissance']],
+      body: productsData,
+      margin: { top: 10 }
+    })
+  }
+  
+  const fileName = `dashboard-report-${exportConfig.value.period}-${new Date().toISOString().split('T')[0]}.pdf`
+  pdf.save(fileName)
+  
+  exportProgress.value = 100
+}
+
+// Fonction d'export Image
+const exportToImage = async (element) => {
+  const canvas = await html2canvas(element)
+  exportProgress.value = 50
+  
+  const link = document.createElement('a')
+  link.download = 'dashboard-snapshot.png'
+  link.href = canvas.toDataURL('image/png')
+  link.click()
+  
+  exportProgress.value = 100
+}
+
+// Fonction de recherche
+const handleSearch = () => {
+  if (!searchQuery.value.trim()) return
+  
+  // TODO: Implémenter la logique de recherche
+  console.log('Recherche:', searchQuery.value)
 }
 </script>
