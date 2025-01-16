@@ -13,6 +13,7 @@ import OrdersView from '../views/OrdersView.vue'
 import StatisticsView from '../views/StatisticsView.vue'
 import InvoicesView from '../views/InvoicesView.vue'
 import ActivitiesView from '../views/ActivitiesView.vue'
+import WidgetsView from '../views/WidgetsView.vue'
 
 const router = createRouter({
   history: createWebHistory(),
@@ -60,6 +61,11 @@ const router = createRouter({
           path: 'activities',
           name: 'activities',
           component: ActivitiesView
+        },
+        {
+          path: 'widgets',
+          name: 'widgets',
+          component: WidgetsView
         },
         {
           path: 'orders',

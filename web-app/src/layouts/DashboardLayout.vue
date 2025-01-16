@@ -1,143 +1,116 @@
 <template>
-  <div class="min-h-screen bg-gray-100">
-    <!-- Navigation -->
-    <nav class="bg-purple-600 border-b border-purple-700">
-      <div class="mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="flex justify-between h-16">
-          <!-- Logo et titre -->
-          <div class="flex">
-            <div class="flex-shrink-0 flex items-center">
-              <img class="h-8 w-auto" src="@/assets/logo.png" alt="SuperMarché" />
-              <span class="ml-2 text-white font-semibold text-lg">SuperMarché</span>
-            </div>
-          </div>
+  <div class="min-h-screen flex">
+    <!-- Sidebar -->
+    <div class="w-64 bg-blue-700 fixed h-full">
+      <!-- Logo -->
+      <div class="h-16 flex items-center px-6">
+        <img class="h-8 w-auto" src="@/assets/logo.png" alt="SuperMarché" />
+        <span class="ml-2 text-white font-semibold text-lg">Key</span>
+      </div>
 
-          <!-- Navigation principale -->
-          <div class="hidden sm:ml-6 sm:flex sm:items-center space-x-4">
-            <router-link
-              v-for="item in navigationItems"
-              :key="item.name"
-              :to="item.to"
-              class="px-3 py-2 rounded-md text-sm font-medium"
-              :class="[
-                $route.name === item.name
-                  ? 'bg-purple-700 text-white'
-                  : 'text-purple-100 hover:bg-purple-500 hover:text-white'
-              ]"
-            >
-              {{ item.text }}
-            </router-link>
-          </div>
+      <!-- Navigation -->
+      <div class="px-4 py-4">
+        <!-- Menu principal -->
+        <div class="space-y-1">
+          <router-link
+            v-for="item in mainMenuItems"
+            :key="item.name"
+            :to="item.to"
+            class="flex items-center px-4 py-3 text-sm font-medium rounded-lg mb-1"
+            :class="[
+              $route.name === item.name
+                ? 'bg-blue-800 text-white'
+                : 'text-blue-100 hover:bg-blue-600 hover:text-white'
+            ]"
+          >
+            <i :class="['fas', item.icon, 'w-5 h-5 mr-3']"></i>
+            {{ item.text }}
+          </router-link>
+        </div>
 
-          <!-- Menu utilisateur -->
-          <div class="hidden sm:ml-6 sm:flex sm:items-center">
-            <div class="ml-3 relative">
-              <div class="flex items-center">
-                <button
-                  @click="showProfileMenu = !showProfileMenu"
-                  class="flex text-sm rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-purple-600 focus:ring-white"
-                >
-                  <span class="sr-only">Ouvrir le menu utilisateur</span>
-                  <img
-                    class="h-8 w-8 rounded-full"
-                    src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80"
-                    alt=""
-                  />
-                </button>
-              </div>
+        <!-- Séparateur -->
+        <div class="my-4 border-t border-blue-600"></div>
 
-              <!-- Menu déroulant -->
-              <transition
-                enter-active-class="transition ease-out duration-100"
-                enter-from-class="transform opacity-0 scale-95"
-                enter-to-class="transform opacity-100 scale-100"
-                leave-active-class="transition ease-in duration-75"
-                leave-from-class="transform opacity-100 scale-100"
-                leave-to-class="transform opacity-0 scale-95"
-              >
-                <div
-                  v-if="showProfileMenu"
-                  class="origin-top-right absolute right-0 mt-2 w-48 rounded-md shadow-lg py-1 bg-white ring-1 ring-black ring-opacity-5"
-                  role="menu"
-                >
-                  <router-link
-                    to="/dashboard/profile"
-                    class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                    role="menuitem"
-                    @click="showProfileMenu = false"
-                  >
-                    Mon profil
-                  </router-link>
-                  <button
-                    @click="handleLogout"
-                    class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                    role="menuitem"
-                  >
-                    Se déconnecter
-                  </button>
-                </div>
-              </transition>
-            </div>
-          </div>
+        <!-- Menu profil -->
+        <div class="space-y-1">
+          <router-link
+            to="/dashboard/profile"
+            class="flex items-center px-4 py-3 text-sm font-medium rounded-lg mb-1 text-blue-100 hover:bg-blue-600 hover:text-white"
+          >
+            <i class="fas fa-user w-5 h-5 mr-3"></i>
+            Mon Profil
+          </router-link>
+          <button
+            @click="handleLogout"
+            class="flex items-center w-full px-4 py-3 text-sm font-medium rounded-lg text-blue-100 hover:bg-blue-600 hover:text-white"
+          >
+            <i class="fas fa-sign-out-alt w-5 h-5 mr-3"></i>
+            Se déconnecter
+          </button>
         </div>
       </div>
-    </nav>
+    </div>
 
-    <!-- Contenu principal -->
-    <main class="py-6">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <router-view />
+    <!-- Main Content -->
+    <div class="flex-1 ml-64">
+      <!-- Header -->
+      <div class="bg-white h-16 fixed right-0 left-64 px-6 flex items-center justify-between">
+        <div class="flex items-center">
+          <div class="relative">
+            <span class="absolute inset-y-0 left-0 pl-3 flex items-center">
+              <i class="fas fa-search text-gray-400"></i>
+            </span>
+            <input
+              type="text"
+              placeholder="Rechercher..."
+              class="w-64 pl-10 pr-4 py-2 border border-gray-300 rounded-lg"
+            />
+          </div>
+        </div>
+        <div>
+          <button class="relative text-gray-500 hover:text-gray-700">
+            <i class="fas fa-bell text-xl"></i>
+            <span class="absolute top-0 right-0 h-2 w-2 bg-red-500 rounded-full"></span>
+          </button>
+        </div>
       </div>
-    </main>
+
+      <!-- Page Content -->
+      <div class="pt-16 p-6">
+        <router-view></router-view>
+      </div>
+    </div>
   </div>
 </template>
 
-<script>
+<script setup>
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 
-export default {
-  name: 'DashboardLayout',
-  setup() {
-    const router = useRouter()
-    const authStore = useAuthStore()
-    const showProfileMenu = ref(false)
+const router = useRouter()
+const authStore = useAuthStore()
 
-    const navigationItems = [
-      { name: 'dashboard', to: '/dashboard', text: 'Tableau de bord' },
-      { name: 'products', to: '/dashboard/products', text: 'Produits' },
-      { name: 'orders', to: '/dashboard/orders', text: 'Commandes' },
-      { name: 'statistics', to: '/dashboard/statistics', text: 'Statistiques' },
-      { name: 'invoices', to: '/dashboard/invoices', text: 'Factures' }
-    ]
+const userAvatar = 'https://via.placeholder.com/40'
+const userName = authStore.user?.name || 'Utilisateur'
+const userEmail = authStore.user?.email || 'utilisateur@example.com'
 
-    const handleLogout = async () => {
-      try {
-        authStore.logout()
-        await router.push('/auth/login')
-      } catch (error) {
-        console.error('Erreur lors de la déconnexion:', error)
-      }
-    }
+const mainMenuItems = [
+  { name: 'dashboard', to: '/dashboard', text: 'Dashboard', icon: 'fa-chart-line' },
+  { name: 'widgets', to: '/dashboard/widgets', text: 'Widgets', icon: 'fa-th-large' },
+  { name: 'products', to: '/dashboard/products', text: 'Produits', icon: 'fa-box' },
+  { name: 'orders', to: '/dashboard/orders', text: 'Commandes', icon: 'fa-shopping-cart' },
+  { name: 'statistics', to: '/dashboard/statistics', text: 'Statistiques', icon: 'fa-chart-bar' },
+  { name: 'invoices', to: '/dashboard/invoices', text: 'Factures', icon: 'fa-file-invoice' },
+  { name: 'activities', to: '/dashboard/activities', text: 'Activités', icon: 'fa-history' }
+]
 
-    return {
-      showProfileMenu,
-      navigationItems,
-      handleLogout
-    }
+const handleLogout = async () => {
+  try {
+    await authStore.logout()
+    router.push('/auth/login')
+  } catch (error) {
+    console.error('Erreur lors de la déconnexion:', error)
   }
 }
 </script>
-
-<style scoped>
-.fade-enter-active,
-.fade-leave-active {
-  transition: opacity 0.3s ease;
-}
-
-.fade-enter-from,
-.fade-leave-to {
-  opacity: 0;
-}
-</style>

@@ -1,5 +1,5 @@
 <template>
-  <div id="app" class="min-h-screen bg-gray-100">
+  <div id="app">
     <router-view />
   </div>
 </template>
@@ -14,9 +14,4 @@ export default {
 @import 'tailwindcss/base';
 @import 'tailwindcss/components';
 @import 'tailwindcss/utilities';
-
-#app {
-  width: 100%;
-  min-height: 100vh;
-}
 </style>

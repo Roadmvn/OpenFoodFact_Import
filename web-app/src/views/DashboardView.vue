@@ -22,112 +22,92 @@
     </div>
 
     <!-- KPI Cards -->
-    <div class="grid grid-cols-5 gap-4">
+    <div class="grid grid-cols-5 gap-6 mb-6">
       <!-- Ventes du jour -->
-      <div class="bg-white shadow rounded-lg p-4">
+      <div class="bg-white rounded-lg shadow p-4">
         <div class="flex items-center">
-          <div class="flex-shrink-0">
-            <div class="bg-green-100 rounded-full p-2">
-              <i class="fas fa-shopping-cart text-green-600 text-lg"></i>
-            </div>
+          <div class="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center mr-3">
+            <i class="fas fa-shopping-cart text-green-500"></i>
           </div>
-          <div class="ml-3">
-            <div class="text-2xl font-bold text-gray-900">
-              {{ formatPrice(statistics.dailySales) }}
-            </div>
-            <div class="flex items-baseline">
-              <span class="text-sm text-gray-500">Ventes du jour</span>
-              <div class="ml-2" :class="statistics.dailySalesChange >= 0 ? 'text-green-600' : 'text-red-600'">
-                <span class="text-sm font-medium">{{ statistics.dailySalesChange >= 0 ? '+' : '' }}{{ statistics.dailySalesChange }}%</span>
-              </div>
+          <div>
+            <h4 class="text-2xl font-bold">{{ formatPrice(dailySales) }}</h4>
+            <div class="flex items-center">
+              <p class="text-gray-600 text-sm">Ventes du jour</p>
+              <span class="ml-2 text-sm" :class="dailySalesGrowth >= 0 ? 'text-green-500' : 'text-red-500'">
+                {{ dailySalesGrowth >= 0 ? '+' : '' }}{{ dailySalesGrowth }}%
+              </span>
             </div>
           </div>
         </div>
       </div>
 
       <!-- Chiffre d'affaires -->
-      <div class="bg-white shadow rounded-lg p-4">
+      <div class="bg-white rounded-lg shadow p-4">
         <div class="flex items-center">
-          <div class="flex-shrink-0">
-            <div class="bg-blue-100 rounded-full p-2">
-              <i class="fas fa-euro-sign text-blue-600 text-lg"></i>
-            </div>
+          <div class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center mr-3">
+            <i class="fas fa-euro-sign text-blue-500"></i>
           </div>
-          <div class="ml-3">
-            <div class="text-2xl font-bold text-gray-900">
-              {{ formatPrice(statistics.totalRevenue) }}
-            </div>
-            <div class="flex items-baseline">
-              <span class="text-sm text-gray-500">Chiffre d'affaires</span>
-              <div class="ml-2" :class="statistics.revenueChange >= 0 ? 'text-green-600' : 'text-red-600'">
-                <span class="text-sm font-medium">{{ statistics.revenueChange >= 0 ? '+' : '' }}{{ statistics.revenueChange }}%</span>
-              </div>
+          <div>
+            <h4 class="text-2xl font-bold">{{ formatPrice(revenue) }}</h4>
+            <div class="flex items-center">
+              <p class="text-gray-600 text-sm">Chiffre d'affaires</p>
+              <span class="ml-2 text-sm" :class="revenueGrowth >= 0 ? 'text-green-500' : 'text-red-500'">
+                {{ revenueGrowth >= 0 ? '+' : '' }}{{ revenueGrowth }}%
+              </span>
             </div>
           </div>
         </div>
       </div>
 
       <!-- Commandes en attente -->
-      <div class="bg-white shadow rounded-lg p-4">
+      <div class="bg-white rounded-lg shadow p-4">
         <div class="flex items-center">
-          <div class="flex-shrink-0">
-            <div class="bg-yellow-100 rounded-full p-2">
-              <i class="fas fa-clock text-yellow-600 text-lg"></i>
-            </div>
+          <div class="w-10 h-10 rounded-full bg-yellow-100 flex items-center justify-center mr-3">
+            <i class="fas fa-clock text-yellow-500"></i>
           </div>
-          <div class="ml-3">
-            <div class="text-2xl font-bold text-gray-900">
-              {{ statistics.pendingOrders }}
-            </div>
-            <div class="flex items-baseline">
-              <span class="text-sm text-gray-500">Commandes en attente</span>
-              <div class="ml-2" :class="statistics.ordersChange >= 0 ? 'text-green-600' : 'text-red-600'">
-                <span class="text-sm font-medium">{{ statistics.ordersChange >= 0 ? '+' : '' }}{{ statistics.ordersChange }}%</span>
-              </div>
+          <div>
+            <h4 class="text-2xl font-bold">{{ pendingOrders }}</h4>
+            <div class="flex items-center">
+              <p class="text-gray-600 text-sm">Commandes en attente</p>
+              <span class="ml-2 text-sm" :class="ordersGrowth >= 0 ? 'text-green-500' : 'text-red-500'">
+                {{ ordersGrowth >= 0 ? '+' : '' }}{{ ordersGrowth }}%
+              </span>
             </div>
           </div>
         </div>
       </div>
 
       <!-- Nouveaux clients -->
-      <div class="bg-white shadow rounded-lg p-4">
+      <div class="bg-white rounded-lg shadow p-4">
         <div class="flex items-center">
-          <div class="flex-shrink-0">
-            <div class="bg-purple-100 rounded-full p-2">
-              <i class="fas fa-users text-purple-600 text-lg"></i>
-            </div>
+          <div class="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center mr-3">
+            <i class="fas fa-users text-purple-500"></i>
           </div>
-          <div class="ml-3">
-            <div class="text-2xl font-bold text-gray-900">
-              {{ statistics.newCustomers }}
-            </div>
-            <div class="flex items-baseline">
-              <span class="text-sm text-gray-500">Nouveaux clients</span>
-              <div class="ml-2" :class="statistics.customersChange >= 0 ? 'text-green-600' : 'text-red-600'">
-                <span class="text-sm font-medium">{{ statistics.customersChange >= 0 ? '+' : '' }}{{ statistics.customersChange }}%</span>
-              </div>
+          <div>
+            <h4 class="text-2xl font-bold">{{ newCustomers }}</h4>
+            <div class="flex items-center">
+              <p class="text-gray-600 text-sm">Nouveaux clients</p>
+              <span class="ml-2 text-sm" :class="customersGrowth >= 0 ? 'text-green-500' : 'text-red-500'">
+                {{ customersGrowth >= 0 ? '+' : '' }}{{ customersGrowth }}%
+              </span>
             </div>
           </div>
         </div>
       </div>
 
       <!-- Taux de conversion -->
-      <div class="bg-white shadow rounded-lg p-4">
+      <div class="bg-white rounded-lg shadow p-4">
         <div class="flex items-center">
-          <div class="flex-shrink-0">
-            <div class="bg-pink-100 rounded-full p-2">
-              <i class="fas fa-chart-line text-pink-600 text-lg"></i>
-            </div>
+          <div class="w-10 h-10 rounded-full bg-pink-100 flex items-center justify-center mr-3">
+            <i class="fas fa-chart-line text-pink-500"></i>
           </div>
-          <div class="ml-3">
-            <div class="text-2xl font-bold text-gray-900">
-              {{ statistics.conversionRate }}%
-            </div>
-            <div class="flex items-baseline">
-              <span class="text-sm text-gray-500">Taux de conversion</span>
-              <div class="ml-2" :class="statistics.conversionChange >= 0 ? 'text-green-600' : 'text-red-600'">
-                <span class="text-sm font-medium">{{ statistics.conversionChange >= 0 ? '+' : '' }}{{ statistics.conversionChange }}%</span>
-              </div>
+          <div>
+            <h4 class="text-2xl font-bold">{{ conversionRate }}%</h4>
+            <div class="flex items-center">
+              <p class="text-gray-600 text-sm">Taux de conversion</p>
+              <span class="ml-2 text-sm" :class="conversionGrowth >= 0 ? 'text-green-500' : 'text-red-500'">
+                {{ conversionGrowth >= 0 ? '+' : '' }}{{ conversionGrowth }}%
+              </span>
             </div>
           </div>
         </div>
@@ -136,48 +116,82 @@
 
     <div class="space-y-6">
       <!-- Graphiques -->
-      <div class="grid grid-cols-1 gap-5 lg:grid-cols-2">
-        <!-- Graphique d'évolution des ventes -->
-        <div class="bg-white shadow rounded-lg p-6">
-          <div class="flex items-center justify-between mb-4">
+      <div class="grid grid-cols-12 gap-6">
+        <!-- Évolution des ventes -->
+        <div class="col-span-8 bg-white shadow rounded-lg p-6">
+          <div class="flex items-center justify-between mb-6">
             <h3 class="text-lg font-medium text-gray-900">Évolution des ventes</h3>
             <div class="flex gap-2">
               <button 
                 v-for="period in periods" 
                 :key="period"
-                :class="[
-                  'px-3 py-1 text-sm rounded-md',
-                  selectedPeriod === period
-                    ? 'bg-green-600 text-white'
-                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                ]"
-                @click="changePeriod(period)"
+                @click="selectedPeriod = period"
+                class="px-4 py-2 rounded-lg text-sm"
+                :class="selectedPeriod === period ? 'bg-green-500 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'"
               >
                 {{ period }}
               </button>
             </div>
           </div>
-          <div class="h-[300px]">
+
+          <!-- Statistiques -->
+          <div class="space-y-2 mb-6">
+            <div class="flex items-center">
+              <div class="w-2 h-2 rounded-full bg-blue-500 mr-2"></div>
+              <span class="text-gray-600">Ventes totales:</span>
+              <span class="ml-2 font-medium">12 Millions</span>
+            </div>
+            <div class="flex items-center">
+              <div class="w-2 h-2 rounded-full bg-green-500 mr-2"></div>
+              <span class="text-gray-600">Bénéfices totaux:</span>
+              <span class="ml-2 font-medium">78 Millions</span>
+            </div>
+            <div class="flex items-center">
+              <div class="w-2 h-2 rounded-full bg-orange-500 mr-2"></div>
+              <span class="text-gray-600">Chiffre d'affaires total:</span>
+              <span class="ml-2 font-medium">60 Millions</span>
+            </div>
+            <div class="flex items-center">
+              <div class="w-2 h-2 rounded-full bg-purple-500 mr-2"></div>
+              <span class="text-gray-600">Nouveaux clients:</span>
+              <span class="ml-2 font-medium">156k</span>
+            </div>
+          </div>
+
+          <!-- Filtres de catégorie -->
+          <div class="flex flex-wrap gap-2 mb-6">
+            <button 
+              v-for="category in categories"
+              :key="category"
+              @click="toggleCategory(category)"
+              class="px-4 py-2 rounded-lg text-sm bg-gray-100 text-gray-600 hover:bg-gray-200"
+              :class="selectedCategories.includes(category) ? 'bg-blue-500 text-white' : ''"
+            >
+              {{ category }}
+            </button>
+          </div>
+
+          <div class="h-[250px]">
             <apexchart
               type="area"
-              :options="chartOptions"
-              :series="chartSeries"
+              :options="areaChartOptions"
+              :series="filteredSeries"
               height="100%"
+              width="100%"
             />
           </div>
         </div>
 
         <!-- Distribution des ventes -->
-        <div class="bg-white shadow rounded-lg p-6">
-          <div class="flex items-center justify-between mb-4">
-            <h3 class="text-lg font-medium text-gray-900">Distribution des ventes</h3>
-          </div>
-          <div class="h-[300px]">
+        <div class="col-span-4 bg-white shadow rounded-lg p-6">
+          <h3 class="text-lg font-medium text-gray-900 mb-6">Distribution des ventes</h3>
+          <div class="h-[250px]">
             <apexchart
               type="pie"
               :options="pieChartOptions"
-              :series="pieChartSeries"
+              :series="pieData"
               height="100%"
+              width="100%"
             />
           </div>
         </div>
@@ -340,7 +354,7 @@
 </template>
 
 <script>
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, computed, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useActivities } from '../stores/activities'
 import VueApexCharts from 'vue3-apexcharts'
@@ -354,7 +368,7 @@ export default {
   setup() {
     const router = useRouter()
     const { getRecentActivities, addActivity } = useActivities()
-    const selectedPeriod = ref('Mois')
+    const selectedPeriod = ref('Jour')
     const periods = ['Jour', 'Semaine', 'Mois']
 
     // Données pour le graphique circulaire
@@ -410,53 +424,48 @@ export default {
       }]
     })
 
-    const pieChartSeries = computed(() => pieData.value)
-
-    const statistics = ref({
-      dailySales: 2543,
-      dailySalesChange: 12,
-      totalRevenue: 48385,
-      revenueChange: 8.2,
-      pendingOrders: 18,
-      ordersChange: -5.4,
-      newCustomers: 156,
-      customersChange: 3.2,
-      conversionRate: 2.8,
-      conversionChange: 0.5
-    })
+    // Données pour les KPI
+    const dailySales = ref(2543.00)
+    const dailySalesGrowth = ref(12)
+    const revenue = ref(48385)  
+    const revenueGrowth = ref(8.2)
+    const pendingOrders = ref(18)
+    const ordersGrowth = ref(-5.4)
+    const newCustomers = ref(156)
+    const customersGrowth = ref(3.2)
+    const conversionRate = ref(2.8)
+    const conversionGrowth = ref(0.5)
 
     const popularProducts = ref([
       {
         id: 1,
         name: 'Ordinateur portable Pro',
         category: 'Électronique',
-        price: 1299,
-        sales: 125,
-        trend: 15
+        sales: [45, 52, 38, 24, 33, 26, 21, 20, 6, 8, 15, 10]
       },
       {
         id: 2,
-        name: 'Écran 27" 4K',
+        name: 'Souris Gaming',
         category: 'Périphériques',
-        price: 499,
-        sales: 89,
-        trend: 8
+        sales: [35, 41, 62, 42, 13, 18, 29, 37, 36, 51, 32, 35]
       },
       {
         id: 3,
-        name: 'Clavier mécanique',
-        category: 'Accessoires',
-        price: 129,
-        sales: 234,
-        trend: 25
+        name: 'Clavier Mécanique',
+        category: 'Périphériques',
+        sales: [87, 57, 74, 99, 75, 38, 62, 47, 82, 56, 45, 47]
       },
       {
         id: 4,
-        name: 'Pack Office Pro',
+        name: 'Écouteurs Sans Fil',
+        category: 'Accessoires',
+        sales: [32, 38, 41, 35, 27, 81, 34, 35, 32, 45, 32, 34]
+      },
+      {
+        id: 5,
+        name: 'Support Technique',
         category: 'Services',
-        price: 299,
-        sales: 67,
-        trend: -5
+        sales: [15, 11, 32, 18, 9, 24, 11, 13, 15, 17, 21, 15]
       }
     ])
 
@@ -467,6 +476,153 @@ export default {
       productId: '',
       quantity: 1,
       customer: ''
+    })
+
+    const categories = ref(['Électronique', 'Périphériques', 'Accessoires', 'Services'])
+    const selectedCategories = ref([])
+
+    // Données pour chaque période
+    const salesData = {
+      Jour: {
+        categories: ['8h', '10h', '12h', '14h', '16h', '18h', '20h'],
+        data: [1500, 2200, 1800, 2400, 2100, 2800, 3000]
+      },
+      Semaine: {
+        categories: ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'],
+        data: [12000, 15000, 13000, 17000, 14000, 18000, 20000]
+      },
+      Mois: {
+        categories: ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Juin', 'Juil', 'Août', 'Sep', 'Oct', 'Nov', 'Déc'],
+        data: [45000, 52000, 48000, 55000, 49000, 58000, 53000, 51000, 54000, 57000, 60000, 62000]
+      }
+    }
+
+    // Ratios pour les catégories
+    const popularProductsRatios = ref([
+      {
+        category: 'Électronique',
+        ratio: 0.4
+      },
+      {
+        category: 'Périphériques',
+        ratio: 0.3
+      },
+      {
+        category: 'Accessoires',
+        ratio: 0.2
+      },
+      {
+        category: 'Services',
+        ratio: 0.1
+      }
+    ])
+
+    const areaChartOptions = ref({
+      chart: {
+        type: 'area',
+        toolbar: {
+          show: false
+        },
+        zoom: {
+          enabled: false
+        }
+      },
+      colors: ['#4F46E5', '#10B981', '#F59E0B', '#6366F1'],
+      stroke: {
+        curve: 'smooth',
+        width: 2
+      },
+      fill: {
+        type: 'gradient',
+        gradient: {
+          shadeIntensity: 1,
+          opacityFrom: 0.7,
+          opacityTo: 0.3,
+          stops: [0, 90, 100]
+        }
+      },
+      grid: {
+        show: true,
+        borderColor: '#f1f1f1',
+        strokeDashArray: 4,
+        padding: {
+          top: 0,
+          right: 0,
+          bottom: 0,
+          left: 10
+        }
+      },
+      dataLabels: {
+        enabled: false
+      },
+      xaxis: {
+        categories: salesData[selectedPeriod.value].categories,
+        labels: {
+          style: {
+            colors: '#64748B',
+            fontSize: '12px'
+          }
+        },
+        axisBorder: {
+          show: false
+        },
+        axisTicks: {
+          show: false
+        }
+      },
+      yaxis: {
+        labels: {
+          style: {
+            colors: '#64748B',
+            fontSize: '12px'
+          },
+          formatter: function(value) {
+            return value.toLocaleString('fr-FR') + ' €'
+          }
+        }
+      },
+      tooltip: {
+        shared: true,
+        intersect: false,
+        y: {
+          formatter: function(value) {
+            return value.toLocaleString('fr-FR') + ' €'
+          }
+        }
+      }
+    })
+
+    // Fonction pour changer la période
+    const changePeriod = (period) => {
+      selectedPeriod.value = period
+      areaChartOptions.value.xaxis.categories = salesData[period].categories
+    }
+
+    // Fonction pour basculer une catégorie
+    const toggleCategory = (category) => {
+      const index = selectedCategories.value.indexOf(category)
+      if (index === -1) {
+        selectedCategories.value.push(category)
+      } else {
+        selectedCategories.value.splice(index, 1)
+      }
+    }
+
+    // Données filtrées pour le graphique
+    const filteredSeries = computed(() => {
+      if (selectedCategories.value.length === 0) {
+        return [{
+          name: 'Total',
+          data: salesData[selectedPeriod.value].data
+        }]
+      }
+      
+      return selectedCategories.value.map(category => ({
+        name: category,
+        data: salesData[selectedPeriod.value].data.map(value => 
+          Math.round(value * (popularProducts.value.find(p => p.category === category)?.ratio || 1))
+        )
+      }))
     })
 
     onMounted(() => {
@@ -498,146 +654,8 @@ export default {
       }
     }
 
-    const chartOptions = ref({
-      chart: {
-        type: 'area',
-        toolbar: {
-          show: false
-        },
-        zoom: {
-          enabled: false
-        },
-        parentHeightOffset: 0
-      },
-      dataLabels: {
-        enabled: false
-      },
-      stroke: {
-        curve: 'smooth',
-        width: 2,
-        colors: ['#2E7D32'] 
-      },
-      fill: {
-        type: 'gradient',
-        gradient: {
-          shadeIntensity: 1,
-          opacityFrom: 0.7,
-          opacityTo: 0.2,
-          stops: [0, 90, 100],
-          colorStops: [
-            {
-              offset: 0,
-              color: '#2E7D32',
-              opacity: 0.4
-            },
-            {
-              offset: 100,
-              color: '#2E7D32',
-              opacity: 0.1
-            }
-          ]
-        }
-      },
-      grid: {
-        borderColor: '#f1f1f1',
-        strokeDashArray: 4,
-        xaxis: {
-          lines: {
-            show: true
-          }
-        },
-        yaxis: {
-          lines: {
-            show: true
-          }
-        },
-        padding: {
-          bottom: 0 
-        }
-      },
-      xaxis: {
-        type: 'category',
-        labels: {
-          style: {
-            colors: '#6B7280',
-            fontSize: '12px'
-          }
-        },
-        axisBorder: {
-          show: false
-        },
-        axisTicks: {
-          show: false
-        }
-      },
-      yaxis: {
-        labels: {
-          formatter: function(value) {
-            return value.toLocaleString('fr-FR', { style: 'currency', currency: 'EUR', minimumFractionDigits: 0 })
-          },
-          style: {
-            colors: '#6B7280',
-            fontSize: '12px'
-          }
-        }
-      },
-      tooltip: {
-        x: {
-          format: 'dd/MM/yy'
-        },
-        y: {
-          formatter: function(value) {
-            return value.toLocaleString('fr-FR', { style: 'currency', currency: 'EUR' })
-          }
-        }
-      }
-    })
-
-    const chartSeries = ref([{
-      name: 'Ventes',
-      data: []
-    }])
-
-    // Données pour chaque période
-    const salesData = {
-      Jour: {
-        categories: ['8h', '10h', '12h', '14h', '16h', '18h', '20h'],
-        data: [1500, 2200, 1800, 2400, 2100, 2800, 3000]
-      },
-      Semaine: {
-        categories: ['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi', 'Dimanche'],
-        data: [12000, 15000, 13000, 17000, 14000, 18000, 20000]
-      },
-      Mois: {
-        categories: ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Juin'],
-        data: [45000, 52000, 48000, 55000, 49000, 58000]
-      }
-    }
-
-    const changePeriod = (period) => {
-      selectedPeriod.value = period
-      
-      // Mettre à jour les données du graphique
-      chartOptions.value = {
-        ...chartOptions.value,
-        xaxis: {
-          ...chartOptions.value.xaxis,
-          categories: salesData[period].categories
-        }
-      }
-      
-      chartSeries.value = [{
-        name: 'Ventes',
-        data: salesData[period].data
-      }]
-    }
-
-    // Initialiser avec les données journalières
-    onMounted(() => {
-      changePeriod('Jour')
-    })
-
-    const formatPrice = (value) => {
+    // Formatage des prix
+    function formatPrice(value) {
       return new Intl.NumberFormat('fr-FR', {
         style: 'currency',
         currency: 'EUR'
@@ -656,11 +674,11 @@ export default {
       // Préparer les données à exporter
       const data = {
         statistiques: {
-          ventes_du_jour: statistics.value.dailySales,
-          revenu_total: statistics.value.totalRevenue,
-          commandes_en_attente: statistics.value.pendingOrders,
-          nouveaux_clients: statistics.value.newCustomers,
-          taux_de_conversion: statistics.value.conversionRate
+          ventes_du_jour: dailySales.value,
+          revenu_total: revenue.value,
+          commandes_en_attente: pendingOrders.value,
+          nouveaux_clients: newCustomers.value,
+          taux_de_conversion: conversionRate.value
         },
         produits_populaires: popularProducts.value.map(product => ({
           nom: product.name,
@@ -711,10 +729,39 @@ export default {
       document.body.removeChild(link)
     }
 
+    watch(selectedPeriod, (newPeriod) => {
+      // Mettre à jour les données en fonction de la période
+      updateChartData(newPeriod)
+    })
+
+    function updateChartData(period) {
+      // Logique pour mettre à jour les données selon la période
+      switch(period) {
+        case 'Jour':
+          // Données journalières
+          break
+        case 'Semaine':
+          // Données hebdomadaires
+          break
+        case 'Mois':
+          // Données mensuelles
+          break
+      }
+    }
+
     return {
       selectedPeriod,
       periods,
-      statistics,
+      dailySales,
+      dailySalesGrowth,
+      revenue,
+      revenueGrowth,
+      pendingOrders,
+      ordersGrowth,
+      newCustomers,
+      customersGrowth,
+      conversionRate,
+      conversionGrowth,
       popularProducts,
       recentActivities,
       showNewSaleModal,
@@ -722,11 +769,13 @@ export default {
       formatPrice,
       formatDate,
       handleNewSale,
-      changePeriod,
-      chartOptions,
-      chartSeries,
+      categories,
+      selectedCategories,
+      toggleCategory,
+      areaChartOptions,
+      filteredSeries,
       pieChartOptions,
-      pieChartSeries
+      pieData
     }
   }
 }
