@@ -5,19 +5,19 @@ const Invoice = require('./Invoice');
 const Order = require('./Order');
 
 // Définir les relations entre les modèles
-Invoice.belongsTo(User, { 
+Invoice.belongsTo(User, {
     foreignKey: 'userId',
     onDelete: 'CASCADE'
 });
-User.hasMany(Invoice, { 
+User.hasMany(Invoice, {
     foreignKey: 'userId'
 });
 
-Order.belongsTo(User, { 
+Order.belongsTo(User, {
     foreignKey: 'userId',
     onDelete: 'CASCADE'
 });
-User.hasMany(Order, { 
+User.hasMany(Order, {
     foreignKey: 'userId'
 });
 
@@ -38,11 +38,11 @@ const InvoiceProduct = db.sequelize.define('InvoiceProduct', {
     underscored: true
 });
 
-Invoice.belongsToMany(Product, { 
+Invoice.belongsToMany(Product, {
     through: InvoiceProduct,
     foreignKey: 'invoiceId'
 });
-Product.belongsToMany(Invoice, { 
+Product.belongsToMany(Invoice, {
     through: InvoiceProduct,
     foreignKey: 'productId'
 });

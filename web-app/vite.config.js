@@ -17,10 +17,6 @@ export default defineConfig({
         changeOrigin: true
       }
     },
-    open: {
-      app: {
-        name: 'C:\\Users\\Dablaq\\AppData\\Local\\Programs\\Opera\\launcher.exe'
-      }
-    }
+    open: false
   }
 })

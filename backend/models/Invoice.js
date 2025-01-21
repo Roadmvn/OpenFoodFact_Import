@@ -103,11 +103,11 @@ const Invoice = db.sequelize.define('Invoice', {
         const random = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
         invoice.invoiceNumber = `${prefix}-${timestamp}-${random}`;
       }
-      
+
       // Calculer le total
-      invoice.total = parseFloat(invoice.subtotal) + 
-                     parseFloat(invoice.tax) - 
-                     parseFloat(invoice.discount);
+      invoice.total = parseFloat(invoice.subtotal) +
+          parseFloat(invoice.tax) -
+          parseFloat(invoice.discount);
     }
   },
   indexes: [

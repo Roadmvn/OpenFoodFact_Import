@@ -11,6 +11,13 @@ const sequelize = new Sequelize(dbName, dbUser, dbPassword, {
   host: dbHost,
   dialect: 'mysql',
   logging: false,
+  dialectOptions: {
+    // MySQL 8.0 身份验证配置
+    connectTimeout: 10000,
+    authPlugins: {
+      mysql_native_password: true // 强制使用 mysql_native_password 身份验证
+    }
+  },
   pool: {
     max: 5,
     min: 0,
@@ -19,49 +26,63 @@ const sequelize = new Sequelize(dbName, dbUser, dbPassword, {
   }
 });
 
-// Configuration de la base de données locale
+// Local database configuration with mysql_native_password option
 const localDbConfig = {
   host: process.env.DB_HOST || 'localhost',
   user: process.env.DB_USER || 'root',
   password: process.env.DB_PASSWORD || '',
-  database: process.env.DB_NAME || 'ecommerce'
+  database: process.env.DB_NAME || 'ecommerce',
+  waitForConnections: true,
+  connectionLimit: 10,
+  queueLimit: 0,
+  // 添加 MySQL 8.0 authentication 支持
+  authPlugins: {
+    mysql_native_password: true
+  }
 };
 
-// Configuration de la base de données distante (produits)
+// Remote database configuration with mysql_native_password option
 const remoteDbConfig = {
   host: process.env.REMOTE_DB_HOST,
   port: process.env.REMOTE_DB_PORT,
   user: process.env.REMOTE_DB_USER,
   password: process.env.REMOTE_DB_PASSWORD,
-  database: process.env.REMOTE_DB_NAME
+  database: process.env.REMOTE_DB_NAME,
+  waitForConnections: true,
+  connectionLimit: 10,
+  queueLimit: 0,
+  // 添加 MySQL 8.0 authentication 支持
+  authPlugins: {
+    mysql_native_password: true
+  }
 };
 
-// Création des pools de connexions
-const localPool = mysql.createPool(localDbConfig);
-const remotePool = mysql.createPool(remoteDbConfig);
+// Create connection pools with adjusted MySQL 8.0 compatibility
+const localPool = mysql.createPool(localDbConfig); // mysql2 with native password auth
+const remotePool = mysql.createPool(remoteDbConfig); // mysql2 with native password auth
 
-// Fonction pour initialiser la base de données
+// Function to initialize the database
 const initializeDatabase = async () => {
   try {
-    // Tester la connexion
+    // Test connection
     await sequelize.authenticate();
-    console.log('✅ Connexion à la base de données établie avec succès.');
+    console.log('✅ Connected to database successfully.');
 
-    // Synchroniser les modèles avec la base de données (alter: true pour mettre à jour les tables sans les recréer)
+    // Sync models to database (alter: true updates tables without recreating them)
     await sequelize.sync({ alter: true });
-    console.log('✅ Base de données synchronisée avec succès.');
+    console.log('✅ Database synchronized successfully.');
   } catch (error) {
-    console.error('❌ Impossible de se connecter à la base de données:', error);
+    console.error('❌ Unable to connect to the database:', error);
     throw error;
   }
 };
 
-// Test des connexions
+// Test pool connections
 const testConnections = async () => {
   try {
     await localPool.getConnection();
     console.log('Connected to local database successfully');
-    
+
     await remotePool.getConnection();
     console.log('Connected to remote products database successfully');
   } catch (error) {

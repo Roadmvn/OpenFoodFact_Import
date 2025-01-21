@@ -55,9 +55,9 @@ const User = sequelize.define('User', {
 // Méthode d'instance pour générer un token JWT
 User.prototype.generateToken = function() {
   return jwt.sign(
-    { id: this.id, email: this.email, role: this.role },
-    process.env.JWT_SECRET || 'your-secret-key',
-    { expiresIn: '24h' }
+      { id: this.id, email: this.email, role: this.role },
+      process.env.JWT_SECRET || 'your-secret-key',
+      { expiresIn: '24h' }
   );
 };
 
