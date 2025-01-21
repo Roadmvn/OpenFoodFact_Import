@@ -1,29 +1,39 @@
+require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
+const rateLimit = require('express-rate-limit');
 const helmet = require('helmet');
 const morgan = require('morgan');
-const rateLimit = require('express-rate-limit');
-require('dotenv').config();
-
-const { initializeDatabase } = require('./config/database');
-const { User } = require('./models');
-const routes = require('./routes');
+const { testConnections } = require('./config/database');
+const { configureSecurityMiddleware } = require('./config/security');
+const passport = require('./config/passport');
 const logger = require('./utils/logger');
+
+// Routes
+const authRoutes = require('./routes/authRoutes');
+const productRoutes = require('./routes/productRoutes');
+const userRoutes = require('./routes/userRoutes');
+const routes = require('./routes');
 
 const app = express();
 
 // Sécurité
 app.use(helmet());
 
-// Configuration CORS plus permissive en développement
-app.use(cors());
-
-// Rate limiting
+// Configuration du rate limiting
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100
+  max: 100 // limite chaque IP à 100 requêtes par fenêtre
 });
-app.use('/api/', limiter);
+
+// Middleware
+app.use(cors({
+  origin: process.env.FRONTEND_URL || 'http://localhost:3000',
+  credentials: true
+}));
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+app.use(limiter);
 
 // Logging
 app.use((req, res, next) => {
@@ -34,11 +44,15 @@ app.use((req, res, next) => {
   }
 });
 
-// Middleware
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+// Configuration de la sécurité et des sessions
+configureSecurityMiddleware(app);
+app.use(passport.initialize());
+app.use(passport.session());
 
 // Routes
+app.use('/api/auth', authRoutes);
+app.use('/api/products', productRoutes);
+app.use('/api/users', userRoutes);
 app.use('/api', routes);
 
 // Gestion des erreurs
@@ -52,37 +66,17 @@ app.use((err, req, res, next) => {
   });
 });
 
-// Initialisation de la base de données et démarrage du serveur
-async function startServer() {
-  try {
-    await initializeDatabase();
-    logger.info('✅ Base de données synchronisée avec succès.');
-
-    // Créer l'utilisateur admin par défaut s'il n'existe pas
-    const adminEmail = 'admin@example.com';
-    const existingAdmin = await User.findOne({ where: { email: adminEmail } });
-
-    if (!existingAdmin) {
-      await User.create({
-        firstName: 'Admin',
-        lastName: 'System',
-        email: adminEmail,
-        password: 'admin123', // À changer en production !
-        role: 'admin'
-      });
-      logger.info('✅ Utilisateur admin créé avec succès.');
-    }
-
+// Test des connexions à la base de données
+testConnections()
+  .then(() => {
     const PORT = process.env.PORT || 3000;
     app.listen(PORT, () => {
       logger.info(`Server is running on port ${PORT}`);
     });
-  } catch (error) {
-    logger.error('❌ Erreur lors du démarrage du serveur:', error);
+  })
+  .catch((error) => {
+    logger.error('Failed to connect to databases:', error);
     process.exit(1);
-  }
-}
-
-startServer();
+  });
 
 module.exports = app;

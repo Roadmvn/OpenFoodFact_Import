@@ -180,6 +180,58 @@ exports.getAllProducts = async (req, res) => {
     }
 };
 
+// Récupérer un produit par son ID
+exports.getProductById = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const product = await Product.findByPk(id);
+        
+        if (!product) {
+            return res.status(404).json({
+                message: 'Produit non trouvé'
+            });
+        }
+
+        res.json(product);
+    } catch (error) {
+        logger.error(`Erreur lors de la récupération du produit: ${error.message}`);
+        res.status(500).json({
+            message: 'Erreur lors de la récupération du produit',
+            error: error.message
+        });
+    }
+};
+
+// Rechercher des produits
+exports.searchProducts = async (req, res) => {
+    try {
+        const { query } = req.query;
+        if (!query) {
+            return res.status(400).json({
+                message: 'La requête de recherche est requise'
+            });
+        }
+
+        const products = await Product.findAll({
+            where: {
+                [Product.sequelize.Op.or]: [
+                    { name: { [Product.sequelize.Op.like]: `%${query}%` } },
+                    { brand: { [Product.sequelize.Op.like]: `%${query}%` } },
+                    { category: { [Product.sequelize.Op.like]: `%${query}%` } },
+                ]
+            }
+        });
+
+        res.json(products);
+    } catch (error) {
+        logger.error(`Erreur lors de la recherche des produits: ${error.message}`);
+        res.status(500).json({
+            message: 'Erreur lors de la recherche des produits',
+            error: error.message
+        });
+    }
+};
+
 // Mettre à jour un produit
 exports.updateProduct = async (req, res) => {
     try {
