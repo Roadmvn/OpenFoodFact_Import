@@ -1,5 +1,9 @@
 const { Invoice, Product, User } = require('../models');
 const { Op } = require('sequelize');
+const PDFDocument = require('pdfkit');
+const { Parser } = require('json2csv');
+const path = require('path');
+const fs = require('fs');
 
 // GET /api/invoices
 exports.getInvoices = async (req, res) => {
@@ -304,5 +308,132 @@ exports.getInvoiceStats = async (req, res) => {
   } catch (error) {
     console.error('Error in getInvoiceStats:', error);
     res.status(500).json({ message: 'Erreur lors de la récupération des statistiques' });
+  }
+};
+
+// POST /api/invoices/generate/pdf
+exports.generatePDF = async (req, res) => {
+  try {
+    const { order, notes } = req.body;
+    const doc = new PDFDocument();
+    
+    // En-tête
+    doc.fontSize(20).text('FastFood - Facture', { align: 'center' });
+    doc.moveDown();
+    
+    // Informations client et commande
+    doc.fontSize(12);
+    doc.text(`N° Commande: #${order.id}`);
+    doc.text(`Date: ${new Date(order.date).toLocaleDateString('fr-FR')}`);
+    doc.moveDown();
+    
+    doc.text('Client:');
+    doc.text(order.customer.name);
+    doc.text(order.customer.email);
+    doc.text(order.customer.phone);
+    doc.text(order.customer.address);
+    doc.moveDown();
+    
+    // Articles
+    doc.text('Articles:', { underline: true });
+    doc.moveDown();
+    
+    // En-tête du tableau
+    const tableTop = doc.y;
+    const itemCodeX = 50;
+    const descriptionX = 150;
+    const quantityX = 350;
+    const priceX = 400;
+    const totalX = 500;
+    
+    doc.text('Code', itemCodeX);
+    doc.text('Description', descriptionX);
+    doc.text('Qté', quantityX);
+    doc.text('Prix', priceX);
+    doc.text('Total', totalX);
+    doc.moveDown();
+    
+    // Lignes du tableau
+    let total = 0;
+    order.items.forEach(item => {
+      const itemTotal = item.price * item.quantity;
+      total += itemTotal;
+      
+      doc.text(item.id.toString(), itemCodeX);
+      doc.text(item.name, descriptionX);
+      doc.text(item.quantity.toString(), quantityX);
+      doc.text(`${item.price.toFixed(2)} €`, priceX);
+      doc.text(`${itemTotal.toFixed(2)} €`, totalX);
+      doc.moveDown();
+    });
+    
+    // Total et TVA
+    const tva = total * 0.2;
+    doc.moveDown();
+    doc.text(`Sous-total: ${total.toFixed(2)} €`, { align: 'right' });
+    doc.text(`TVA (20%): ${tva.toFixed(2)} €`, { align: 'right' });
+    doc.text(`Total: ${(total + tva).toFixed(2)} €`, { align: 'right' });
+    
+    // Notes
+    if (notes) {
+      doc.moveDown();
+      doc.text('Notes:', { underline: true });
+      doc.text(notes);
+    }
+    
+    // Pied de page
+    doc.fontSize(10);
+    doc.text('Merci de votre confiance !', { align: 'center' });
+    
+    // Envoi du PDF
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', `attachment; filename=facture_${order.id}.pdf`);
+    doc.pipe(res);
+    doc.end();
+  } catch (error) {
+    console.error('Error generating PDF:', error);
+    res.status(500).json({ success: false, error: 'Erreur lors de la génération du PDF' });
+  }
+};
+
+// POST /api/invoices/generate/csv
+exports.generateCSV = async (req, res) => {
+  try {
+    const { order } = req.body;
+    
+    // Préparer les données pour le CSV
+    const items = order.items.map(item => ({
+      'N° Commande': order.id,
+      'Date': new Date(order.date).toLocaleDateString('fr-FR'),
+      'Client': order.customer.name,
+      'Email': order.customer.email,
+      'Produit': item.name,
+      'Quantité': item.quantity,
+      'Prix unitaire': item.price.toFixed(2),
+      'Total ligne': (item.price * item.quantity).toFixed(2)
+    }));
+    
+    // Configurer les champs du CSV
+    const fields = [
+      'N° Commande',
+      'Date',
+      'Client',
+      'Email',
+      'Produit',
+      'Quantité',
+      'Prix unitaire',
+      'Total ligne'
+    ];
+    
+    const json2csvParser = new Parser({ fields });
+    const csv = json2csvParser.parse(items);
+    
+    // Envoi du CSV
+    res.setHeader('Content-Type', 'text/csv');
+    res.setHeader('Content-Disposition', `attachment; filename=facture_${order.id}.csv`);
+    res.send(csv);
+  } catch (error) {
+    console.error('Error generating CSV:', error);
+    res.status(500).json({ success: false, error: 'Erreur lors de la génération du CSV' });
   }
 };

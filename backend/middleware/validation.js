@@ -1,4 +1,6 @@
 const { body, validationResult } = require('express-validator');
+const Joi = require('joi');
+const logger = require('../utils/logger');
 
 // Middleware de validation générique
 const validate = (validations) => {
@@ -113,3 +115,32 @@ exports.validateInvoice = validate([
         .isInt({ min: 1 })
         .withMessage('Quantity must be a positive integer')
 ]);
+
+// Validation du mot de passe
+exports.validatePassword = (req, res, next) => {
+    const schema = Joi.object({
+        newPassword: Joi.string()
+            .min(8)
+            .max(30)
+            .pattern(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/)
+            .required()
+            .messages({
+                'string.min': 'Le mot de passe doit contenir au moins 8 caractères',
+                'string.max': 'Le mot de passe ne doit pas dépasser 30 caractères',
+                'string.pattern.base': 'Le mot de passe doit contenir au moins une majuscule, une minuscule, un chiffre et un caractère spécial',
+                'any.required': 'Le mot de passe est requis'
+            })
+    });
+
+    const { error } = schema.validate(req.body);
+    
+    if (error) {
+        logger.warn('❌ Validation du mot de passe échouée', {
+            error: error.details[0].message,
+            timestamp: new Date().toISOString()
+        });
+        return res.status(400).json({ message: error.details[0].message });
+    }
+
+    next();
+};

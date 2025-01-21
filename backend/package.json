@@ -30,7 +30,9 @@
     "openfoodfacts-nodejs": "github:openfoodfacts/openfoodfacts-nodejs",
     "passport": "^0.7.0",
     "passport-google-oauth20": "^2.0.0",
+    "pdfkit": "^1.16.0",
     "sequelize": "^6.37.5",
+    "json2csv": "^5.0.7",
     "winston": "^3.17.0"
   },
   "devDependencies": {
