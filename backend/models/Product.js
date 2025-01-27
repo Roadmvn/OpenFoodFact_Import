@@ -1,6 +1,5 @@
 const { DataTypes } = require('sequelize');
 const db = require('../config/database');
-const { remotePool } = require('../config/database');
 
 const Product = db.sequelize.define('Product', {
     id: {
@@ -63,40 +62,4 @@ const Product = db.sequelize.define('Product', {
     }
 });
 
-class ProductModel {
-  static async getAllProducts() {
-    try {
-      const [rows] = await remotePool.execute('SELECT * FROM products');
-      return rows;
-    } catch (error) {
-      console.error('Error fetching products:', error);
-      throw error;
-    }
-  }
-
-  static async getProductById(id) {
-    try {
-      const [rows] = await remotePool.execute('SELECT * FROM products WHERE id = ?', [id]);
-      return rows[0];
-    } catch (error) {
-      console.error('Error fetching product:', error);
-      throw error;
-    }
-  }
-
-  static async searchProducts(query) {
-    try {
-      const searchQuery = `%${query}%`;
-      const [rows] = await remotePool.execute(
-        'SELECT * FROM products WHERE name LIKE ? OR description LIKE ?',
-        [searchQuery, searchQuery]
-      );
-      return rows;
-    } catch (error) {
-      console.error('Error searching products:', error);
-      throw error;
-    }
-  }
-}
-
-module.exports = { Product, ProductModel };
+module.exports = Product;
