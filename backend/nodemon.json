@@ -1,5 +1,0 @@
-{
-  "ignore": ["*.test.js", "*.spec.js", "node_modules/*", "logs/*"],
-  "delay": "2000",
-  "verbose": true
-}
