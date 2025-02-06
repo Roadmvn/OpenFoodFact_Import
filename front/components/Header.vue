@@ -120,7 +120,7 @@
           </el-tag>
           <div class="flex flex-row justify-between">
             <el-button type="danger" @click="cartStore.clearCart()" v-if="cartStore.totalQuantity > 0">Vider le panier</el-button>
-            <el-button type="success" @click="payer()">Payer</el-button>
+            <el-button type="success" @click="payer()" v-if="cartStore.totalQuantity > 0">Payer</el-button>
           </div>
         </div>
       </div>
@@ -175,6 +175,7 @@ const to_route = (path) => {
 
 const payer = () => {
   cartStore.payer();
+  window.location.href = '/commandes';
 }
 
 </script>

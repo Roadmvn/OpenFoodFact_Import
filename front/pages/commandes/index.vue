@@ -8,8 +8,17 @@
           class="p-4 bg-white shadow-lg rounded-lg border"
       >
         <div class="flex justify-between items-center">
-          <div class="text-lg font-semibold">Numéro de commande : {{ order.id }}</div>
+          <div class="text-lg font-semibold">Numéro de commande : {{ order.id }}
+            <el-tag v-if="order.status === 'pending'" type="danger">{{ order.status }}</el-tag>
+            <el-tag v-else>{{ order.status }}</el-tag>
+          </div>
           <div class="text-gray-500">Montant total : ¥{{ order.totalAmount }}</div>
+        </div>
+        <div v-for="item in order.items" :key="item.id" class="flex justify-between items-center mt-4">
+          <div class="flex flex-col items-center">
+            <el-text tag="b">{{ item.internalProduct.product.name + ' x ' + item.quantity }}</el-text>
+          </div>
+          <el-text>{{ item.internalProduct.price + ' x ' + item.quantity }} €</el-text>
         </div>
         <div class="mt-4 flex justify-end gap-3">
           <el-button
@@ -19,6 +28,9 @@
               :disabled="order.paypalPayment || isLoading"
           >
             Payer avec PayPal
+          </el-button>
+          <el-button type="danger" size="small" :disabled="isLoading" @click="deleteOrder(order.id)">
+            Supprimer
           </el-button>
         </div>
         <!-- 动态创建 PayPal 按钮容器 -->
@@ -52,6 +64,16 @@ const fetchOrders = async () => {
   } catch (error) {
     console.error('Erreur lors de l\'obtention des commandes :', error)
     ElMessage.error('Impossible de charger les commandes pour le moment.')
+  }
+}
+
+const deleteOrder = async (orderId) => {
+  try {
+    const response = await $axios.delete(`/api/orders/${orderId}`);
+    window.location.href = '/commandes'
+  }catch (error) {
+    console.error('Erreur lors de la suppression de l\'ordre :', error)
+    ElMessage.error('Impossible de supprimer l\'ordre.')
   }
 }
 

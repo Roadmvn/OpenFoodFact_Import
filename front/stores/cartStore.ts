@@ -83,12 +83,15 @@ export const useCartStore = defineStore("cartStore", {
                         total: newItem.internalProduct.price * newItem.quantity, // 计算总价
                         image: product.image_url || newItem.internalProduct.product.image_url, // 产品图片
                     });
+
+                    window.location.reload();
                 }
 
                 // 更新购物车总计
                 this.calculateCart();
             } catch (error) {
                 console.error("Ajout au panier échoué:", error);
+                window.location.reload();
             }
         },
 
