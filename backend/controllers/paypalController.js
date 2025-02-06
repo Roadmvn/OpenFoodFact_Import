@@ -1,7 +1,7 @@
 // controllers/paypalController.js
 const { client } = require('../paypalClient');
 const paypal = require('@paypal/checkout-server-sdk');
-const { Order } = require('../models');
+const { Order, Invoice } = require('../models');
 
 const createOrder = async (req, res) => {
     const localOrderId = req.body.localOrderId; // 从前端传入的本地订单 ID
@@ -53,14 +53,13 @@ const createOrder = async (req, res) => {
 };
 
 const captureOrder = async (req, res) => {
-    const paypalOrderId = req.params.paypalOrderId;// 从请求 URL 中获取 PayPal 的订单 ID
+    const paypalOrderId = req.params.paypalOrderId; // 从请求 URL 中获取 PayPal 的订单 ID
 
     console.log('PayPal Order ID:', req.params.paypalOrderId);
 
-
     // 检查 PayPal Order ID 是否存在
     if (!paypalOrderId) {
-        return res.status(400).json({ error: 'paypalOrderId est requis pour capturer une commande' });
+        return res.status(400).json({ error: 'paypalOrderId 是捕获订单所必需的' });
     }
 
     const request = new paypal.orders.OrdersCaptureRequest(paypalOrderId);
@@ -77,7 +76,7 @@ const captureOrder = async (req, res) => {
 
             if (!order) {
                 return res.status(404).json({
-                    error: 'La commande associée à cet ID PayPal n\'existe pas',
+                    error: '与此 PayPal ID 关联的订单不存在',
                 });
             }
 
@@ -86,20 +85,40 @@ const captureOrder = async (req, res) => {
             order.paypalPayment = true; // 标记为 PayPal 支付
             await order.save(); // 保存更新
 
-            res.status(200).json({
-                status: 'success',
-                message: 'Le paiement de la commande a été capturé avec succès',
-                captureId: response.result.id, // 返回 PayPal 捕获 ID
-            });
+            // 在这里添加生成发票逻辑
+            try {
+                // 生成唯一发票编号
+                const invoiceNumber = `INV-${Date.now()}`;
+
+                // 在数据库中创建发票
+                const newInvoice = await Invoice.create({
+                    orderId: order.id, // 关联到订单
+                    invoiceNumber,
+                    totalAmount: order.totalAmount, // 使用订单金额
+                    status: 'paid', // 已支付状态
+                });
+
+                console.log('发票已成功创建:', newInvoice);
+
+                res.status(200).json({
+                    status: 'success',
+                    message: '订单支付已成功捕获并生成了发票',
+                    captureId: response.result.id, // 返回 PayPal 捕获 ID
+                    invoice: newInvoice, // 返回生成的发票
+                });
+            } catch (invoiceError) {
+                console.error('创建发票时发生错误:', invoiceError);
+                res.status(500).json({ error: '订单支付已成功捕获，但生成发票失败' });
+            }
         } else {
             return res.status(400).json({
-                error: 'Le paiement de la commande n\'a pas pu être saisi avec succès',
+                error: '订单支付未能成功捕获',
             });
         }
     } catch (err) {
-        console.error('Erreur lors de la capture de la commande:', err);
+        console.error('捕获订单时发生错误:', err);
         res.status(500).json({
-            error: 'La capture du paiement de la commande a échoué',
+            error: '订单支付捕获失败',
         });
     }
 };

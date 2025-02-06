@@ -8,6 +8,7 @@ const internalproducts = require('./internalProductRoutes');
 const cartRoutes = require('./cartRoutes');
 const ordersRoutes = require('./orderRoutes');
 const paypalRoutes = require('./paypalRoutes');
+const invoiceRoutes = require('./invoiceRoutes');
 
 // 添加路由前缀 /api/products
 router.use('/products', productRoutes);
@@ -16,5 +17,6 @@ router.use('/internal-products', internalproducts);
 router.use('/cart', cartRoutes);
 router.use('/orders', ordersRoutes);
 router.use('/paypal', paypalRoutes);
+router.use('/invoice', invoiceRoutes);
 
 module.exports = router;
