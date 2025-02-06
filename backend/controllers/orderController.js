@@ -77,6 +77,83 @@ const createOrder = async (req, res) => {
     }
 };
 
+// 卖家创建订单
+const createOrderForBuyer = async (req, res) => {
+    try {
+        const { buyerId, items } = req.body; // 从请求体中解析 buyerId 和 items 数据
+        const sellerId = req.user.id; // 从已验证的 JWT token 中获取卖家 ID
+
+        // 校验 buyerId 和 items 是否存在
+        if (!buyerId) {
+            return res.status(400).json({ message: "Buyer ID is required." });
+        }
+        if (!items || !Array.isArray(items) || items.length === 0) {
+            return res.status(400).json({ message: "Items are required and should be a non-empty array." });
+        }
+
+        // 校验所有产品是否存在以及是否属于当前卖家
+        const processedItems = [];
+        for (const item of items) {
+            const internalProduct = await InternalProduct.findByPk(item.internalProductId);
+
+            // 如果产品 ID 无效或者不属于当前卖家
+            if (!internalProduct || internalProduct.sellerId !== sellerId) {
+                return res.status(404).json({ message: `Product with ID ${item.internalProductId} not found or unauthorized.` });
+            }
+
+            // 校验库存是否充足
+            if (internalProduct.quantity < item.quantity) {
+                return res.status(400).json({ message: `Insufficient stock for product with ID ${item.internalProductId}.` });
+            }
+
+            // 计算小计并添加到处理中商品列表
+            processedItems.push({
+                internalProductId: item.internalProductId,
+                quantity: item.quantity,
+                unitPrice: internalProduct.price, // 使用数据库中的单价
+                subtotal: internalProduct.price * item.quantity, // 计算小计
+            });
+
+            // 更新产品库存
+            internalProduct.quantity -= item.quantity;
+            await internalProduct.save();
+        }
+
+        // 计算订单总金额
+        const totalAmount = processedItems.reduce((sum, item) => sum + item.subtotal, 0);
+
+        // 创建订单
+        const order = await Order.create({
+            buyerId,
+            sellerId,
+            totalAmount,
+            paypalPayment: false, // PayPal 相关字段设置为 null/默认值
+            paypalTransactionId: null,
+        });
+
+        // 为订单创建订单项
+        for (const item of processedItems) {
+            await OrderItem.create({
+                orderId: order.id,
+                internalProductId: item.internalProductId,
+                quantity: item.quantity,
+                unitPrice: item.unitPrice,
+                subtotal: item.subtotal,
+            });
+        }
+
+        // 返回成功的响应
+        return res.status(201).json({
+            message: "Order created successfully",
+            order,
+        });
+    } catch (error) {
+        console.error("Error creating order:", error);
+        return res.status(500).json({ message: "An error occurred while creating the order." });
+    }
+};
+
+
 // 获取所有订单
 const getAllOrders = async (req, res) => {
     try {
@@ -341,4 +418,5 @@ module.exports = {
     getOrdersByBuyer,
     getOrdersBySeller,
     getUsersBySeller,
+    createOrderForBuyer
 };

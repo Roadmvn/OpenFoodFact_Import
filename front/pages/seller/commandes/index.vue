@@ -11,6 +11,9 @@
       <div class="container mx-auto p-6">
         <!-- 页面标题 -->
         <h1 class="text-xl font-bold text-center mb-6">Liste des Commandes</h1>
+        <div class="flex justify-end mb-6">
+          <el-button size="large" type="primary" @click="to_route('/seller/commandes/create')">Create</el-button>
+        </div>
 
         <!-- 表格展示 -->
         <el-table
@@ -155,6 +158,10 @@ const orders = ref<Order[]>([]);
 // 弹窗状态和产品选项
 const isDialogVisible = ref(false);
 const selectedProducts = ref<Item[]>([]);
+
+const to_route = (path: string) => {
+  window.location.href = path;
+}
 
 // 请求订单数据
 const fetchOrders = async () => {
