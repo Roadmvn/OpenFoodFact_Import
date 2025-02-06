@@ -30,7 +30,7 @@
           >
             Payer avec PayPal
           </el-button>
-          <el-button type="danger" size="small" :disabled="isLoading" @click="deleteOrder(order.id)">
+          <el-button type="danger" size="small" @click="deleteOrder(order.id)" :disabled="order.paypalPayment || isLoading">
             Supprimer
           </el-button>
         </div>
@@ -95,53 +95,64 @@ const loadPayPalScript = async (clientId, currency = "EUR") => {
 };
 
 // 启动 PayPal 支付
-const payWithPayPal = async (orderId) => {
+const payWithPayPal = async (localOrderId) => {
   try {
     isLoading.value = true;
-    selectedOrderId.value = orderId; // 保存当前正在支付的订单 ID
+    selectedOrderId.value = localOrderId; // 保存当前正在支付的订单 ID
 
     // 动态加载 PayPal SDK
     await loadPayPalScript("AX2YAQ3gXr-WidNvgMevZM5ysidZRocYDSF2sxkp5FXjhv8gcQtLpJ7A9YR7PG58N0NRJcEUXgVLrTSb", "EUR"); // 替换为你的 PayPal Client ID
 
-    // 创建 PayPal 订单
+    // **调用后端创建 PayPal 订单接口**
     const createOrderResponse = await $axios.post(`/api/paypal/create-order`, {
-      orderId,
+      localOrderId, // 向后端传递本地订单 ID
     });
-    const { id: paypalOrderId } = createOrderResponse.data;
+    const { paypalTransactionId: paypalOrderId } = createOrderResponse.data; // 获取 PayPal 订单 ID
+    if (!paypalOrderId) {
+      throw new Error("Erreur : ID de commande PayPal invalide !");
+    }
 
     // 启动 PayPal 按钮
-    paypal.Buttons({
-      createOrder: function () {
-        return paypalOrderId;
-      },
-      onApprove: async function (data, actions) {
-        try {
-          // 捕获订单
-          const captureResponse = await $axios.post(
-              `/api/paypal/capture-order/${data.orderID}`
-          );
-          if (captureResponse.data.status === "success") {
-            ElMessage.success("Paiement réussi !");
-            fetchOrders(); // 刷新订单状态
-          } else {
-            ElMessage.error("Erreur lors du paiement.");
-          }
-        } catch (err) {
-          console.error("Capture Error:", err);
-          ElMessage.error("Impossible de capturer le paiement.");
-        }
-      },
-      onError: function (err) {
-        console.error("PayPal SDK Error:", err);
-        ElMessage.error("Impossible de lancer le paiement.");
-      },
-    }).render("#paypal-button-container");
+    paypal
+        .Buttons({
+          // 将后端返回的 PayPal 订单 ID 传递到 PayPal 按钮
+          createOrder: function () {
+            return paypalOrderId;
+          },
+          // 捕获订单（支付成功时调用）
+          onApprove: async function (data, actions) {
+            try {
+              // 捕获支付订单
+              const captureResponse = await $axios.post(
+                  `/api/paypal/capture-order/${data.orderID}` // `data.orderID` 来自 PayPal 的返回值
+              );
+
+              if (captureResponse.data.status === "success") {
+                // 支付成功后的用户界面处理
+                ElMessage.success("Paiement réussi !");
+                fetchOrders(); // 刷新订单列表，查看最新支付状态
+                window.location.reload(); // 可选：刷新页面以获取更新的订单视图
+              } else {
+                ElMessage.error("Erreur lors du paiement.");
+              }
+            } catch (err) {
+              console.error("Erreur lors de la capture du paiement :", err);
+              ElMessage.error("Impossible de capturer le paiement.");
+            }
+          },
+          // 支付发生错误时调用
+          onError: function (err) {
+            console.error("PayPal SDK Error:", err);
+            ElMessage.error("Impossible de lancer le paiement.");
+          },
+        })
+        .render("#paypal-button-container"); // 渲染 PayPal 按钮到指定容器
 
   } catch (error) {
     console.error("Erreur lors de l'initiation du paiement avec PayPal :", error);
     ElMessage.error("Impossible de lancer le paiement.");
   } finally {
-    isLoading.value = false;
+    isLoading.value = false; // 结束加载
   }
 };
 

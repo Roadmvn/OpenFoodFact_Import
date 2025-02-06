@@ -7,6 +7,6 @@ const { createOrder, captureOrder } = require('../controllers/paypalController')
 router.post('/create-order', createOrder);
 
 // 捕获订单支付
-router.post('/capture-order/:orderId', captureOrder);
+router.post('/capture-order/:paypalOrderId', captureOrder);
 
 module.exports = router;
