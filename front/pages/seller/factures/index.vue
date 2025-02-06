@@ -1,59 +1,71 @@
 <template>
-  <div class="container mx-auto p-6">
-    <!-- 页面标题 -->
-    <h1 class="text-xl font-bold text-center mb-6">Liste des factures</h1>
+  <div class="flex h-screen">
+    <!-- Menu部分，占比3 -->
+    <div class="basis-3/12 bg-gray-200 p-4">
+      <MenuComponent />
+    </div>
 
-    <!-- 表格展示 -->
-    <el-table
-        v-if="invoices && invoices.length > 0"
-        :data="invoices"
-        style="width: 100%;"
-        border
-        stripe
-    >
-      <!-- 发票 ID -->
-      <el-table-column prop="id" label="ID Facture" align="center" width="120" />
+    <!-- Contenu部分，占比7 -->
+    <div class="basis-9/12 p-4 grid gap-4" style="max-height: 95vh; overflow-y: scroll;">
+      <!-- ChartComponents 等分，2列 -->
+      <div class="container mx-auto p-6">
+        <!-- 页面标题 -->
+        <h1 class="text-xl font-bold text-center mb-6">Liste des factures</h1>
 
-      <!-- 发票编号 -->
-      <el-table-column prop="invoiceNumber" label="N° de Facture" align="center" />
+        <!-- 表格展示 -->
+        <el-table
+            v-if="invoices && invoices.length > 0"
+            :data="invoices"
+            style="width: 100%;"
+            border
+            stripe
+        >
+          <!-- 发票 ID -->
+          <el-table-column prop="id" label="ID Facture" align="center" width="120" />
 
-      <!-- 订单 ID -->
-      <el-table-column prop="orderId" label="ID Commande" align="center" />
+          <!-- 发票编号 -->
+          <el-table-column prop="invoiceNumber" label="N° de Facture" align="center" />
 
-      <!-- 总金额 -->
-      <el-table-column prop="totalAmount" label="Montant Total (€)" align="center" />
+          <!-- 订单 ID -->
+          <el-table-column prop="orderId" label="ID Commande" align="center" />
 
-      <!-- 发票状态 -->
-      <el-table-column label="Statut" align="center">
-        <template #default="scope">
-          <el-tag :type="scope.row.status === 'paid' ? 'success' : 'warning'">
-            {{ formatStatus(scope.row.status) }}
-          </el-tag>
-        </template>
-      </el-table-column>
+          <!-- 总金额 -->
+          <el-table-column prop="totalAmount" label="Montant Total (€)" align="center" />
 
-      <!-- 创建时间 -->
-      <el-table-column prop="createdAt" label="Date Création" align="center" />
+          <!-- 发票状态 -->
+          <el-table-column label="Statut" align="center">
+            <template #default="scope">
+              <el-tag :type="scope.row.status === 'paid' ? 'success' : 'warning'">
+                {{ formatStatus(scope.row.status) }}
+              </el-tag>
+            </template>
+          </el-table-column>
 
-      <!-- 操作：导出PDF按钮 -->
-      <el-table-column label="Actions" align="center" width="150">
-        <template #default="scope">
-          <el-button
-              type="primary"
-              size="small"
-              @click="exportFormattedPdf(scope.row)"
-          >
-            Exporter PDF
-          </el-button>
-        </template>
-      </el-table-column>
-    </el-table>
+          <!-- 创建时间 -->
+          <el-table-column prop="createdAt" label="Date Création" align="center" />
 
-    <!-- 如果没有发票 -->
-    <div v-else class="text-center text-gray-500 mt-6">
-      Aucune facture disponible.
+          <!-- 操作：导出PDF按钮 -->
+          <el-table-column label="Actions" align="center" width="150">
+            <template #default="scope">
+              <el-button
+                  type="primary"
+                  size="small"
+                  @click="exportFormattedPdf(scope.row)"
+              >
+                Exporter PDF
+              </el-button>
+            </template>
+          </el-table-column>
+        </el-table>
+
+        <!-- 如果没有发票 -->
+        <div v-else class="text-center text-gray-500 mt-6">
+          Aucune facture disponible.
+        </div>
+      </div>
     </div>
   </div>
+
 </template>
 
 <script lang="ts" setup>
@@ -61,6 +73,7 @@ import { ref, onMounted } from 'vue';
 const { $axios } = useNuxtApp();
 import jsPDF from 'jspdf';
 import { ElMessage } from 'element-plus';
+import MenuComponent from "~/components/SellerPage/MenuComponent.vue";
 
 // 定义发票数据类型
 interface Product {
@@ -212,6 +225,6 @@ onMounted(fetchInvoices);
 
 <style scoped>
 .container {
-  max-width: 75%;
+  max-width: 100%  ;
 }
 </style>
