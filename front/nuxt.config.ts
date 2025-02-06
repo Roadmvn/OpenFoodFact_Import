@@ -9,6 +9,8 @@ export default defineNuxtConfig({
       tailwindcss()
     ]
   },
+  ssr: true,
+  pages: true,
   plugins: ['~/plugins/axios.ts'],
   modules: ['@pinia/nuxt'],
   runtimeConfig: {

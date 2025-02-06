@@ -13,8 +13,8 @@
           :ellipsis="false"
       >
         <el-menu-item index="1"><a href="/about">Qui somme nous</a></el-menu-item>
-        <el-menu-item index="1"><a href="/products">Nous Produits</a></el-menu-item>
-        <el-menu-item index="1"><a href="/products/new-product">Nouveaux produits</a></el-menu-item>
+        <el-menu-item index="1"><a href="/nos-products">Nous Produits</a></el-menu-item>
+        <el-menu-item index="1"><a href="/new-products">Nouveaux produits</a></el-menu-item>
         <el-menu-item index="1" v-if="!user"><a href="/login">Se connecter</a></el-menu-item>
         <el-sub-menu index="2" v-if="user?.role === 'buyer'">
           <template #title>{{ user.email }}</template>
