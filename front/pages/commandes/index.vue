@@ -12,10 +12,11 @@
             <el-tag v-if="order.status === 'pending'" type="danger">{{ order.status }}</el-tag>
             <el-tag v-else>{{ order.status }}</el-tag>
           </div>
-          <div class="text-gray-500">Montant total : ¥{{ order.totalAmount }}</div>
+          <div class="text-gray-500">Montant total : €{{ order.totalAmount }}</div>
         </div>
         <div v-for="item in order.items" :key="item.id" class="flex justify-between items-center mt-4">
-          <div class="flex flex-col items-center">
+          <div class="flex flex-row items-center gap-2">
+            <el-image :src="item.internalProduct.product.image_url" style="max-width: 33px;border-radius: 5px;height: 55px;"></el-image>
             <el-text tag="b">{{ item.internalProduct.product.name + ' x ' + item.quantity }}</el-text>
           </div>
           <el-text>{{ item.internalProduct.price + ' x ' + item.quantity }} €</el-text>

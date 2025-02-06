@@ -222,7 +222,7 @@ const getOrdersByBuyer = async (req, res) => {
                         include: {
                             model: Product, // 联合查询的 Product 模型
                             as: 'product', // 假设关联名称为 `product`
-                            attributes: ['id', 'name'], // 返回的 Product 字段
+                            attributes: ['id', 'name', 'image_url'], // 返回的 Product 字段
                         },
                     },
                 },
