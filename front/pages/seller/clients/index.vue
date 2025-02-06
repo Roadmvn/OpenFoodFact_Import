@@ -81,6 +81,6 @@ onMounted(fetchUsers);
 <style scoped>
 /* 自定义样式 */
 .container {
-  max-width: 1024px;
+  max-width: 75%;
 }
 </style>

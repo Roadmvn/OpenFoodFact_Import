@@ -212,6 +212,6 @@ onMounted(fetchInvoices);
 
 <style scoped>
 .container {
-  max-width: 1024px;
+  max-width: 75%;
 }
 </style>
