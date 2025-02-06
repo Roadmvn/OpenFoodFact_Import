@@ -209,9 +209,39 @@ const getSellerInvoices = async (req, res) => {
             include: [
                 {
                     model: Order,
-                    as: 'order',
-                    where: { sellerId },
-                    attributes: ['id', 'userId', 'totalAmount'], // 卖家相关订单
+                    as: 'order', // 关联订单信息
+                    where: { sellerId: sellerId }, // 限定为当前用户的订单
+                    attributes: ['id', 'sellerId', 'status', 'totalAmount'],
+                    include: [
+                        {
+                            model: User,
+                            as: 'buyer', // 买家信息
+                            attributes: ['id', 'email', 'firstName', 'lastName'],
+                        },
+                        {
+                            model: User,
+                            as: 'seller', // 卖家信息
+                            attributes: ['id', 'email', 'firstName', 'lastName'],
+                        },
+                        {
+                            model: OrderItem,
+                            as: 'items',
+                            include: {
+                                model: InternalProduct,
+                                as: 'internalProduct',
+                                attributes: ['sellerId'],
+                                include: [{
+                                    model: Product, // 联合查询的 Product 模型
+                                    as: 'product', // 假设关联名称为 `product`
+                                    attributes: ['id', 'name', 'image_url'], // 返回的 Product 字段
+                                },{
+                                    model: User,
+                                    as: 'seller',
+                                    attributes: ['id', 'email', 'firstName', 'lastName'],
+                                }]
+                            },
+                        },
+                    ],
                 },
             ],
         });

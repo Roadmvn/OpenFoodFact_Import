@@ -12,6 +12,7 @@ const {
     deleteOrder,
     getOrdersByBuyer,
     getOrdersBySeller,
+    getUsersBySeller
 } = require('../controllers/orderController'); // 确保路径正确
 
 // 创建订单
@@ -34,6 +35,8 @@ router.get('/buyer/me', authMiddleware, getOrdersByBuyer);
 
 // 卖家获取属于自己的订单
 router.get('/seller/me', authMiddleware, getOrdersBySeller);
+
+router.get('/seller/users', authMiddleware, getUsersBySeller);
 
 
 module.exports = router;

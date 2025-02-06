@@ -279,6 +279,53 @@ const getOrdersBySeller = async (req, res) => {
     }
 };
 
+/**
+ * 获取与当前卖家(seller)关联的所有买家(users)
+ * @param {Object} req - 请求对象，其中包含已验证的JWT token (req.user)
+ * @param {Object} res - 响应对象，用于返回处理结果
+ */
+const getUsersBySeller = async (req, res) => {
+    try {
+        // 从JWT token中提取 sellerId
+        const sellerId = req.user.id;
+
+        if (!sellerId) {
+            return res.status(401).json({ message: 'Seller token is invalid or missing.' });
+        }
+
+        // 使用 Order 模型查询所有和该 sellerId 关联的订单及买家
+        const orders = await Order.findAll({
+            where: { sellerId },
+            include: {
+                model: User,
+                as: 'buyer', // 匹配 order.js 中定义的 'buyer' 别名
+                attributes: ['id', 'email', 'firstName', 'lastName'], // 包括买家的有用字段
+            },
+        });
+
+        // 整理出唯一的买家
+        const buyers = [];
+        const buyerIds = new Set();
+
+        for (const order of orders) {
+            if (!buyerIds.has(order.buyer.id)) {
+                buyerIds.add(order.buyer.id);
+                buyers.push(order.buyer);
+            }
+        }
+
+        if (buyers.length === 0) {
+            return res.status(404).json({ message: 'No users found for this seller.' });
+        }
+
+        // 返回买家信息
+        return res.status(200).json(buyers);
+    } catch (error) {
+        console.error('Error retrieving users for seller:', error);
+        return res.status(500).json({ message: 'An error occurred while retrieving users.' });
+    }
+};
+
 
 module.exports = {
     createOrder,
@@ -288,4 +335,5 @@ module.exports = {
     deleteOrder,
     getOrdersByBuyer,
     getOrdersBySeller,
+    getUsersBySeller,
 };
