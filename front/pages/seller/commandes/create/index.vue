@@ -3,7 +3,7 @@
     <h1 class="text-xl font-bold text-center mb-6">Créer une Commande</h1>
 
     <!-- 表单 -->
-    <el-form :model="orderForm">
+    <el-form :model="orderForm" style="width: 100%; display: block;">
       <!-- 买家邮箱 -->
       <el-form-item label="Acheteur (Email)">
         <el-autocomplete
@@ -16,13 +16,14 @@
       </el-form-item>
 
       <!-- 商品添加 -->
-      <el-form-item label="Produits">
+      <el-form-item label="Produits" style="width: 100%; display: block;">
         <div
             v-for="(item, index) in orderForm.items"
             :key="index"
             class="mb-4 flex flex-col space-x-4 gap-2"
+            style="width: 100%; display: block;"
         >
-          <div class="flex flex-row justify-start items-center gap-2">
+          <div class="flex flex-row justify-between items-start gap-2">
             <!-- 搜索商品 -->
             <el-autocomplete
                 v-model="searchProductNames[index]"
@@ -30,13 +31,11 @@
                 placeholder="Rechercher un produit"
                 @select="(product) => onProductSelect(index, product)"
                 clearable
-                class="w-1/2"
             ></el-autocomplete>
 
             <!-- 商品数量 -->
             <el-input-number
                 v-model="item.quantity"
-                class="w-1/4"
                 :min="1"
                 placeholder="Quantité"
             />
@@ -48,6 +47,7 @@
             <el-button type="primary" size="small" @click="addProduct">
               Ajouter un Produit
             </el-button>
+
           </div>
 
           </div>
@@ -178,6 +178,7 @@ const submitOrderForm = async () => {
     const response = await $axios.post("/api/orders/seller/create_order", orderForm);
     successMessage.value = "Commande créée avec succès !";
     resetOrderForm(); // 提交成功后重置表单
+    window.location.href = "/seller/commandes";
   } catch (error) {
     console.error("Error creating order:", error);
     errorMessage.value = "Erreur lors de la création de la commande.";
@@ -209,8 +210,23 @@ const resetOrderForm = () => {
 
 <style scoped>
 .container {
-  max-width: 800px;
+  max-width: 75%;
   margin: auto;
+}
+
+.el-form-item__content{
+  width: 100%;
+  align-items: baseline;
+  display: block;
+  flex: 1;
+  line-height: 32px;
+  min-width: 0;
+  position: relative;
+  flex-direction: row;
+}
+
+.el-form-item{
+  display: block  ;
 }
 
 </style>
