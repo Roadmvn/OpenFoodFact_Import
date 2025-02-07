@@ -37,9 +37,35 @@
         <!-- 操作按钮 -->
         <div class="flex space-x-4">
           <el-button type="primary" size="large" @click="addToCart(product)">Ajouter au panier</el-button>
+          <el-button type="success" @click="open_contact" size="large">Contact Seller</el-button>
         </div>
       </div>
     </div>
+    <!-- 抽屉组件 -->
+    <el-drawer
+        title="Contact Form"
+        v-model="drawerVisible"
+        direction="rtl"
+        size="30%">
+      <el-form :model="form" :rules="rules" ref="contactForm" label-width="100px">
+        <!-- 消息输入 -->
+        <el-form-item label="Messages" prop="message">
+          <el-input
+              type="textarea"
+              v-model="form.message"
+              placeholder="Veuillez saisir vos coordonnées"
+              rows="4"
+          ></el-input>
+        </el-form-item>
+
+        <!-- 按钮 -->
+        <el-form-item>
+          <el-button type="primary" @click="handleSubmit">Soumettre</el-button>
+          <el-button @click="drawerVisible = false">Annuler</el-button>
+        </el-form-item>
+      </el-form>
+    </el-drawer>
+
   </div>
 </template>
 
@@ -53,6 +79,46 @@ const { $axios } = useNuxtApp()
 
 const route = useRoute();
 const product = ref<any>(null); // 产品数据
+
+const drawerVisible = ref<boolean>(false);
+
+const open_contact = () => {
+  drawerVisible.value = true;
+}
+
+const form = reactive({
+  message: "",
+});
+
+const rules = reactive({
+  message: [{ required: true, message: "cant be null", trigger: "blur" }],
+});
+
+const contactForm = ref();
+
+const current_user = useUserStore().user;
+
+const handleSubmit = async () => {
+  try {
+    const response = await $axios.post("/api/contact", {
+      sellerId: product.value.seller.id,
+      buyerId: current_user?.id,
+      message: form.message,
+    });
+    // 如果 API 返回响应
+    ElMessage.success("Soumettre avec succès！");
+    // 重置表单
+    form.message = "";
+    drawerVisible.value = false;
+  } catch (err: any) {
+    // 验证未通过或请求失败
+    if (err.response) {
+      ElMessage.error(`La demande a échoué：${err.response.data.message || err.message}`);
+    } else {
+      ElMessage.error("La soumission a échoué, veuillez vérifier le réseau ou réessayer plus tard！");
+    }
+  }
+};
 
 // 加载产品数据
 const fetchProduct = async () => {

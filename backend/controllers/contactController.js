@@ -3,9 +3,10 @@ const { User, Contact } = require('../models');
 exports.createContact = async (req, res) => {
     let { message, buyerId, sellerId } = req.body;
 
+
     try {
 
-        if (!buyerId || !sellerId) {
+        if (!buyerId && !sellerId) {
             buyerId = 1;
             sellerId = 1;
             const contact = await Contact.create({
@@ -15,11 +16,6 @@ exports.createContact = async (req, res) => {
             });
 
             return res.status(201).json(contact);
-        }
-
-        // 确保当前用户是买家或卖家
-        if (req.user.role !== 'buyer' && req.user.role !== 'seller') {
-            return res.status(403).json({ message: 'Only buyers or sellers can create contacts.' });
         }
 
         // 验证买家和卖家是否存在
