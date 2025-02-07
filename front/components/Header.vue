@@ -21,6 +21,9 @@
           <el-menu-item index="2-1" @click="go_route('/user/profile')">Profile</el-menu-item>
           <el-menu-item index="2-2" @click="go_route('/commandes')">Commandes</el-menu-item>
           <el-menu-item index="2-3" @click="go_route('/factures')">Factures</el-menu-item>
+          <el-menu-item index="2-4">
+            <a href="/user/messages">Messages</a>
+          </el-menu-item>
           <el-menu-item index="2-4" @click="logout()"  v-if="user">Se déconnecter</el-menu-item>
         </el-sub-menu>
         <el-menu-item index="2-5" @click="drawer = true"  v-if="user?.role === 'buyer'">
@@ -73,6 +76,9 @@
           </el-menu-item>
           <el-menu-item index="/invoices">
             <a href="/invoices">Factures</a>
+          </el-menu-item>
+          <el-menu-item index="/messages">
+            <a href="/user/messages">Messages</a>
           </el-menu-item>
           <el-menu-item index="/logout" @click="logout"  v-if="user">
             Déconnexion
