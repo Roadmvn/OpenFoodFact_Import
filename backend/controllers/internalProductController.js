@@ -1,4 +1,5 @@
 const { InternalProduct, Product, User} = require('../models');
+const { Op } = require('sequelize');
 
 // 创建内部产品
 exports.createInternalProduct = async (req, res) => {
@@ -167,3 +168,98 @@ exports.getAllInternalProducts = async (req, res) => {
         res.status(500).json({ message: "Erreur serveur." });
     }
 };
+
+// 动态搜索函数
+exports.dynamicSearch = async (req, res) => {
+    try {
+        // 从请求中获取查询参数
+        const {
+            sellerId,
+            price,
+            quantity,
+            name,
+            brand,
+            categories,
+            labels,
+            code,
+            energy_kcal,
+            fat,
+            saturated_fat,
+            sugars,
+            salt,
+            proteins,
+        } = req.query;
+
+        // 动态生成查询条件
+        const internalProductConditions = {};
+        const productConditions = {};
+
+        // InternalProduct 字段条件
+        if (sellerId) {
+            internalProductConditions.sellerId = { [Op.like]: `%${sellerId}%` };
+        }
+        if (price) {
+            internalProductConditions.price = { [Op.like]: `%${price}%` };
+        }
+        if (quantity) {
+            internalProductConditions.quantity = { [Op.like]: `%${quantity}%` };
+        }
+
+        // Product 字段条件
+        if (name) {
+            productConditions.name = { [Op.like]: `%${name}%` };
+        }
+        if (brand) {
+            productConditions.brand = { [Op.like]: `%${brand}%` };
+        }
+        if (categories) {
+            productConditions.categories = { [Op.like]: `%${categories}%` };
+        }
+        if (labels) {
+            productConditions.labels = { [Op.like]: `%${labels}%` };
+        }
+        if (code) {
+            productConditions.code = { [Op.like]: `%${code}%` };
+        }
+        if (energy_kcal) {
+            productConditions.energy_kcal = { [Op.like]: `%${energy_kcal}%` };
+        }
+        if (fat) {
+            productConditions.fat = { [Op.like]: `%${fat}%` };
+        }
+        if (saturated_fat) {
+            productConditions.saturated_fat = { [Op.like]: `%${saturated_fat}%` };
+        }
+        if (sugars) {
+            productConditions.sugars = { [Op.like]: `%${sugars}%` };
+        }
+        if (salt) {
+            productConditions.salt = { [Op.like]: `%${salt}%` };
+        }
+        if (proteins) {
+            productConditions.proteins = { [Op.like]: `%${proteins}%` };
+        }
+
+        // 执行查询
+        const results = await InternalProduct.findAll({
+            where: internalProductConditions, // InternalProduct 条件
+            include: [
+                {
+                    model: Product,
+                    as: 'product',
+                    where: productConditions, // Product 条件
+                },
+            ],
+        });
+
+        // 返回结果
+        res.status(200).json({
+            message: '搜索成功',
+            results,
+        });
+    } catch (error) {
+        console.error('搜索时发生错误:', error);
+        res.status(500).json({ message: '服务器错误，请稍后重试。' });
+    }
+};
+

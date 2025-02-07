@@ -1,5 +1,7 @@
 <template>
   <div class="max-w-7xl mx-auto mt-10">
+    <el-text tag="b" style="font-size: 1.2rem;">Nos Produits</el-text>
+    <el-divider></el-divider>
     <!-- Liste des produits internes -->
     <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6" style="height: 100%;">
       <el-card

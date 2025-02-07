@@ -11,6 +11,7 @@ router.post('/', authMiddleware, isSeller, internalProductController.createInter
 router.get('/', authMiddleware, isSeller, internalProductController.getInternalProducts);
 router.get('/products_all', internalProductController.getAllInternalProducts);
 router.get('/products/:id' , internalProductController.getProductById);
+router.get('/products_search' , internalProductController.dynamicSearch);
 
 // 更新内部产品
 router.put('/:id', authMiddleware, isSeller, internalProductController.updateInternalProduct);
