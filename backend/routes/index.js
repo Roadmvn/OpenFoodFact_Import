@@ -9,6 +9,7 @@ const cartRoutes = require('./cartRoutes');
 const ordersRoutes = require('./orderRoutes');
 const paypalRoutes = require('./paypalRoutes');
 const invoiceRoutes = require('./invoiceRoutes');
+const contactRoutes = require('./contactRoutes');
 
 // 添加路由前缀 /api/products
 router.use('/products', productRoutes);
@@ -18,5 +19,6 @@ router.use('/cart', cartRoutes);
 router.use('/orders', ordersRoutes);
 router.use('/paypal', paypalRoutes);
 router.use('/invoice', invoiceRoutes);
+router.use('/contact', contactRoutes);
 
 module.exports = router;
