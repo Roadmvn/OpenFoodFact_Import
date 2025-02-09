@@ -1,1 +1,1 @@
-export { default } from "file:///C:/Users/pc/Desktop/T-DEV-702-Api/front/node_modules/@nuxt/vite-builder/dist/runtime/vite-node.mjs"
+export { default } from "file:///C:/Users/Nat-ryo/Desktop/T-DEV-702-Api/front/node_modules/@nuxt/vite-builder/dist/runtime/vite-node.mjs"
