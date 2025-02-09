@@ -73,14 +73,44 @@ const getAllInvoices = async (req, res) => {
                 {
                     model: Order,
                     as: 'order',
-                    attributes: ['userId', 'sellerId', 'totalAmount'], // 包含订单相关信息
+                    attributes: ['buyerId', 'sellerId', 'totalAmount', 'status'], // 包含订单相关信息
+                    include: [
+                        {
+                            model: User,
+                            as: 'buyer', // 买家信息
+                            attributes: ['id', 'email', 'firstName', 'lastName'],
+                        },
+                        {
+                            model: User,
+                            as: 'seller', // 卖家信息
+                            attributes: ['id', 'email', 'firstName', 'lastName'],
+                        },
+                        {
+                            model: OrderItem,
+                            as: 'items',
+                            include: {
+                                model: InternalProduct,
+                                as: 'internalProduct',
+                                attributes: ['sellerId'],
+                                include: [{
+                                    model: Product, // 联合查询的 Product 模型
+                                    as: 'product', // 假设关联名称为 `product`
+                                    attributes: ['id', 'name', 'image_url'], // 返回的 Product 字段
+                                },{
+                                    model: User,
+                                    as: 'seller',
+                                    attributes: ['id', 'email', 'firstName', 'lastName'],
+                                }]
+                            },
+                        },
+                    ],
                 },
             ],
         });
         res.status(200).json(invoices);
     } catch (error) {
         console.error(error);
-        res.status(500).json({ error: '获取全部发票失败' });
+        res.status(500).json({ error: 'Impossible d\'obtenir toutes les factures' });
     }
 };
 

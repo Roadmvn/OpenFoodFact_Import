@@ -122,7 +122,49 @@
   </header>
   <el-drawer title="Panier" v-model="drawer" direction="rtl">
     <div class="flex flex-col gap-4">
-      <!-- Drawer cart content remains unchanged -->
+      <div class="flex flex-col gap-4">
+        <el-card v-for="item in cartStore.items" :key="item.id">
+          <div style="display: flex; justify-content: center; align-items: center; max-height: 200px; max-width: 100%; overflow: hidden;">
+            <img
+                :src="item.image"
+                alt="product-image"
+                style="max-height: 100%; max-width: 100%; object-fit: contain;" />
+          </div>
+          <div class="flex flex-col gap-2">
+            <el-text style="width: 100%;" tag="b">{{ item.name }}</el-text>
+            <el-text style="width: 100%;">Qte: {{ item.quantity }}</el-text>
+            <el-tag type="danger" class="mt-2 mb-2 w-30" size="large">
+              <el-text tag="b" type="danger">TTC: {{ item.total }} €</el-text>
+            </el-tag>
+          </div>
+          <div class="flex flex-row justify-between gap-2">
+            <div class="flex flex-row gap-2">
+              <el-button type="success" @click="cartStore.updateCartItem(item.id, item.quantity + 1)">+</el-button>
+              <el-button type="success" @click="cartStore.updateCartItem(item.id, item.quantity - 1)" :disabled="item.quantity <= 1">-</el-button>
+            </div>
+            <el-button type="danger" @click="cartStore.removeCartItem(item.id)">Delete</el-button>
+          </div>
+        </el-card>
+
+        <div class="cart-footer flex flex-row justify-between items-center">
+          <div class="flex flex-col space-y-2 gap-4" v-if="cartStore.totalQuantity === 0">
+            <el-icon size="50" color="#3393ff"><Shop /></el-icon>
+            <el-text tag="b" style="font-size: 1.2rem">
+              Vous n'avez pas trouvé le produit que vous recherchiez ?
+            </el-text>
+            <el-button type="primary" size="large" @click="to_route('/products')">Trouver des produits</el-button>
+          </div>
+          <div class="flex flex-col space-y-2 gap-4" style="width: 100%;">
+            <el-tag type="success" size="large" v-if="cartStore.totalQuantity > 0">
+              <el-text type="success" style="font-size: 1rem;">Total TTC: {{ cartStore.cartTotalPrice }}€</el-text>
+            </el-tag>
+            <div class="flex flex-row justify-between">
+              <el-button type="danger" @click="cartStore.clearCart()" v-if="cartStore.totalQuantity > 0">Vider le panier</el-button>
+              <el-button type="success" @click="payer()" v-if="cartStore.totalQuantity > 0">Payer</el-button>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   </el-drawer>
 </template>
