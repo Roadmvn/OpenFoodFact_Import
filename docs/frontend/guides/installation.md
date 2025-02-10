@@ -65,6 +65,24 @@ frontend/
 └── public/        # Fichiers statiques
 ```
 
+## Comptes de Test
+Voici les différents comptes disponibles pour tester l'application :
+
+### Comptes Administrateur
+- Email : admin@gmail.com
+  - Mot de passe : Jiojio000608.
+- Email : tudy@epitech.eu
+  - Mot de passe : Jiojio000608.
+
+### Compte Utilisateur
+- Email : houzeyu77@gmail.com
+  - Mot de passe : Jiojio000608.
+  - Note : Connexion possible via Google également
+
+### Compte Vendeur
+- Email : seller@epitech.eu
+  - Mot de passe : Jiojio000608.
+
 ## Déploiement
 1. Construire l'application
 ```bash
