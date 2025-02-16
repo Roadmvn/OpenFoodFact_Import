@@ -14,17 +14,17 @@ module.exports = (sequelize, DataTypes) => {
     Product.init(
         {
             code: {
-                type: DataTypes.STRING,
-                unique: true, // 确保唯一
+                type: DataTypes.STRING(255),
+                unique: true,
                 allowNull: true,
             },
             name: {
-                type: DataTypes.STRING,
+                type: DataTypes.STRING(255),
                 allowNull: false,
                 defaultValue: 'Unknown',
             },
             brand: {
-                type: DataTypes.STRING,
+                type: DataTypes.STRING(255),
                 allowNull: false,
                 defaultValue: 'Unknown',
             },
@@ -32,19 +32,26 @@ module.exports = (sequelize, DataTypes) => {
                 type: DataTypes.TEXT,
                 allowNull: false,
                 defaultValue: 'Unknown',
+                get() {
+                    const value = this.getDataValue('categories');
+                    return value ? value : 'Unknown';
+                },
+                set(value) {
+                    this.setDataValue('categories', value ? value : 'Unknown');
+                }
             },
             labels: {
-                type: DataTypes.STRING,
+                type: DataTypes.STRING(255),
                 allowNull: false,
                 defaultValue: 'None',
             },
             quantity: {
-                type: DataTypes.STRING,
+                type: DataTypes.STRING(255),
                 allowNull: true,
             },
             image_url: {
                 type: DataTypes.TEXT,
-                allowNull: true, // 可以为空
+                allowNull: true,
             },
             image_nutrition_url: {
                 type: DataTypes.TEXT,
@@ -77,19 +84,8 @@ module.exports = (sequelize, DataTypes) => {
         },
         {
             sequelize,
-            modelName: 'Product', // 模型名称
-
-            // 默认 Scope（可以根据需求定制输出）
-            defaultScope: {
-                attributes: { exclude: [] }, // 默认不排除任何字段
-            },
-
-            // 自定义 Scope
-            scopes: {
-                minimal: {
-                    attributes: ['code', 'name', 'brand'], // 例如只返回基础信息
-                },
-            },
+            modelName: 'Product',
+            timestamps: true,
         }
     );
 

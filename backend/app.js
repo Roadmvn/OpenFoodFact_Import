@@ -17,50 +17,55 @@ app.use(cors({
     credentials: true, // 允许跨域携带 Cookie
 }));
 
-const sessionStore = new SequelizeStore({
-    db: sequelize,
-});
+// Synchroniser d'abord la base de données
+sequelize.sync({ force: true }).then(() => {
+    console.log('Base de données synchronisée avec succès');
+    
+    // Configurer la session après la synchronisation
+    const sessionStore = new SequelizeStore({
+        db: sequelize,
+    });
 
-sessionStore.sync();
+    sessionStore.sync();
 
-app.use(
-    session({
-        secret: 'JMsgmBe7nbZqw59OPO',
-        store: sessionStore,
-        resave: false,
-        saveUninitialized: false,
-    })
-);
+    app.use(
+        session({
+            secret: 'JMsgmBe7nbZqw59OPO',
+            store: sessionStore,
+            resave: false,
+            saveUninitialized: false,
+        })
+    );
 
-app.use('/static', express.static('public'));
+    app.use('/static', express.static('public'));
 
+    app.use(express.json());
 
-app.use(express.json());
+    // 中间件
+    app.use(bodyParser.json());
+    app.use(express.urlencoded({ extended: true }));
+    app.use(cookieParser());
 
-// 中间件
-app.use(bodyParser.json());
-app.use(express.urlencoded({ extended: true }));
-app.use(cookieParser());
+    // 路由挂载
+    app.use('/auth', authRoutes);
+    app.use('/api', routes);
 
-// 路由挂载
-app.use('/auth', authRoutes);
-app.use('/api', routes);
+    // 未找到路由时处理
+    app.use((req, res, next) => {
+        res.status(404).json({ message: 'La ressource demandée n\'a pas été trouvée！' });
+    });
 
-// 未找到路由时处理
-app.use((req, res, next) => {
-    res.status(404).json({ message: 'La ressource demandée n\'a pas été trouvée！' });
-});
+    // 捕获所有其他错误
+    app.use((err, req, res, next) => {
+        console.error(err.stack);
+        res.status(500).json({ message: 'Erreur interne du serveur！' });
+    });
 
-
-// 捕获所有其他错误
-app.use((err, req, res, next) => {
-    console.error(err.stack);
-    res.status(500).json({ message: 'Erreur interne du serveur！' });
-});
-
-
-// 启动服务器
-const PORT = 8001;
-app.listen(PORT, () => {
-    console.log(`Le serveur est en cours d'exécution：http://localhost:${PORT}`);
+    // 启动服务器
+    const PORT = 8001;
+    app.listen(PORT, () => {
+        console.log(`Le serveur est en cours d'exécution：http://localhost:${PORT}`);
+    });
+}).catch((error) => {
+    console.error('Erreur lors de la synchronisation de la base de données:', error);
 });
