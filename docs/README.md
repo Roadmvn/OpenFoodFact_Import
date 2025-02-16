@@ -1,5 +1,3 @@
-# Documentation du Projet T-DEV-702-Api
-
 ## Structure du Projet
 
 ### Backend (Express.js)
