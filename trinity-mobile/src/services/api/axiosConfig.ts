@@ -3,7 +3,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // Créer une instance axios avec la configuration de base
 const axiosInstance = axios.create({
-  baseURL: 'http://localhost:3000/api', // À changer selon l'environnement
+  baseURL: 'http://localhost:8001/api', // URL du backend
   timeout: 10000,
   headers: {
     'Content-Type': 'application/json',
@@ -29,10 +29,8 @@ axiosInstance.interceptors.response.use(
   (response) => response,
   async (error) => {
     if (error.response?.status === 401) {
-      // Token expiré ou invalide
+      // Gérer la déconnexion ici
       await AsyncStorage.removeItem('token');
-      // Rediriger vers la page de login si nécessaire
-      // Vous pouvez utiliser un événement personnalisé ou un contexte pour gérer la redirection
     }
     return Promise.reject(error);
   }

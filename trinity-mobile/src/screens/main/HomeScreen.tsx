@@ -1,17 +1,11 @@
 import React, { useEffect } from 'react';
 import { View, Text, FlatList, StyleSheet, TouchableOpacity, Image } from 'react-native';
-import { useDispatch, useSelector } from 'react-redux';
 import { fetchProducts } from '../../store/slices/productsSlice';
-import { RootState } from '../../store/types';
-import { TypedUseSelectorHook, useDispatch as useTypedDispatch, useSelector as useTypedSelector } from 'react-redux';
-import { AppDispatch } from '../../store';
-
-const useTypedDispatch: () => AppDispatch = useTypedDispatch();
-const useTypedSelector: TypedUseSelectorHook<RootState> = useTypedSelector;
+import { useAppDispatch, useAppSelector } from '../../store/hooks';
 
 const HomeScreen = ({ navigation }: { navigation: any }) => {
-  const dispatch = useTypedDispatch();
-  const { items, isLoading, error } = useTypedSelector((state: RootState) => state.products);
+  const dispatch = useAppDispatch();
+  const { items, isLoading, error } = useAppSelector((state) => state.products);
 
   useEffect(() => {
     dispatch(fetchProducts({ page: 1 }));

@@ -12,17 +12,38 @@ const LoginScreen = ({ navigation }: { navigation: any }) => {
   const [password, setPassword] = useState('');
 
   const handleLogin = async () => {
+    if (!email || !password) {
+      Alert.alert('Erreur', 'Veuillez remplir tous les champs');
+      return;
+    }
+
+    if (!email.includes('@')) {
+      Alert.alert('Erreur', 'Veuillez entrer une adresse email valide');
+      return;
+    }
+    
     try {
       await dispatch(loginUser({ email, password })).unwrap();
       // La navigation sera gérée automatiquement par notre navigation guard
     } catch (error: any) {
-      Alert.alert('Erreur', error.message || 'Une erreur est survenue lors de la connexion');
+      let errorMessage = 'Une erreur est survenue lors de la connexion';
+      
+      // Gestion des erreurs spécifiques du backend
+      if (error === 'L\'utilisateur n\'existe pas！') {
+        errorMessage = 'Aucun compte ne correspond à cet email';
+      } else if (error === 'Mot de passe erroné！') {
+        errorMessage = 'Mot de passe incorrect';
+      }
+      
+      Alert.alert('Erreur de connexion', errorMessage);
     }
   };
 
   return (
     <View style={styles.container}>
       <View style={styles.form}>
+        <Text style={styles.title}>Connexion</Text>
+
         <TextInput
           style={styles.input}
           placeholder="Email"
@@ -30,6 +51,7 @@ const LoginScreen = ({ navigation }: { navigation: any }) => {
           onChangeText={setEmail}
           keyboardType="email-address"
           autoCapitalize="none"
+          placeholderTextColor="#666"
         />
         <TextInput
           style={styles.input}
@@ -37,9 +59,10 @@ const LoginScreen = ({ navigation }: { navigation: any }) => {
           value={password}
           onChangeText={setPassword}
           secureTextEntry
+          placeholderTextColor="#666"
         />
         <TouchableOpacity 
-          style={styles.button} 
+          style={[styles.button, isLoading && styles.buttonDisabled]} 
           onPress={handleLogin}
           disabled={isLoading}
         >
@@ -76,7 +99,7 @@ const styles = StyleSheet.create({
   form: {
     backgroundColor: 'white',
     padding: 20,
-    borderRadius: 10,
+    borderRadius: 15,
     shadowColor: '#000',
     shadowOffset: {
       width: 0,
@@ -85,6 +108,13 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.25,
     shadowRadius: 3.84,
     elevation: 5,
+  },
+  title: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    marginBottom: 20,
+    textAlign: 'center',
+    color: '#333',
   },
   input: {
     height: 50,
@@ -102,6 +132,9 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     alignItems: 'center',
     marginTop: 10,
+  },
+  buttonDisabled: {
+    backgroundColor: '#999',
   },
   buttonText: {
     color: 'white',
