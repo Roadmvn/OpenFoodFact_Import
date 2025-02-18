@@ -22,6 +22,8 @@ export type MainTabParamList = {
 export type ProductStackParamList = {
   ProductList: undefined;
   ProductDetail: { product: Product };
+  AddProduct: undefined;
+  EditProduct: { productId: number };
 };
 
 // Root Stack

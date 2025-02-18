@@ -1,59 +1,106 @@
 import React from 'react';
 import { View, Text, Image, ScrollView, StyleSheet } from 'react-native';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { ProductScreenProps } from '@types/navigation';
 
 const ProductDetailScreen: React.FC<ProductScreenProps<'ProductDetail'>> = ({ route }) => {
   const { product } = route.params;
 
+  const nutritionItems = [
+    { label: 'Énergie', value: product.energy_kcal, unit: 'kcal' },
+    { label: 'Protéines', value: product.proteins, unit: 'g' },
+    { label: 'Glucides', value: product.carbohydrates, unit: 'g' },
+    { label: 'dont Sucres', value: product.sugars, unit: 'g' },
+    { label: 'Lipides', value: product.fat, unit: 'g' },
+    { label: 'dont Saturés', value: product.saturated_fat, unit: 'g' },
+    { label: 'Fibres', value: product.fiber, unit: 'g' },
+    { label: 'Sel', value: product.salt, unit: 'g' },
+    { label: 'Sodium', value: product.sodium, unit: 'g' },
+  ];
+
   return (
     <ScrollView style={styles.container}>
-      <Image
-        source={{ uri: product.image_url }}
-        style={styles.image}
-        defaultSource={require('@assets/placeholder.png')}
-      />
+      {product.image_url ? (
+        <Image
+          source={{ uri: product.image_url }}
+          style={styles.image}
+        />
+      ) : (
+        <View style={[styles.image, styles.noImageContainer]}>
+          <MaterialCommunityIcons name="food-off" size={64} color="#666" />
+          <Text style={styles.noImageText}>Image non disponible</Text>
+        </View>
+      )}
 
       <View style={styles.content}>
         <Text style={styles.name}>{product.name}</Text>
         <Text style={styles.brand}>{product.brand}</Text>
+        
+        {product.categories && (
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Catégories</Text>
+            <View style={styles.categoryContainer}>
+              {product.categories.split(',').map((category, index) => (
+                <View key={index} style={styles.categoryTag}>
+                  <Text style={styles.categoryText}>{category.trim()}</Text>
+                </View>
+              ))}
+            </View>
+          </View>
+        )}
+
+        {product.labels && product.labels !== 'None' && (
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Labels</Text>
+            <View style={styles.categoryContainer}>
+              {product.labels.split(',').map((label, index) => (
+                <View key={index} style={styles.categoryTag}>
+                  <Text style={styles.categoryText}>{label.trim()}</Text>
+                </View>
+              ))}
+            </View>
+          </View>
+        )}
+
+        {product.quantity && (
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Quantité</Text>
+            <Text style={styles.text}>{product.quantity}</Text>
+          </View>
+        )}
 
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Informations nutritionnelles</Text>
           <View style={styles.nutritionGrid}>
-            <View style={styles.nutritionItem}>
-              <Text style={styles.nutritionValue}>{product.energy_kcal}</Text>
-              <Text style={styles.nutritionLabel}>kcal</Text>
-            </View>
-            <View style={styles.nutritionItem}>
-              <Text style={styles.nutritionValue}>{product.proteins}g</Text>
-              <Text style={styles.nutritionLabel}>Protéines</Text>
-            </View>
-            <View style={styles.nutritionItem}>
-              <Text style={styles.nutritionValue}>{product.fat}g</Text>
-              <Text style={styles.nutritionLabel}>Lipides</Text>
-            </View>
-            <View style={styles.nutritionItem}>
-              <Text style={styles.nutritionValue}>{product.salt}g</Text>
-              <Text style={styles.nutritionLabel}>Sel</Text>
-            </View>
-          </View>
-        </View>
-
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Catégories</Text>
-          <View style={styles.categoriesContainer}>
-            {product.categories.map((category, index) => (
-              <View key={index} style={styles.categoryTag}>
-                <Text style={styles.categoryText}>{category}</Text>
-              </View>
+            {nutritionItems.map((item, index) => (
+              item.value != null && (
+                <View key={index} style={styles.nutritionItem}>
+                  <Text style={styles.nutritionValue}>
+                    {item.value} {item.unit}
+                  </Text>
+                  <Text style={styles.nutritionLabel}>{item.label}</Text>
+                </View>
+              )
             ))}
           </View>
         </View>
 
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Code-barres</Text>
-          <Text style={styles.barcode}>{product.code}</Text>
-        </View>
+        {product.image_nutrition_url && (
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Tableau nutritionnel</Text>
+            <Image
+              source={{ uri: product.image_nutrition_url }}
+              style={styles.nutritionImage}
+            />
+          </View>
+        )}
+
+        {product.code && (
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Code-barres</Text>
+            <Text style={styles.text}>{product.code}</Text>
+          </View>
+        )}
       </View>
     </ScrollView>
   );
@@ -69,6 +116,22 @@ const styles = StyleSheet.create({
     height: 300,
     resizeMode: 'contain',
     backgroundColor: '#f5f5f5',
+  },
+  nutritionImage: {
+    width: '100%',
+    height: 200,
+    resizeMode: 'contain',
+    backgroundColor: '#f5f5f5',
+    marginTop: 8,
+  },
+  noImageContainer: {
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  noImageText: {
+    fontSize: 16,
+    color: '#666',
+    marginTop: 8,
   },
   content: {
     padding: 16,
@@ -88,34 +151,18 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     fontSize: 20,
-    fontWeight: 'bold',
-    marginBottom: 12,
-  },
-  nutritionGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'space-between',
-    backgroundColor: '#f5f5f5',
-    padding: 16,
-    borderRadius: 8,
-  },
-  nutritionItem: {
-    alignItems: 'center',
-    width: '25%',
+    fontWeight: '600',
     marginBottom: 16,
+    color: '#333',
   },
-  nutritionValue: {
-    fontSize: 18,
-    fontWeight: 'bold',
+  text: {
+    fontSize: 16,
+    color: '#444',
   },
-  nutritionLabel: {
-    fontSize: 14,
-    color: '#666',
-    marginTop: 4,
-  },
-  categoriesContainer: {
+  categoryContainer: {
     flexDirection: 'row',
     flexWrap: 'wrap',
+    marginTop: 8,
   },
   categoryTag: {
     backgroundColor: '#e3f2fd',
@@ -129,10 +176,28 @@ const styles = StyleSheet.create({
     color: '#2196F3',
     fontSize: 14,
   },
-  barcode: {
-    fontSize: 16,
+  nutritionGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+  },
+  nutritionItem: {
+    width: '48%',
+    backgroundColor: '#f5f5f5',
+    padding: 16,
+    borderRadius: 8,
+    marginBottom: 16,
+    alignItems: 'center',
+  },
+  nutritionValue: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#333',
+  },
+  nutritionLabel: {
+    fontSize: 14,
     color: '#666',
-    fontFamily: 'monospace',
+    marginTop: 4,
   },
 });
 

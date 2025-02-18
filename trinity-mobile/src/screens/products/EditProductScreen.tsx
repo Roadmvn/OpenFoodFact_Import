@@ -1,98 +1,50 @@
-import React, { useState, useEffect } from 'react';
-import { View, TextInput, TouchableOpacity, Text, StyleSheet, ScrollView } from 'react-native';
-import { useDispatch, useSelector } from 'react-redux';
-import { AppDispatch } from '../../store';
-import { updateProduct } from '../../store/slices/productsSlice';
-import { RootState } from '../../store/types';
+import React from 'react';
+import { View, StyleSheet } from 'react-native';
+import { Button } from 'react-native-paper';
+import { useDispatch } from 'react-redux';
+import { updateProduct } from '@store/slices/productsSlice';
+import { ProductScreenProps } from '@types/navigation';
+import ProductForm from '@components/products/ProductForm';
+import { Product } from '@store/types';
 
-export const EditProductScreen = ({ route, navigation }: { route: any; navigation: any }) => {
-  const dispatch = useDispatch<AppDispatch>();
-  const { productId } = route.params;
-  const product = useSelector((state: RootState) => 
-    state.products.items.find(p => p.id === productId)
-  );
+const EditProductScreen: React.FC<ProductScreenProps<'EditProduct'>> = ({ 
+  route,
+  navigation 
+}) => {
+  const { product } = route.params;
+  const dispatch = useDispatch();
+  const [isSubmitting, setIsSubmitting] = React.useState(false);
 
-  const [name, setName] = useState('');
-  const [brand, setBrand] = useState('');
-  const [description, setDescription] = useState('');
-  const [barcode, setBarcode] = useState('');
-  const [price, setPrice] = useState('');
-
-  useEffect(() => {
-    if (product) {
-      setName(product.name);
-      setBrand(product.brand);
-      setDescription(product.description || '');
-      setBarcode(product.barcode || '');
-      setPrice(product.price.toString());
-    }
-  }, [product]);
-
-  const handleSubmit = async () => {
+  const handleSubmit = async (values: Partial<Product>) => {
     try {
-      await dispatch(updateProduct({
-        id: productId,
-        name,
-        brand,
-        description,
-        barcode,
-        price: parseFloat(price),
-      })).unwrap();
+      setIsSubmitting(true);
+      await dispatch(updateProduct({ id: product.id, ...values }));
       navigation.goBack();
     } catch (error) {
-      console.error('Error updating product:', error);
+      console.error('Erreur lors de la modification du produit:', error);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
-  if (!product) {
-    return (
-      <View style={styles.container}>
-        <Text>Produit non trouvé</Text>
-      </View>
-    );
-  }
-
   return (
-    <ScrollView style={styles.container}>
-      <View style={styles.form}>
-        <TextInput
-          style={styles.input}
-          placeholder="Nom du produit"
-          value={name}
-          onChangeText={setName}
-        />
-        <TextInput
-          style={styles.input}
-          placeholder="Marque"
-          value={brand}
-          onChangeText={setBrand}
-        />
-        <TextInput
-          style={styles.input}
-          placeholder="Description"
-          value={description}
-          onChangeText={setDescription}
-          multiline
-        />
-        <TextInput
-          style={styles.input}
-          placeholder="Code-barres"
-          value={barcode}
-          onChangeText={setBarcode}
-          keyboardType="numeric"
-        />
-        <TextInput
-          style={styles.input}
-          placeholder="Prix"
-          value={price}
-          onChangeText={setPrice}
-          keyboardType="decimal-pad"
-        />
-        <TouchableOpacity style={styles.button} onPress={handleSubmit}>
-          <Text style={styles.buttonText}>Mettre à jour le produit</Text>
-        </TouchableOpacity>
+    <View style={styles.container}>
+      <ProductForm
+        initialValues={product}
+        onSubmit={handleSubmit}
+        isLoading={isSubmitting}
+      />
+      <View style={styles.buttonContainer}>
+        <Button
+          mode="contained"
+          onPress={() => handleSubmit(product)}
+          loading={isSubmitting}
+          disabled={isSubmitting}
+        >
+          Modifier le produit
+        </Button>
       </View>
-    </ScrollView>
+    </View>
   );
 };
 
@@ -101,26 +53,14 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#fff',
   },
-  form: {
-    padding: 20,
-  },
-  input: {
-    borderWidth: 1,
-    borderColor: '#ddd',
-    padding: 10,
-    marginBottom: 15,
-    borderRadius: 5,
-  },
-  button: {
-    backgroundColor: '#2196F3',
-    padding: 15,
-    borderRadius: 5,
-    alignItems: 'center',
-  },
-  buttonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: 'bold',
+  buttonContainer: {
+    padding: 16,
+    backgroundColor: '#fff',
+    elevation: 4,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: -2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
   },
 });
 

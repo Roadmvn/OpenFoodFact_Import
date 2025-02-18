@@ -13,6 +13,19 @@ export interface Product {
   stock?: number;
   created_at?: string;
   updated_at?: string;
+  calories?: number;
+  proteins?: number;
+  fats?: number;
+  carbohydrates?: number;
+  fiber?: number;
+  sugar?: number;
+  salt?: number;
+  energy?: number;
+  saturated_fats?: number;
+  omega_3?: number;
+  omega_6?: number;
+  cholesterol?: number;
+  sodium?: number;
 }
 
 interface ProductsState {

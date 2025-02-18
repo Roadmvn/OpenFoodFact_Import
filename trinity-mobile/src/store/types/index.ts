@@ -35,14 +35,25 @@ export interface User {
 
 export interface Product {
   id: number;
+  code: string | null;
   name: string;
-  description?: string;
-  price: number;
-  image_url?: string;
-  barcode?: string;
-  category?: string;
-  brand?: string;
-  stock?: number;
+  brand: string;
+  categories: string;
+  labels: string;
+  quantity: string | null;
+  image_url: string | null;
+  image_nutrition_url: string | null;
+  // Informations nutritionnelles
+  energy_kcal: number | null;
+  fat: number | null;
+  saturated_fat: number | null;
+  carbohydrates: number | null;
+  sugars: number | null;
+  fiber: number | null;
+  proteins: number | null;
+  salt: number | null;
+  sodium: number | null;
+  // Métadonnées
   created_at?: string;
   updated_at?: string;
 }

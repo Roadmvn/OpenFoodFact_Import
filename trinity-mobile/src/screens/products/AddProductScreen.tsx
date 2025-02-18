@@ -1,73 +1,66 @@
-import React, { useState } from 'react';
-import { View, TextInput, TouchableOpacity, Text, StyleSheet, ScrollView } from 'react-native';
+import React from 'react';
+import { View, StyleSheet } from 'react-native';
+import { Button } from 'react-native-paper';
 import { useDispatch } from 'react-redux';
-import { AppDispatch } from '../../store';
-import { addProduct } from '../../store/slices/productsSlice';
+import { addProduct } from '@store/slices/productsSlice';
+import { ProductScreenProps } from '@types/navigation';
+import ProductForm from '@components/products/ProductForm';
+import { Product } from '@store/types';
 
-export const AddProductScreen = ({ navigation }: { navigation: any }) => {
-  const dispatch = useDispatch<AppDispatch>();
-  const [name, setName] = useState('');
-  const [brand, setBrand] = useState('');
-  const [description, setDescription] = useState('');
-  const [barcode, setBarcode] = useState('');
-  const [price, setPrice] = useState('');
+const AddProductScreen: React.FC<ProductScreenProps<'AddProduct'>> = ({ navigation }) => {
+  const dispatch = useDispatch();
+  const [isSubmitting, setIsSubmitting] = React.useState(false);
 
-  const handleSubmit = async () => {
+  const initialValues: Partial<Product> = {
+    name: '',
+    brand: '',
+    code: null,
+    categories: '',
+    labels: '',
+    quantity: null,
+    image_url: null,
+    image_nutrition_url: null,
+    energy_kcal: null,
+    fat: null,
+    saturated_fat: null,
+    carbohydrates: null,
+    sugars: null,
+    fiber: null,
+    proteins: null,
+    salt: null,
+    sodium: null,
+  };
+
+  const handleSubmit = async (values: Partial<Product>) => {
     try {
-      await dispatch(addProduct({
-        name,
-        brand,
-        description,
-        barcode,
-        price: parseFloat(price),
-      })).unwrap();
+      setIsSubmitting(true);
+      await dispatch(addProduct(values));
       navigation.goBack();
     } catch (error) {
-      console.error('Error adding product:', error);
+      console.error('Erreur lors de l\'ajout du produit:', error);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
   return (
-    <ScrollView style={styles.container}>
-      <View style={styles.form}>
-        <TextInput
-          style={styles.input}
-          placeholder="Nom du produit"
-          value={name}
-          onChangeText={setName}
-        />
-        <TextInput
-          style={styles.input}
-          placeholder="Marque"
-          value={brand}
-          onChangeText={setBrand}
-        />
-        <TextInput
-          style={styles.input}
-          placeholder="Description"
-          value={description}
-          onChangeText={setDescription}
-          multiline
-        />
-        <TextInput
-          style={styles.input}
-          placeholder="Code-barres"
-          value={barcode}
-          onChangeText={setBarcode}
-          keyboardType="numeric"
-        />
-        <TextInput
-          style={styles.input}
-          placeholder="Prix"
-          value={price}
-          onChangeText={setPrice}
-          keyboardType="decimal-pad"
-        />
-        <TouchableOpacity style={styles.button} onPress={handleSubmit}>
-          <Text style={styles.buttonText}>Ajouter le produit</Text>
-        </TouchableOpacity>
+    <View style={styles.container}>
+      <ProductForm
+        initialValues={initialValues}
+        onSubmit={handleSubmit}
+        isLoading={isSubmitting}
+      />
+      <View style={styles.buttonContainer}>
+        <Button
+          mode="contained"
+          onPress={() => handleSubmit(initialValues)}
+          loading={isSubmitting}
+          disabled={isSubmitting}
+        >
+          Ajouter le produit
+        </Button>
       </View>
-    </ScrollView>
+    </View>
   );
 };
 
@@ -76,26 +69,14 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#fff',
   },
-  form: {
-    padding: 20,
-  },
-  input: {
-    borderWidth: 1,
-    borderColor: '#ddd',
-    padding: 10,
-    marginBottom: 15,
-    borderRadius: 5,
-  },
-  button: {
-    backgroundColor: '#2196F3',
-    padding: 15,
-    borderRadius: 5,
-    alignItems: 'center',
-  },
-  buttonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: 'bold',
+  buttonContainer: {
+    padding: 16,
+    backgroundColor: '#fff',
+    elevation: 4,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: -2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
   },
 });
 
