@@ -1,13 +1,17 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet } from 'react-native';
-import { useDispatch } from 'react-redux';
-import { AuthScreenProps } from '@types/navigation';
+import { View, TextInput, TouchableOpacity, Text, StyleSheet, Alert, ScrollView } from 'react-native';
+import { useDispatch, useSelector } from 'react-redux';
+import { registerUser } from '../../store/slices/authSlice';
+import { RootState } from '../../store/types';
+import { AppDispatch } from '../../store';
 
-const RegisterScreen: React.FC<AuthScreenProps<'Register'>> = ({ navigation }) => {
+const RegisterScreen = ({ navigation }: { navigation: any }) => {
+  const dispatch = useDispatch<AppDispatch>();
+  const { isLoading, error } = useSelector((state: RootState) => state.auth);
+
   const [email, setEmail] = useState('');
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
-  const dispatch = useDispatch();
 
   const handleRegister = () => {
     // TODO: Implement register logic

@@ -1,57 +1,65 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet } from 'react-native';
-import { useDispatch } from 'react-redux';
-import { AuthScreenProps } from '@types/navigation';
-import { loginStart } from '@store/slices/authSlice';
+import { View, TextInput, TouchableOpacity, Text, StyleSheet, Alert } from 'react-native';
+import { useDispatch, useSelector } from 'react-redux';
+import { loginUser } from '../../store/slices/authSlice';
+import { RootState } from '../../store/types';
+import { AppDispatch } from '../../store';
 
-const LoginScreen: React.FC<AuthScreenProps<'Login'>> = ({ navigation }) => {
+const LoginScreen = ({ navigation }: { navigation: any }) => {
+  const dispatch: AppDispatch = useDispatch();
+  const { isLoading, error } = useSelector((state: RootState) => state.auth);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const dispatch = useDispatch();
 
-  const handleLogin = () => {
-    dispatch(loginStart());
-    // TODO: Implement login logic
+  const handleLogin = async () => {
+    try {
+      await dispatch(loginUser({ email, password })).unwrap();
+      // La navigation sera gérée automatiquement par notre navigation guard
+    } catch (error: any) {
+      Alert.alert('Erreur', error.message || 'Une erreur est survenue lors de la connexion');
+    }
   };
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Connexion</Text>
-      
-      <TextInput
-        style={styles.input}
-        placeholder="Email"
-        value={email}
-        onChangeText={setEmail}
-        keyboardType="email-address"
-        autoCapitalize="none"
-      />
-
-      <TextInput
-        style={styles.input}
-        placeholder="Mot de passe"
-        value={password}
-        onChangeText={setPassword}
-        secureTextEntry
-      />
-
-      <TouchableOpacity style={styles.button} onPress={handleLogin}>
-        <Text style={styles.buttonText}>Se connecter</Text>
-      </TouchableOpacity>
-
-      <View style={styles.linkContainer}>
+      <View style={styles.form}>
+        <TextInput
+          style={styles.input}
+          placeholder="Email"
+          value={email}
+          onChangeText={setEmail}
+          keyboardType="email-address"
+          autoCapitalize="none"
+        />
+        <TextInput
+          style={styles.input}
+          placeholder="Mot de passe"
+          value={password}
+          onChangeText={setPassword}
+          secureTextEntry
+        />
         <TouchableOpacity 
-          style={styles.linkButton}
-          onPress={() => navigation.navigate('ForgotPassword')}
+          style={styles.button} 
+          onPress={handleLogin}
+          disabled={isLoading}
         >
-          <Text style={styles.linkText}>Mot de passe oublié ?</Text>
+          <Text style={styles.buttonText}>
+            {isLoading ? 'Connexion...' : 'Se connecter'}
+          </Text>
         </TouchableOpacity>
 
         <TouchableOpacity 
-          style={styles.linkButton}
           onPress={() => navigation.navigate('Register')}
+          style={styles.linkButton}
         >
-          <Text style={styles.linkText}>Créer un compte</Text>
+          <Text style={styles.linkText}>Pas encore de compte ? S'inscrire</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity 
+          onPress={() => navigation.navigate('ForgotPassword')}
+          style={styles.linkButton}
+        >
+          <Text style={styles.linkText}>Mot de passe oublié ?</Text>
         </TouchableOpacity>
       </View>
     </View>
@@ -63,46 +71,49 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     padding: 20,
-    backgroundColor: '#fff',
+    backgroundColor: '#f5f5f5',
   },
-  title: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    marginBottom: 30,
-    textAlign: 'center',
+  form: {
+    backgroundColor: 'white',
+    padding: 20,
+    borderRadius: 10,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
   },
   input: {
     height: 50,
     borderWidth: 1,
     borderColor: '#ddd',
     borderRadius: 8,
-    paddingHorizontal: 15,
     marginBottom: 15,
+    paddingHorizontal: 15,
     fontSize: 16,
+    backgroundColor: '#fff',
   },
   button: {
-    backgroundColor: '#2196F3',
-    height: 50,
+    backgroundColor: '#007AFF',
+    padding: 15,
     borderRadius: 8,
-    justifyContent: 'center',
     alignItems: 'center',
-    marginTop: 20,
+    marginTop: 10,
   },
   buttonText: {
-    color: '#fff',
+    color: 'white',
     fontSize: 16,
     fontWeight: 'bold',
   },
-  linkContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginTop: 15,
-  },
   linkButton: {
-    padding: 5,
+    marginTop: 15,
+    alignItems: 'center',
   },
   linkText: {
-    color: '#2196F3',
+    color: '#007AFF',
     fontSize: 14,
   },
 });

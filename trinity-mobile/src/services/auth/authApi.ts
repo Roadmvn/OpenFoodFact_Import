@@ -1,58 +1,48 @@
-import axiosInstance from '../api/axiosConfig';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import axios from '../api/axiosConfig';
+import { User } from '../../store/types';
 
-export interface LoginCredentials {
-  email: string;
-  password: string;
-}
-
-export interface RegisterData {
-  email: string;
-  password: string;
-  username: string;
-}
-
-export interface AuthResponse {
+interface LoginResponse {
+  user: User;
   token: string;
-  user: {
-    id: number;
-    email: string;
-    username: string;
-    role: string;
-  };
+}
+
+interface RegisterData {
+  firstName: string;
+  lastName: string;
+  email: string;
+  password: string;
+  phone?: string;
+  address?: string;
+  zipCode?: string;
+  city?: string;
+  country?: string;
 }
 
 export const authApi = {
-  login: async (credentials: LoginCredentials) => {
-    const response = await axiosInstance.post<AuthResponse>('/auth/login', credentials);
-    if (response.data.token) {
-      await AsyncStorage.setItem('token', response.data.token);
-    }
+  login: async (credentials: { email: string; password: string }): Promise<LoginResponse> => {
+    const response = await axios.post('/auth/login', credentials);
     return response.data;
   },
 
-  register: async (data: RegisterData) => {
-    const response = await axiosInstance.post<AuthResponse>('/auth/register', data);
-    if (response.data.token) {
-      await AsyncStorage.setItem('token', response.data.token);
-    }
+  register: async (userData: RegisterData): Promise<LoginResponse> => {
+    const response = await axios.post('/auth/register', userData);
     return response.data;
   },
 
-  logout: async () => {
-    const response = await axiosInstance.post('/auth/logout');
-    await AsyncStorage.removeItem('token');
+  logout: async (): Promise<void> => {
+    await axios.post('/auth/logout');
+  },
+
+  getCurrentUser: async (): Promise<User> => {
+    const response = await axios.get('/auth/me');
     return response.data;
   },
 
-  getCurrentUser: async () => {
-    const response = await axiosInstance.get('/auth/me');
-    return response.data;
+  forgotPassword: async (email: string): Promise<void> => {
+    await axios.post('/auth/forgot-password', { email });
   },
 
-  googleLogin: () => {
-    // Note: Pour React Native, nous devrons utiliser une solution comme
-    // react-native-app-auth pour l'authentification OAuth
-    throw new Error('Google login not implemented for mobile yet');
-  }
+  resetPassword: async (token: string, newPassword: string): Promise<void> => {
+    await axios.post('/auth/reset-password', { token, newPassword });
+  },
 };
