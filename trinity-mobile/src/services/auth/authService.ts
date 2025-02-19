@@ -52,12 +52,42 @@ class AuthService {
       (response) => response,
       async (error) => {
         if (error.response?.status === 401) {
+          // Token expiré ou invalide
           await AuthService.logout();
-          // Vous pouvez ajouter ici la logique pour rediriger vers la page de connexion
+          // Rediriger vers la page de connexion
+          // Cette partie sera gérée par Redux
+          throw new Error('Session expirée. Veuillez vous reconnecter.');
         }
         return Promise.reject(error);
       }
     );
+  }
+
+  // Vérifier si l'utilisateur est authentifié
+  static async isAuthenticated(): Promise<boolean> {
+    const token = await AuthService.getToken();
+    return !!token;
+  }
+
+  // Restaurer la session
+  static async restoreSession(): Promise<{ token: string; user: any } | null> {
+    try {
+      const token = await AuthService.getToken();
+      if (!token) return null;
+
+      // Configurer axios avec le token
+      await AuthService.setupAxiosInterceptors();
+
+      // Vérifier la validité du token en appelant une route protégée
+      const response = await axios.get(`${API_URL}/auth/me`);
+      return {
+        token,
+        user: response.data
+      };
+    } catch (error) {
+      await AuthService.logout();
+      return null;
+    }
   }
 }
 

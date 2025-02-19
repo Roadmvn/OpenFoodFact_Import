@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -8,20 +8,41 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
-import { loginRequest } from '../../store/slices/authSlice';
+import { loginRequest, logoutRequest } from '../../store/slices/authSlice';
 import { RootState } from '../../store';
+import { useToast } from '../../contexts/ToastContext';
 
 export default function LoginScreen() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const dispatch = useDispatch();
   const { loading, error } = useSelector((state: RootState) => state.auth);
+  const { showToast } = useToast();
+
+  // Gérer les erreurs d'authentification
+  useEffect(() => {
+    if (error) {
+      showToast(error, 'error');
+    }
+  }, [error]);
 
   const handleLogin = () => {
+    // Validation des champs
     if (!email || !password) {
+      showToast('Veuillez remplir tous les champs', 'error');
       return;
     }
+
+    if (!email.includes('@')) {
+      showToast('Email invalide', 'error');
+      return;
+    }
+
     dispatch(loginRequest({ email, password }));
+  };
+
+  const handleLogout = () => {
+    dispatch(logoutRequest());
   };
 
   return (
@@ -48,12 +69,10 @@ export default function LoginScreen() {
           editable={!loading}
         />
 
-        {error && <Text style={styles.error}>{error}</Text>}
-
         <TouchableOpacity 
           style={[styles.button, loading && styles.buttonDisabled]}
           onPress={handleLogin}
-          disabled={loading || !email || !password}
+          disabled={loading}
         >
           {loading ? (
             <ActivityIndicator color="#fff" />
@@ -69,18 +88,29 @@ export default function LoginScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
-    padding: 20,
     justifyContent: 'center',
+    padding: 20,
+    backgroundColor: '#f5f5f5',
   },
   form: {
-    width: '100%',
+    backgroundColor: '#fff',
+    padding: 20,
+    borderRadius: 10,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
   },
   title: {
     fontSize: 24,
     fontWeight: 'bold',
-    marginBottom: 30,
+    marginBottom: 20,
     textAlign: 'center',
+    color: '#333',
   },
   input: {
     height: 50,
@@ -97,7 +127,6 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     justifyContent: 'center',
     alignItems: 'center',
-    marginTop: 10,
   },
   buttonDisabled: {
     backgroundColor: '#ccc',
@@ -106,10 +135,5 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 16,
     fontWeight: 'bold',
-  },
-  error: {
-    color: 'red',
-    marginBottom: 10,
-    textAlign: 'center',
   },
 });
