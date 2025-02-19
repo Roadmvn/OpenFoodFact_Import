@@ -8,7 +8,11 @@ const Stack = createNativeStackNavigator<MainStackParamList>();
 export default function MainStack() {
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }}>
-      <Stack.Screen name="ProductList" component={ProductListScreen} />
+      <Stack.Screen 
+        name="ProductList" 
+        component={ProductListScreen} 
+        options={{ title: 'Produits' }} 
+      />
     </Stack.Navigator>
   );
 }

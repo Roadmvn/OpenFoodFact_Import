@@ -28,7 +28,11 @@ export default function ProductListScreen() {
       setProducts(response.data);
       setLoading(false);
     } catch (err) {
-      setError(err.message);
+      if (err instanceof Error) {
+        setError(err.message);
+      } else {
+        setError('Une erreur est survenue');
+      }
       setLoading(false);
     }
   };

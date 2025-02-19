@@ -10,12 +10,12 @@ import {
   restoreSessionFailure,
 } from '../slices/authSlice';
 import AuthService from '../../services/auth/authService';
-import { LoginCredentials } from '../types/auth';
+import { LoginCredentials, LoginResponse } from '../types/auth';
 
 function* loginSaga(action: ReturnType<typeof loginRequest>) {
   try {
-    const response = yield call(AuthService.login, action.payload);
-    yield call(AuthService.setupAxiosInterceptors);
+    const response: LoginResponse = yield call([AuthService, 'login'], action.payload);
+    yield call([AuthService, 'setupAxiosInterceptors']);
     yield put(loginSuccess(response));
   } catch (error) {
     yield put(loginFailure(error instanceof Error ? error.message : 'Erreur de connexion'));
@@ -24,7 +24,7 @@ function* loginSaga(action: ReturnType<typeof loginRequest>) {
 
 function* logoutSaga() {
   try {
-    yield call(AuthService.logout);
+    yield call([AuthService, 'logout']);
     yield put(logoutSuccess());
   } catch (error) {
     console.error('Erreur lors de la déconnexion:', error);
@@ -35,7 +35,7 @@ function* logoutSaga() {
 
 function* restoreSessionSaga() {
   try {
-    const session = yield call(AuthService.restoreSession);
+    const session: LoginResponse | null = yield call([AuthService, 'restoreSession']);
     yield put(restoreSessionSuccess(session));
   } catch (error) {
     yield put(restoreSessionFailure());

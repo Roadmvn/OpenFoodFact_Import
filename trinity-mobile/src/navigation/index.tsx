@@ -6,8 +6,7 @@ import { RootState } from '../store';
 import AuthStack from './stacks/AuthStack';
 import MainStack from './stacks/MainStack';
 import SplashScreen from '../screens/auth/SplashScreen';
-import AuthService from '../services/auth/authService';
-import { loginSuccess, restoreSessionRequest } from '../store/slices/authSlice';
+import { restoreSessionRequest } from '../store/slices/authSlice';
 import { RootStackParamList } from './types/navigation';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
