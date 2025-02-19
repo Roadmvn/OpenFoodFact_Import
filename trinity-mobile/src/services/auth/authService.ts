@@ -42,9 +42,20 @@ class AuthService {
 
   static async logout(): Promise<void> {
     try {
+      // Appeler l'API de déconnexion
+      await axios.post(`${API_URL}/auth/logout`);
+      
+      // Supprimer le token localement
       await SecureStore.deleteItemAsync(TOKEN_KEY);
+      
+      // Réinitialiser la configuration Axios
+      axios.defaults.headers.common['Authorization'] = '';
     } catch (error) {
       console.error('Erreur lors de la déconnexion:', error);
+      // Même en cas d'erreur, on supprime le token local
+      await SecureStore.deleteItemAsync(TOKEN_KEY);
+      axios.defaults.headers.common['Authorization'] = '';
+      throw error;
     }
   }
 

@@ -1,6 +1,14 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, FlatList, StyleSheet, ActivityIndicator } from 'react-native';
+import {
+  View,
+  Text,
+  FlatList,
+  StyleSheet,
+  ActivityIndicator,
+} from 'react-native';
 import axios from 'axios';
+import { API_URL } from '../../config/api';
+import Header from '../../components/common/Header';
 
 interface Product {
   id: number;
@@ -20,7 +28,7 @@ export default function ProductListScreen() {
 
   const fetchProducts = async () => {
     try {
-      const response = await axios.get('http://10.0.2.2:3000/api/products', {
+      const response = await axios.get(`${API_URL}/api/products`, {
         headers: {
           'Content-Type': 'application/json',
         },
@@ -39,22 +47,29 @@ export default function ProductListScreen() {
 
   if (loading) {
     return (
-      <View style={styles.centered}>
-        <ActivityIndicator size="large" color="#0000ff" />
+      <View style={styles.container}>
+        <Header title="Produits" />
+        <View style={styles.centered}>
+          <ActivityIndicator size="large" color="#0000ff" />
+        </View>
       </View>
     );
   }
 
   if (error) {
     return (
-      <View style={styles.centered}>
-        <Text style={styles.error}>Erreur: {error}</Text>
+      <View style={styles.container}>
+        <Header title="Produits" />
+        <View style={styles.centered}>
+          <Text style={styles.error}>Erreur: {error}</Text>
+        </View>
       </View>
     );
   }
 
   return (
     <View style={styles.container}>
+      <Header title="Produits" />
       <FlatList
         data={products}
         keyExtractor={(item) => item.id.toString()}
