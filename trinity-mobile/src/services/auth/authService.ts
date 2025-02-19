@@ -141,6 +141,23 @@ class AuthService {
       throw error;
     }
   }
+
+  static async googleLogin(token: string): Promise<LoginResponse> {
+    try {
+      const response = await axios.post(`${API_URL}/auth/google`, { token });
+      const { token: authToken, user } = response.data;
+      
+      // Stocker le token de manière sécurisée
+      await SecureStore.setItemAsync(TOKEN_KEY, authToken);
+      
+      return { token: authToken, user };
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        throw new Error(error.response?.data?.message || 'Erreur de connexion Google');
+      }
+      throw error;
+    }
+  }
 }
 
 export default AuthService;
