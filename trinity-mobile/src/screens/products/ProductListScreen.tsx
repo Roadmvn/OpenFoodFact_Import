@@ -1,23 +1,50 @@
-import React, { useEffect } from 'react';
-import { View, FlatList, StyleSheet, ActivityIndicator } from 'react-native';
-import { useDispatch, useSelector } from 'react-redux';
-import { ProductScreenProps } from '@types/navigation';
-import { RootState } from '@store/types';
-import { fetchProductsStart } from '@store/slices/productsSlice';
-import ProductCard from '@components/products/ProductCard';
+import React, { useEffect, useState } from 'react';
+import { View, Text, FlatList, StyleSheet, ActivityIndicator } from 'react-native';
+import axios from 'axios';
 
-const ProductListScreen: React.FC<ProductScreenProps<'ProductList'>> = ({ navigation }) => {
-  const dispatch = useDispatch();
-  const { items, loading } = useSelector((state: RootState) => state.products);
+interface Product {
+  id: number;
+  name: string;
+  description: string;
+  price: number;
+}
+
+export default function ProductListScreen() {
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    dispatch(fetchProductsStart());
-  }, [dispatch]);
+    fetchProducts();
+  }, []);
+
+  const fetchProducts = async () => {
+    try {
+      const response = await axios.get('http://10.0.2.2:3000/api/products', {
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      setProducts(response.data);
+      setLoading(false);
+    } catch (err) {
+      setError(err.message);
+      setLoading(false);
+    }
+  };
 
   if (loading) {
     return (
       <View style={styles.centered}>
-        <ActivityIndicator size="large" color="#2196F3" />
+        <ActivityIndicator size="large" color="#0000ff" />
+      </View>
+    );
+  }
+
+  if (error) {
+    return (
+      <View style={styles.centered}>
+        <Text style={styles.error}>Erreur: {error}</Text>
       </View>
     );
   }
@@ -25,33 +52,51 @@ const ProductListScreen: React.FC<ProductScreenProps<'ProductList'>> = ({ naviga
   return (
     <View style={styles.container}>
       <FlatList
-        data={items}
-        keyExtractor={(item) => item.id}
+        data={products}
+        keyExtractor={(item) => item.id.toString()}
         renderItem={({ item }) => (
-          <ProductCard
-            product={item}
-            onPress={() => navigation.navigate('ProductDetail', { product: item })}
-          />
+          <View style={styles.productItem}>
+            <Text style={styles.productName}>{item.name}</Text>
+            <Text style={styles.productDescription}>{item.description}</Text>
+            <Text style={styles.productPrice}>{item.price}€</Text>
+          </View>
         )}
-        contentContainerStyle={styles.listContent}
       />
     </View>
   );
-};
+}
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: '#fff',
   },
   centered: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
   },
-  listContent: {
-    padding: 10,
+  error: {
+    color: 'red',
+    fontSize: 16,
+  },
+  productItem: {
+    padding: 15,
+    borderBottomWidth: 1,
+    borderBottomColor: '#eee',
+  },
+  productName: {
+    fontSize: 18,
+    fontWeight: 'bold',
+  },
+  productDescription: {
+    fontSize: 14,
+    color: '#666',
+    marginTop: 5,
+  },
+  productPrice: {
+    fontSize: 16,
+    color: '#2f95dc',
+    marginTop: 5,
   },
 });
-
-export default ProductListScreen;
