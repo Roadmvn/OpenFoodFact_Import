@@ -1,61 +1,86 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, Alert } from 'react-native';
 import { useDispatch } from 'react-redux';
+import { useNavigation } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { MainStackParamList } from '../../navigation/types/navigation';
 import { logoutRequest } from '../../store/slices/authSlice';
+import { Ionicons } from '@expo/vector-icons';
+import { useToast } from '../../contexts/ToastContext';
 
 interface HeaderProps {
   title: string;
 }
 
+type NavigationProp = NativeStackNavigationProp<MainStackParamList>;
+
 export default function Header({ title }: HeaderProps) {
   const dispatch = useDispatch();
+  const navigation = useNavigation<NavigationProp>();
+  const { showToast } = useToast();
 
   const handleLogout = () => {
-    dispatch(logoutRequest());
+    Alert.alert(
+      'Déconnexion',
+      'Êtes-vous sûr de vouloir vous déconnecter ?',
+      [
+        {
+          text: 'Annuler',
+          style: 'cancel'
+        },
+        {
+          text: 'Déconnexion',
+          style: 'destructive',
+          onPress: () => {
+            dispatch(logoutRequest());
+            showToast('Vous avez été déconnecté', 'success');
+          }
+        }
+      ]
+    );
   };
 
   return (
     <View style={styles.header}>
       <Text style={styles.title}>{title}</Text>
-      <TouchableOpacity onPress={handleLogout} style={styles.logoutButton}>
-        <Text style={styles.logoutText}>Déconnexion</Text>
-      </TouchableOpacity>
+      <View style={styles.rightButtons}>
+        <TouchableOpacity
+          style={styles.iconButton}
+          onPress={() => navigation.navigate('Profile')}
+        >
+          <Ionicons name="person-outline" size={24} color="#007AFF" />
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={styles.iconButton}
+          onPress={handleLogout}
+        >
+          <Ionicons name="log-out-outline" size={24} color="#007AFF" />
+        </TouchableOpacity>
+      </View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   header: {
-    height: 60,
     flexDirection: 'row',
-    alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 16,
+    alignItems: 'center',
+    padding: 16,
     backgroundColor: '#fff',
     borderBottomWidth: 1,
-    borderBottomColor: '#ddd',
-    // Ajouter une ombre légère
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
-    elevation: 2,
+    borderBottomColor: '#eee',
   },
   title: {
-    fontSize: 18,
+    fontSize: 20,
     fontWeight: 'bold',
-    color: '#212121',
   },
-  logoutButton: {
-    padding: 8,
-    borderRadius: 4,
+  rightButtons: {
+    flexDirection: 'row',
+    alignItems: 'center',
   },
-  logoutText: {
-    color: '#F44336',
-    fontSize: 14,
-    fontWeight: '500',
+  iconButton: {
+    marginLeft: 16,
+    padding: 4,
   },
 });

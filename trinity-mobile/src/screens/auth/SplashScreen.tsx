@@ -1,7 +1,10 @@
 import React from 'react';
 import { View, ActivityIndicator, StyleSheet, Text } from 'react-native';
+import { AuthStackScreenProps } from '../../navigation/types/navigation';
 
-export default function SplashScreen() {
+type Props = AuthStackScreenProps<'Splash'>;
+
+export default function SplashScreen({ navigation }: Props) {
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Trinity</Text>

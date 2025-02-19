@@ -11,9 +11,15 @@ import {
   restoreSessionRequest,
   restoreSessionSuccess,
   restoreSessionFailure,
+  fetchProfileRequest,
+  fetchProfileSuccess,
+  fetchProfileFailure,
+  updateProfileRequest,
+  updateProfileSuccess,
+  updateProfileFailure,
 } from '../slices/authSlice';
 import AuthService from '../../services/auth/authService';
-import { LoginCredentials, LoginResponse, RegisterCredentials } from '../types/auth';
+import { LoginCredentials, LoginResponse, RegisterCredentials, User } from '../types/auth';
 
 function* loginSaga(action: ReturnType<typeof loginRequest>) {
   try {
@@ -55,9 +61,31 @@ function* restoreSessionSaga() {
   }
 }
 
+function* fetchProfileSaga() {
+  try {
+    const user: User = yield call([AuthService, 'getCurrentUser']);
+    yield put(fetchProfileSuccess(user));
+  } catch (error) {
+    yield put(fetchProfileFailure(error instanceof Error ? error.message : 'Erreur lors de la récupération du profil'));
+  }
+}
+
+function* updateProfileSaga(action: ReturnType<typeof updateProfileRequest>) {
+  try {
+    const user: User = yield call([AuthService, 'updateProfile'], action.payload);
+    yield put(updateProfileSuccess(user));
+    // Afficher un message de succès
+    // TODO: Implémenter un système de toast/notification
+  } catch (error) {
+    yield put(updateProfileFailure(error instanceof Error ? error.message : 'Erreur lors de la mise à jour du profil'));
+  }
+}
+
 export default function* authSaga() {
   yield takeLatest(loginRequest.type, loginSaga);
   yield takeLatest(registerRequest.type, registerSaga);
   yield takeLatest(logoutRequest.type, logoutSaga);
   yield takeLatest(restoreSessionRequest.type, restoreSessionSaga);
+  yield takeLatest(fetchProfileRequest.type, fetchProfileSaga);
+  yield takeLatest(updateProfileRequest.type, updateProfileSaga);
 }

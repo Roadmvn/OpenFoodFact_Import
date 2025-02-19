@@ -1,7 +1,7 @@
 import axios from 'axios';
 import * as SecureStore from 'expo-secure-store';
 import { API_URL } from '../../config/api';
-import { LoginCredentials, LoginResponse, RegisterCredentials } from '../../store/types/auth';
+import { LoginCredentials, LoginResponse, RegisterCredentials, User, UpdateProfileData } from '../../store/types/auth';
 
 const TOKEN_KEY = 'auth_token';
 
@@ -115,6 +115,30 @@ class AuthService {
     } catch (error) {
       await AuthService.logout();
       return null;
+    }
+  }
+
+  static async getCurrentUser(): Promise<User> {
+    try {
+      const response = await axios.get(`${API_URL}/auth/me`);
+      return response.data;
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        throw new Error(error.response?.data?.message || 'Erreur lors de la récupération du profil');
+      }
+      throw error;
+    }
+  }
+
+  static async updateProfile(data: UpdateProfileData): Promise<User> {
+    try {
+      const response = await axios.put(`${API_URL}/auth/me`, data);
+      return response.data;
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        throw new Error(error.response?.data?.message || 'Erreur lors de la mise à jour du profil');
+      }
+      throw error;
     }
   }
 }

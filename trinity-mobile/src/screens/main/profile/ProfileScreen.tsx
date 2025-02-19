@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import {
   View,
   Text,
@@ -7,26 +7,33 @@ import {
   StyleSheet,
   ScrollView,
   ActivityIndicator,
-  Keyboard,
-  TouchableWithoutFeedback,
   KeyboardAvoidingView,
   Platform,
+  TouchableWithoutFeedback,
+  Keyboard,
+  Alert,
 } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
-import { registerRequest } from '../../store/slices/authSlice';
-import { RootState } from '../../store';
-import { useToast } from '../../contexts/ToastContext';
-import { RegisterCredentials } from '../../store/types/auth';
-import { AuthStackScreenProps } from '../../navigation/types/navigation';
+import { RootState } from '../../../store';
+import {
+  fetchProfileRequest,
+  updateProfileRequest,
+} from '../../../store/slices/authSlice';
+import Header from '../../../components/common/Header';
+import { UpdateProfileData } from '../../../store/types/auth';
+import { useToast } from '../../../contexts/ToastContext';
 
-type Props = AuthStackScreenProps<'Register'>;
+export default function ProfileScreen() {
+  const dispatch = useDispatch();
+  const { showToast } = useToast();
+  const { user, loading, isUpdating, error } = useSelector(
+    (state: RootState) => state.auth
+  );
 
-export default function RegisterScreen({ navigation }: Props) {
-  const [formData, setFormData] = useState<RegisterCredentials>({
+  const [formData, setFormData] = useState<UpdateProfileData>({
     firstName: '',
     lastName: '',
     email: '',
-    password: '',
     phone: '',
     address: '',
     zipCode: '',
@@ -34,22 +41,33 @@ export default function RegisterScreen({ navigation }: Props) {
     country: '',
   });
 
-  const dispatch = useDispatch();
-  const { loading, error } = useSelector((state: RootState) => ({
-    loading: state.auth.loading,
-    error: state.auth.error
-  }));
-  const { showToast } = useToast();
-
   // Refs pour la navigation entre les champs
   const lastNameRef = useRef<TextInput>(null);
   const emailRef = useRef<TextInput>(null);
-  const passwordRef = useRef<TextInput>(null);
   const phoneRef = useRef<TextInput>(null);
   const addressRef = useRef<TextInput>(null);
   const zipCodeRef = useRef<TextInput>(null);
   const cityRef = useRef<TextInput>(null);
   const countryRef = useRef<TextInput>(null);
+
+  useEffect(() => {
+    dispatch(fetchProfileRequest());
+  }, [dispatch]);
+
+  useEffect(() => {
+    if (user) {
+      setFormData({
+        firstName: user.firstName,
+        lastName: user.lastName,
+        email: user.email,
+        phone: user.phone || '',
+        address: user.address || '',
+        zipCode: user.zipCode || '',
+        city: user.city || '',
+        country: user.country || '',
+      });
+    }
+  }, [user]);
 
   useEffect(() => {
     if (error) {
@@ -58,8 +76,8 @@ export default function RegisterScreen({ navigation }: Props) {
   }, [error, showToast]);
 
   const validateForm = () => {
-    if (Object.values(formData).some(value => !value)) {
-      showToast('Veuillez remplir tous les champs', 'error');
+    if (!formData.firstName || !formData.lastName || !formData.email) {
+      showToast('Veuillez remplir tous les champs obligatoires', 'error');
       return false;
     }
 
@@ -68,17 +86,12 @@ export default function RegisterScreen({ navigation }: Props) {
       return false;
     }
 
-    if (formData.password.length < 8) {
-      showToast('Le mot de passe doit contenir au moins 8 caractères', 'error');
-      return false;
-    }
-
-    if (!/^\d{10}$/.test(formData.phone.replace(/\D/g, ''))) {
+    if (formData.phone && !/^\d{10}$/.test(formData.phone.replace(/\D/g, ''))) {
       showToast('Numéro de téléphone invalide', 'error');
       return false;
     }
 
-    if (!/^\d{5}$/.test(formData.zipCode)) {
+    if (formData.zipCode && !/^\d{5}$/.test(formData.zipCode)) {
       showToast('Code postal invalide', 'error');
       return false;
     }
@@ -86,144 +99,167 @@ export default function RegisterScreen({ navigation }: Props) {
     return true;
   };
 
-  const handleRegister = () => {
-    if (validateForm()) {
-      dispatch(registerRequest(formData));
-    }
+  const handleUpdateProfile = () => {
+    if (!validateForm()) return;
+
+    Alert.alert(
+      'Confirmation',
+      'Voulez-vous mettre à jour votre profil ?',
+      [
+        {
+          text: 'Annuler',
+          style: 'cancel'
+        },
+        {
+          text: 'Mettre à jour',
+          onPress: () => {
+            dispatch(updateProfileRequest(formData));
+            showToast('Profil mis à jour avec succès', 'success');
+          }
+        }
+      ]
+    );
   };
+
+  if (loading && !user) {
+    return (
+      <View style={styles.container}>
+        <Header title="Profil" />
+        <View style={styles.centered}>
+          <ActivityIndicator size="large" color="#007AFF" />
+        </View>
+      </View>
+    );
+  }
 
   return (
     <KeyboardAvoidingView
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       style={styles.container}
     >
+      <Header title="Profil" />
       <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-        <ScrollView style={styles.scrollView}>
+        <ScrollView style={styles.content}>
           <View style={styles.form}>
-            <Text style={styles.title}>Inscription</Text>
-            
+            <Text style={styles.title}>Informations personnelles</Text>
+
+            <Text style={styles.label}>Prénom *</Text>
             <TextInput
               style={styles.input}
-              placeholder="Prénom"
               value={formData.firstName}
-              onChangeText={(text) => setFormData({...formData, firstName: text})}
+              onChangeText={(text) => setFormData({ ...formData, firstName: text })}
+              placeholder="Prénom"
               returnKeyType="next"
               onSubmitEditing={() => lastNameRef.current?.focus()}
               blurOnSubmit={false}
-              editable={!loading}
+              editable={!isUpdating}
             />
+
+            <Text style={styles.label}>Nom *</Text>
             <TextInput
               ref={lastNameRef}
               style={styles.input}
-              placeholder="Nom"
               value={formData.lastName}
-              onChangeText={(text) => setFormData({...formData, lastName: text})}
+              onChangeText={(text) => setFormData({ ...formData, lastName: text })}
+              placeholder="Nom"
               returnKeyType="next"
               onSubmitEditing={() => emailRef.current?.focus()}
               blurOnSubmit={false}
-              editable={!loading}
+              editable={!isUpdating}
             />
+
+            <Text style={styles.label}>Email *</Text>
             <TextInput
               ref={emailRef}
               style={styles.input}
+              value={formData.email}
+              onChangeText={(text) => setFormData({ ...formData, email: text })}
               placeholder="Email"
               keyboardType="email-address"
               autoCapitalize="none"
-              value={formData.email}
-              onChangeText={(text) => setFormData({...formData, email: text})}
-              returnKeyType="next"
-              onSubmitEditing={() => passwordRef.current?.focus()}
-              blurOnSubmit={false}
-              editable={!loading}
-            />
-            <TextInput
-              ref={passwordRef}
-              style={styles.input}
-              placeholder="Mot de passe (8 caractères minimum)"
-              secureTextEntry
-              value={formData.password}
-              onChangeText={(text) => setFormData({...formData, password: text})}
               returnKeyType="next"
               onSubmitEditing={() => phoneRef.current?.focus()}
               blurOnSubmit={false}
-              editable={!loading}
+              editable={!isUpdating}
             />
+
+            <Text style={styles.label}>Téléphone</Text>
             <TextInput
               ref={phoneRef}
               style={styles.input}
+              value={formData.phone}
+              onChangeText={(text) => setFormData({ ...formData, phone: text })}
               placeholder="Téléphone"
               keyboardType="phone-pad"
-              value={formData.phone}
-              onChangeText={(text) => setFormData({...formData, phone: text})}
               returnKeyType="next"
               onSubmitEditing={() => addressRef.current?.focus()}
               blurOnSubmit={false}
-              editable={!loading}
+              editable={!isUpdating}
             />
+
+            <Text style={styles.label}>Adresse</Text>
             <TextInput
               ref={addressRef}
               style={styles.input}
-              placeholder="Adresse"
               value={formData.address}
-              onChangeText={(text) => setFormData({...formData, address: text})}
+              onChangeText={(text) => setFormData({ ...formData, address: text })}
+              placeholder="Adresse"
               returnKeyType="next"
               onSubmitEditing={() => zipCodeRef.current?.focus()}
               blurOnSubmit={false}
-              editable={!loading}
+              editable={!isUpdating}
             />
+
+            <Text style={styles.label}>Code postal</Text>
             <TextInput
               ref={zipCodeRef}
               style={styles.input}
+              value={formData.zipCode}
+              onChangeText={(text) => setFormData({ ...formData, zipCode: text })}
               placeholder="Code postal"
               keyboardType="numeric"
-              value={formData.zipCode}
-              onChangeText={(text) => setFormData({...formData, zipCode: text})}
               returnKeyType="next"
               onSubmitEditing={() => cityRef.current?.focus()}
               blurOnSubmit={false}
-              editable={!loading}
+              editable={!isUpdating}
               maxLength={5}
             />
+
+            <Text style={styles.label}>Ville</Text>
             <TextInput
               ref={cityRef}
               style={styles.input}
-              placeholder="Ville"
               value={formData.city}
-              onChangeText={(text) => setFormData({...formData, city: text})}
+              onChangeText={(text) => setFormData({ ...formData, city: text })}
+              placeholder="Ville"
               returnKeyType="next"
               onSubmitEditing={() => countryRef.current?.focus()}
               blurOnSubmit={false}
-              editable={!loading}
+              editable={!isUpdating}
             />
+
+            <Text style={styles.label}>Pays</Text>
             <TextInput
               ref={countryRef}
               style={styles.input}
-              placeholder="Pays"
               value={formData.country}
-              onChangeText={(text) => setFormData({...formData, country: text})}
+              onChangeText={(text) => setFormData({ ...formData, country: text })}
+              placeholder="Pays"
               returnKeyType="done"
-              onSubmitEditing={handleRegister}
-              editable={!loading}
+              onSubmitEditing={handleUpdateProfile}
+              editable={!isUpdating}
             />
 
-            <TouchableOpacity 
-              style={[styles.button, loading && styles.buttonDisabled]}
-              onPress={handleRegister}
-              disabled={loading}
+            <TouchableOpacity
+              style={[styles.button, isUpdating && styles.buttonDisabled]}
+              onPress={handleUpdateProfile}
+              disabled={isUpdating}
             >
-              {loading ? (
+              {isUpdating ? (
                 <ActivityIndicator color="#fff" />
               ) : (
-                <Text style={styles.buttonText}>S'inscrire</Text>
+                <Text style={styles.buttonText}>Mettre à jour</Text>
               )}
-            </TouchableOpacity>
-
-            <TouchableOpacity 
-              style={styles.linkButton}
-              onPress={() => navigation.navigate('Login')}
-              disabled={loading}
-            >
-              <Text style={styles.linkText}>Déjà inscrit ? Se connecter</Text>
             </TouchableOpacity>
           </View>
         </ScrollView>
@@ -237,7 +273,12 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#f5f5f5',
   },
-  scrollView: {
+  centered: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  content: {
     flex: 1,
   },
   form: {
@@ -261,6 +302,11 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     color: '#333',
   },
+  label: {
+    fontSize: 16,
+    color: '#666',
+    marginBottom: 5,
+  },
   input: {
     borderWidth: 1,
     borderColor: '#ddd',
@@ -273,6 +319,7 @@ const styles = StyleSheet.create({
     padding: 15,
     borderRadius: 5,
     alignItems: 'center',
+    marginTop: 10,
   },
   buttonDisabled: {
     backgroundColor: '#ccc',
@@ -281,13 +328,5 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 16,
     fontWeight: 'bold',
-  },
-  linkButton: {
-    marginTop: 15,
-    alignItems: 'center',
-  },
-  linkText: {
-    color: '#007AFF',
-    fontSize: 14,
   },
 });

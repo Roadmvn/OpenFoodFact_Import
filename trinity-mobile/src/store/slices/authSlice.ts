@@ -1,5 +1,5 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { AuthState, LoginCredentials, LoginResponse, RegisterCredentials } from '../types/auth';
+import { AuthState, LoginCredentials, LoginResponse, RegisterCredentials, User, UpdateProfileData } from '../types/auth';
 
 const initialState: AuthState = {
   user: null,
@@ -7,6 +7,7 @@ const initialState: AuthState = {
   loading: false,
   error: null,
   isInitialized: false,
+  isUpdating: false,
 };
 
 const authSlice = createSlice({
@@ -73,6 +74,35 @@ const authSlice = createSlice({
       state.token = null;
       state.isInitialized = true;
     },
+
+    // Profile actions
+    fetchProfileRequest: (state) => {
+      state.loading = true;
+      state.error = null;
+    },
+    fetchProfileSuccess: (state, action: PayloadAction<User>) => {
+      state.loading = false;
+      state.user = action.payload;
+      state.error = null;
+    },
+    fetchProfileFailure: (state, action: PayloadAction<string>) => {
+      state.loading = false;
+      state.error = action.payload;
+    },
+
+    updateProfileRequest: (state, action: PayloadAction<UpdateProfileData>) => {
+      state.isUpdating = true;
+      state.error = null;
+    },
+    updateProfileSuccess: (state, action: PayloadAction<User>) => {
+      state.isUpdating = false;
+      state.user = action.payload;
+      state.error = null;
+    },
+    updateProfileFailure: (state, action: PayloadAction<string>) => {
+      state.isUpdating = false;
+      state.error = action.payload;
+    },
   },
 });
 
@@ -85,6 +115,12 @@ export const {
   registerFailure,
   logoutRequest,
   logoutSuccess,
+  fetchProfileRequest,
+  fetchProfileSuccess,
+  fetchProfileFailure,
+  updateProfileRequest,
+  updateProfileSuccess,
+  updateProfileFailure,
   restoreSessionRequest,
   restoreSessionSuccess,
   restoreSessionFailure,

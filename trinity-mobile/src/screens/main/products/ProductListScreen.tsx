@@ -1,23 +1,20 @@
 import React, { useEffect, useState } from 'react';
 import {
   View,
-  Text,
-  FlatList,
   StyleSheet,
   ActivityIndicator,
+  FlatList,
+  Text,
 } from 'react-native';
 import axios from 'axios';
-import { API_URL } from '../../config/api';
-import Header from '../../components/common/Header';
+import { API_URL } from '../../../config/api';
+import Header from '../../../components/common/Header';
+import { Product } from '../../../types/product';
+import { MainStackScreenProps } from '../../../navigation/types/navigation';
 
-interface Product {
-  id: number;
-  name: string;
-  description: string;
-  price: number;
-}
+type Props = MainStackScreenProps<'Products'>;
 
-export default function ProductListScreen() {
+export default function ProductListScreen({ navigation }: Props) {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -61,7 +58,7 @@ export default function ProductListScreen() {
       <View style={styles.container}>
         <Header title="Produits" />
         <View style={styles.centered}>
-          <Text style={styles.error}>Erreur: {error}</Text>
+          <Text style={styles.error}>{error}</Text>
         </View>
       </View>
     );
@@ -77,7 +74,6 @@ export default function ProductListScreen() {
           <View style={styles.productItem}>
             <Text style={styles.productName}>{item.name}</Text>
             <Text style={styles.productDescription}>{item.description}</Text>
-            <Text style={styles.productPrice}>{item.price}€</Text>
           </View>
         )}
       />
@@ -100,22 +96,17 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   productItem: {
-    padding: 15,
+    padding: 16,
     borderBottomWidth: 1,
     borderBottomColor: '#eee',
   },
   productName: {
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: 'bold',
+    marginBottom: 4,
   },
   productDescription: {
     fontSize: 14,
     color: '#666',
-    marginTop: 5,
-  },
-  productPrice: {
-    fontSize: 16,
-    color: '#2f95dc',
-    marginTop: 5,
   },
 });

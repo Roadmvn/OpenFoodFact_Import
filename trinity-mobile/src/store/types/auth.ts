@@ -1,7 +1,16 @@
 export interface User {
   id: number;
   email: string;
+  firstName: string;
+  lastName: string;
   role: 'admin' | 'seller' | 'buyer';
+  phone?: string;
+  address?: string;
+  zipCode?: string;
+  city?: string;
+  country?: string;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface AuthState {
@@ -10,6 +19,7 @@ export interface AuthState {
   loading: boolean;
   error: string | null;
   isInitialized: boolean;
+  isUpdating?: boolean;
 }
 
 export interface LoginCredentials {
@@ -32,4 +42,15 @@ export interface RegisterCredentials {
   zipCode: string;
   city: string;
   country: string;
+}
+
+export interface UpdateProfileData {
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone?: string;
+  address?: string;
+  zipCode?: string;
+  city?: string;
+  country?: string;
 }

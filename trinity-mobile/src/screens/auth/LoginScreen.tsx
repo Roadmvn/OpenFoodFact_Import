@@ -9,25 +9,27 @@ import {
 } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
 import { loginRequest, logoutRequest } from '../../store/slices/authSlice';
-import { RootState } from '../../store';
+import { RootState } from '../../store/types';
 import { useToast } from '../../contexts/ToastContext';
-import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { AuthStackParamList } from '../../navigation/types/navigation';
+import { AuthStackScreenProps } from '../../navigation/types/navigation';
 
-type Props = NativeStackScreenProps<AuthStackParamList, 'Login'>;
+type Props = AuthStackScreenProps<'Login'>;
 
 export default function LoginScreen({ navigation }: Props) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const dispatch = useDispatch();
-  const { loading, error } = useSelector((state: RootState) => state.auth);
+  const { loading, error } = useSelector((state: RootState) => ({
+    loading: state.auth.loading,
+    error: state.auth.error
+  }));
   const { showToast } = useToast();
 
   useEffect(() => {
     if (error) {
       showToast(error, 'error');
     }
-  }, [error]);
+  }, [error, showToast]);
 
   const handleLogin = () => {
     if (!email || !password) {
@@ -122,19 +124,16 @@ const styles = StyleSheet.create({
     color: '#333',
   },
   input: {
-    height: 50,
     borderWidth: 1,
     borderColor: '#ddd',
-    borderRadius: 8,
-    paddingHorizontal: 15,
+    borderRadius: 5,
+    padding: 10,
     marginBottom: 15,
-    fontSize: 16,
   },
   button: {
     backgroundColor: '#007AFF',
-    height: 50,
-    borderRadius: 8,
-    justifyContent: 'center',
+    padding: 15,
+    borderRadius: 5,
     alignItems: 'center',
   },
   buttonDisabled: {

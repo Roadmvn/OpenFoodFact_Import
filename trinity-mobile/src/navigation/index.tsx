@@ -2,10 +2,10 @@ import React, { useEffect } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { useDispatch, useSelector } from 'react-redux';
+import { View, ActivityIndicator, StyleSheet } from 'react-native';
 import { RootState } from '../store';
 import AuthStack from './stacks/AuthStack';
 import MainStack from './stacks/MainStack';
-import SplashScreen from '../screens/auth/SplashScreen';
 import { restoreSessionRequest } from '../store/slices/authSlice';
 import { RootStackParamList } from './types/navigation';
 
@@ -19,9 +19,13 @@ export default function AppNavigator() {
     dispatch(restoreSessionRequest());
   }, []);
 
-  // Afficher le SplashScreen pendant l'initialisation
+  // Afficher un indicateur de chargement pendant l'initialisation
   if (!isInitialized) {
-    return <SplashScreen />;
+    return (
+      <View style={styles.container}>
+        <ActivityIndicator size="large" color="#007AFF" />
+      </View>
+    );
   }
 
   return (
@@ -36,3 +40,12 @@ export default function AppNavigator() {
     </NavigationContainer>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#FFFFFF',
+  },
+});
