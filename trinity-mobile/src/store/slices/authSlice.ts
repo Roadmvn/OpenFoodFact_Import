@@ -1,12 +1,12 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { AuthState, LoginCredentials, User } from '../types/auth';
+import { AuthState, LoginCredentials, LoginResponse, RegisterCredentials } from '../types/auth';
 
 const initialState: AuthState = {
   user: null,
   token: null,
   loading: false,
   error: null,
-  isInitialized: false, // Nouvel état pour suivre l'initialisation
+  isInitialized: false,
 };
 
 const authSlice = createSlice({
@@ -18,13 +18,29 @@ const authSlice = createSlice({
       state.loading = true;
       state.error = null;
     },
-    loginSuccess: (state, action: PayloadAction<{ token: string; user: User }>) => {
+    loginSuccess: (state, action: PayloadAction<LoginResponse>) => {
       state.loading = false;
-      state.token = action.payload.token;
       state.user = action.payload.user;
+      state.token = action.payload.token;
       state.error = null;
     },
     loginFailure: (state, action: PayloadAction<string>) => {
+      state.loading = false;
+      state.error = action.payload;
+    },
+
+    // Actions d'inscription
+    registerRequest: (state, action: PayloadAction<RegisterCredentials>) => {
+      state.loading = true;
+      state.error = null;
+    },
+    registerSuccess: (state, action: PayloadAction<LoginResponse>) => {
+      state.loading = false;
+      state.user = action.payload.user;
+      state.token = action.payload.token;
+      state.error = null;
+    },
+    registerFailure: (state, action: PayloadAction<string>) => {
       state.loading = false;
       state.error = action.payload;
     },
@@ -34,29 +50,28 @@ const authSlice = createSlice({
       state.loading = true;
     },
     logoutSuccess: (state) => {
-      state.loading = false;
-      state.token = null;
       state.user = null;
+      state.token = null;
+      state.loading = false;
+      state.error = null;
     },
 
     // Actions de restauration de session
     restoreSessionRequest: (state) => {
       state.loading = true;
-      state.isInitialized = false;
+      state.error = null;
     },
-    restoreSessionSuccess: (state, action: PayloadAction<{ token: string; user: User } | null>) => {
+    restoreSessionSuccess: (state, action: PayloadAction<LoginResponse | null>) => {
       state.loading = false;
+      state.user = action.payload?.user || null;
+      state.token = action.payload?.token || null;
       state.isInitialized = true;
-      if (action.payload) {
-        state.token = action.payload.token;
-        state.user = action.payload.user;
-      }
     },
     restoreSessionFailure: (state) => {
       state.loading = false;
-      state.isInitialized = true;
-      state.token = null;
       state.user = null;
+      state.token = null;
+      state.isInitialized = true;
     },
   },
 });
@@ -65,6 +80,9 @@ export const {
   loginRequest,
   loginSuccess,
   loginFailure,
+  registerRequest,
+  registerSuccess,
+  registerFailure,
   logoutRequest,
   logoutSuccess,
   restoreSessionRequest,

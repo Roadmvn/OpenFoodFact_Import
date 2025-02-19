@@ -3,6 +3,9 @@ import {
   loginRequest,
   loginSuccess,
   loginFailure,
+  registerRequest,
+  registerSuccess,
+  registerFailure,
   logoutRequest,
   logoutSuccess,
   restoreSessionRequest,
@@ -10,7 +13,7 @@ import {
   restoreSessionFailure,
 } from '../slices/authSlice';
 import AuthService from '../../services/auth/authService';
-import { LoginCredentials, LoginResponse } from '../types/auth';
+import { LoginCredentials, LoginResponse, RegisterCredentials } from '../types/auth';
 
 function* loginSaga(action: ReturnType<typeof loginRequest>) {
   try {
@@ -19,6 +22,16 @@ function* loginSaga(action: ReturnType<typeof loginRequest>) {
     yield put(loginSuccess(response));
   } catch (error) {
     yield put(loginFailure(error instanceof Error ? error.message : 'Erreur de connexion'));
+  }
+}
+
+function* registerSaga(action: ReturnType<typeof registerRequest>) {
+  try {
+    const response: LoginResponse = yield call([AuthService, 'register'], action.payload);
+    yield call([AuthService, 'setupAxiosInterceptors']);
+    yield put(registerSuccess(response));
+  } catch (error) {
+    yield put(registerFailure(error instanceof Error ? error.message : 'Erreur lors de l\'inscription'));
   }
 }
 
@@ -44,6 +57,7 @@ function* restoreSessionSaga() {
 
 export default function* authSaga() {
   yield takeLatest(loginRequest.type, loginSaga);
+  yield takeLatest(registerRequest.type, registerSaga);
   yield takeLatest(logoutRequest.type, logoutSaga);
   yield takeLatest(restoreSessionRequest.type, restoreSessionSaga);
 }

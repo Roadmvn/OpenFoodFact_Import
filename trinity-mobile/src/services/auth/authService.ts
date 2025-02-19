@@ -1,7 +1,7 @@
 import axios from 'axios';
 import * as SecureStore from 'expo-secure-store';
 import { API_URL } from '../../config/api';
-import { LoginCredentials, LoginResponse } from '../../store/types/auth';
+import { LoginCredentials, LoginResponse, RegisterCredentials } from '../../store/types/auth';
 
 const TOKEN_KEY = 'auth_token';
 
@@ -18,6 +18,23 @@ class AuthService {
     } catch (error) {
       if (axios.isAxiosError(error)) {
         throw new Error(error.response?.data?.message || 'Erreur de connexion');
+      }
+      throw error;
+    }
+  }
+
+  static async register(credentials: RegisterCredentials): Promise<LoginResponse> {
+    try {
+      const response = await axios.post(`${API_URL}/auth/register`, credentials);
+      const { token, user } = response.data;
+      
+      // Stocker le token de manière sécurisée
+      await SecureStore.setItemAsync(TOKEN_KEY, token);
+      
+      return { token, user };
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        throw new Error(error.response?.data?.message || 'Erreur lors de l\'inscription');
       }
       throw error;
     }

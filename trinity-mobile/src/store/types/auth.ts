@@ -21,3 +21,15 @@ export interface LoginResponse {
   user: User;
   token: string;
 }
+
+export interface RegisterCredentials {
+  firstName: string;
+  lastName: string;
+  email: string;
+  password: string;
+  phone: string;
+  address: string;
+  zipCode: string;
+  city: string;
+  country: string;
+}

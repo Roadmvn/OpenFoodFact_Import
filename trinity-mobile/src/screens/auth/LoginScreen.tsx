@@ -11,15 +11,18 @@ import { useDispatch, useSelector } from 'react-redux';
 import { loginRequest, logoutRequest } from '../../store/slices/authSlice';
 import { RootState } from '../../store';
 import { useToast } from '../../contexts/ToastContext';
+import { NativeStackScreenProps } from '@react-navigation/native-stack';
+import { AuthStackParamList } from '../../navigation/types/navigation';
 
-export default function LoginScreen() {
+type Props = NativeStackScreenProps<AuthStackParamList, 'Login'>;
+
+export default function LoginScreen({ navigation }: Props) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const dispatch = useDispatch();
   const { loading, error } = useSelector((state: RootState) => state.auth);
   const { showToast } = useToast();
 
-  // Gérer les erreurs d'authentification
   useEffect(() => {
     if (error) {
       showToast(error, 'error');
@@ -27,7 +30,6 @@ export default function LoginScreen() {
   }, [error]);
 
   const handleLogin = () => {
-    // Validation des champs
     if (!email || !password) {
       showToast('Veuillez remplir tous les champs', 'error');
       return;
@@ -79,6 +81,13 @@ export default function LoginScreen() {
           ) : (
             <Text style={styles.buttonText}>Se connecter</Text>
           )}
+        </TouchableOpacity>
+
+        <TouchableOpacity 
+          style={styles.linkButton}
+          onPress={() => navigation.navigate('Register')}
+        >
+          <Text style={styles.linkText}>Pas encore inscrit ? Créer un compte</Text>
         </TouchableOpacity>
       </View>
     </View>
@@ -135,5 +144,13 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 16,
     fontWeight: 'bold',
+  },
+  linkButton: {
+    marginTop: 15,
+    alignItems: 'center',
+  },
+  linkText: {
+    color: '#007AFF',
+    fontSize: 14,
   },
 });
