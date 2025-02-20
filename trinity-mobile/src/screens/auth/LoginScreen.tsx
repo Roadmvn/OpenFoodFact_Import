@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -8,45 +8,20 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
-import { loginRequest, logoutRequest } from '../../store/slices/authSlice';
-import { RootState } from '../../store/types';
-import { useToast } from '../../contexts/ToastContext';
-import { AuthStackScreenProps } from '../../navigation/types/navigation';
+import { loginRequest } from '../../store/slices/authSlice';
+import { RootState } from '../../store';
 
-type Props = AuthStackScreenProps<'Login'>;
-
-export default function LoginScreen({ navigation }: Props) {
+export default function LoginScreen() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const dispatch = useDispatch();
-  const { loading, error } = useSelector((state: RootState) => ({
-    loading: state.auth.loading,
-    error: state.auth.error
-  }));
-  const { showToast } = useToast();
-
-  useEffect(() => {
-    if (error) {
-      showToast(error, 'error');
-    }
-  }, [error, showToast]);
+  const { loading, error } = useSelector((state: RootState) => state.auth);
 
   const handleLogin = () => {
     if (!email || !password) {
-      showToast('Veuillez remplir tous les champs', 'error');
       return;
     }
-
-    if (!email.includes('@')) {
-      showToast('Email invalide', 'error');
-      return;
-    }
-
     dispatch(loginRequest({ email, password }));
-  };
-
-  const handleLogout = () => {
-    dispatch(logoutRequest());
   };
 
   return (
@@ -73,23 +48,18 @@ export default function LoginScreen({ navigation }: Props) {
           editable={!loading}
         />
 
+        {error && <Text style={styles.error}>{error}</Text>}
+
         <TouchableOpacity 
           style={[styles.button, loading && styles.buttonDisabled]}
           onPress={handleLogin}
-          disabled={loading}
+          disabled={loading || !email || !password}
         >
           {loading ? (
             <ActivityIndicator color="#fff" />
           ) : (
             <Text style={styles.buttonText}>Se connecter</Text>
           )}
-        </TouchableOpacity>
-
-        <TouchableOpacity 
-          style={styles.linkButton}
-          onPress={() => navigation.navigate('Register')}
-        >
-          <Text style={styles.linkText}>Pas encore inscrit ? Créer un compte</Text>
         </TouchableOpacity>
       </View>
     </View>
@@ -99,42 +69,35 @@ export default function LoginScreen({ navigation }: Props) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'center',
-    padding: 20,
-    backgroundColor: '#f5f5f5',
-  },
-  form: {
     backgroundColor: '#fff',
     padding: 20,
-    borderRadius: 10,
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-    elevation: 5,
+    justifyContent: 'center',
+  },
+  form: {
+    width: '100%',
   },
   title: {
     fontSize: 24,
     fontWeight: 'bold',
-    marginBottom: 20,
+    marginBottom: 30,
     textAlign: 'center',
-    color: '#333',
   },
   input: {
+    height: 50,
     borderWidth: 1,
     borderColor: '#ddd',
-    borderRadius: 5,
-    padding: 10,
+    borderRadius: 8,
+    paddingHorizontal: 15,
     marginBottom: 15,
+    fontSize: 16,
   },
   button: {
     backgroundColor: '#007AFF',
-    padding: 15,
-    borderRadius: 5,
+    height: 50,
+    borderRadius: 8,
+    justifyContent: 'center',
     alignItems: 'center',
+    marginTop: 10,
   },
   buttonDisabled: {
     backgroundColor: '#ccc',
@@ -144,12 +107,9 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
   },
-  linkButton: {
-    marginTop: 15,
-    alignItems: 'center',
-  },
-  linkText: {
-    color: '#007AFF',
-    fontSize: 14,
+  error: {
+    color: 'red',
+    marginBottom: 10,
+    textAlign: 'center',
   },
 });

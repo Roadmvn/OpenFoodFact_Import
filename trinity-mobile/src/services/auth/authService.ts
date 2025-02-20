@@ -1,7 +1,7 @@
 import axios from 'axios';
 import * as SecureStore from 'expo-secure-store';
 import { API_URL } from '../../config/api';
-import { LoginCredentials, LoginResponse, RegisterCredentials, User, UpdateProfileData } from '../../store/types/auth';
+import { LoginCredentials, LoginResponse, RegisterCredentials, RegisterResponse } from '../../store/types/auth';
 
 const TOKEN_KEY = 'auth_token';
 
@@ -23,7 +23,7 @@ class AuthService {
     }
   }
 
-  static async register(credentials: RegisterCredentials): Promise<LoginResponse> {
+  static async register(credentials: RegisterCredentials): Promise<RegisterResponse> {
     try {
       const response = await axios.post(`${API_URL}/auth/register`, credentials);
       const { token, user } = response.data;
@@ -42,20 +42,9 @@ class AuthService {
 
   static async logout(): Promise<void> {
     try {
-      // Appeler l'API de déconnexion
-      await axios.post(`${API_URL}/auth/logout`);
-      
-      // Supprimer le token localement
       await SecureStore.deleteItemAsync(TOKEN_KEY);
-      
-      // Réinitialiser la configuration Axios
-      axios.defaults.headers.common['Authorization'] = '';
     } catch (error) {
       console.error('Erreur lors de la déconnexion:', error);
-      // Même en cas d'erreur, on supprime le token local
-      await SecureStore.deleteItemAsync(TOKEN_KEY);
-      axios.defaults.headers.common['Authorization'] = '';
-      throw error;
     }
   }
 
@@ -80,83 +69,12 @@ class AuthService {
       (response) => response,
       async (error) => {
         if (error.response?.status === 401) {
-          // Token expiré ou invalide
           await AuthService.logout();
-          // Rediriger vers la page de connexion
-          // Cette partie sera gérée par Redux
-          throw new Error('Session expirée. Veuillez vous reconnecter.');
+          // Vous pouvez ajouter ici la logique pour rediriger vers la page de connexion
         }
         return Promise.reject(error);
       }
     );
-  }
-
-  // Vérifier si l'utilisateur est authentifié
-  static async isAuthenticated(): Promise<boolean> {
-    const token = await AuthService.getToken();
-    return !!token;
-  }
-
-  // Restaurer la session
-  static async restoreSession(): Promise<{ token: string; user: any } | null> {
-    try {
-      const token = await AuthService.getToken();
-      if (!token) return null;
-
-      // Configurer axios avec le token
-      await AuthService.setupAxiosInterceptors();
-
-      // Vérifier la validité du token en appelant une route protégée
-      const response = await axios.get(`${API_URL}/auth/me`);
-      return {
-        token,
-        user: response.data
-      };
-    } catch (error) {
-      await AuthService.logout();
-      return null;
-    }
-  }
-
-  static async getCurrentUser(): Promise<User> {
-    try {
-      const response = await axios.get(`${API_URL}/auth/me`);
-      return response.data;
-    } catch (error) {
-      if (axios.isAxiosError(error)) {
-        throw new Error(error.response?.data?.message || 'Erreur lors de la récupération du profil');
-      }
-      throw error;
-    }
-  }
-
-  static async updateProfile(data: UpdateProfileData): Promise<User> {
-    try {
-      const response = await axios.put(`${API_URL}/auth/me`, data);
-      return response.data;
-    } catch (error) {
-      if (axios.isAxiosError(error)) {
-        throw new Error(error.response?.data?.message || 'Erreur lors de la mise à jour du profil');
-      }
-      throw error;
-    }
-  }
-
-  static async googleLogin(token: string): Promise<LoginResponse> {
-    try {
-      const response = await axios.post(`${API_URL}/auth/google`, { token });
-      const { token: authToken, user } = response.data;
-      
-      // Stocker le token de manière sécurisée
-      await SecureStore.setItemAsync(TOKEN_KEY, authToken);
-      
-      return { token: authToken, user };
-    } catch (error) {
-      if (axios.isAxiosError(error)) {
-        throw new Error(error.response?.data?.message || 'Erreur de connexion Google');
-      }
-      throw error;
-    }
   }
 }
 
